@@ -12,7 +12,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Quadro branco, casa terapêutica e jogo da tríade TCC para sessões online com crianças e adolescentes.",
+          "Quadro branco colaborativo em tempo real para sessões online com crianças e adolescentes.",
       },
     ],
   }),
