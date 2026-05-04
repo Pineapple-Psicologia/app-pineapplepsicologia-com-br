@@ -45,8 +45,8 @@ function Home() {
             <span className="block text-primary">linguagem clínica.</span>
           </h1>
           <p className="mt-5 text-lg text-muted-foreground max-w-md">
-            Três ferramentas lúdicas em tempo real para psicólogas
-            infantojuvenis: quadro branco, casa terapêutica e jogo da tríade TCC.
+            Um quadro branco colaborativo em tempo real para psicólogas
+            infantojuvenis usarem em sessões online com seus pacientes.
           </p>
           <div className="mt-8 flex flex-wrap gap-4 text-sm text-muted-foreground">
             <span className="inline-flex items-center gap-2"><Heart className="w-4 h-4 text-accent" /> Vínculo</span>
