@@ -3,7 +3,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Sparkles, Heart, Users } from "lucide-react";
+import { Sparkles, Heart, Users, Lock } from "lucide-react";
+import { GAMES, type GameId } from "@/lib/games";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -12,7 +13,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Quadro branco colaborativo em tempo real para sessões online com crianças e adolescentes.",
+          "Estante de jogos terapêuticos colaborativos para psicólogas infantojuvenis usarem em sessões online.",
       },
     ],
   }),
@@ -27,62 +28,100 @@ function Home() {
   const navigate = useNavigate();
   const [code, setCode] = useState("");
 
-  const enter = (role: "psi" | "paciente", roomCode?: string) => {
-    const c = (roomCode ?? code).toUpperCase().trim();
+  const openGame = (game: GameId) => {
+    navigate({
+      to: "/sala/$code",
+      params: { code: genCode() },
+      search: { role: "psi", game },
+    });
+  };
+
+  const enterAsPaciente = () => {
+    const c = code.toUpperCase().trim();
     if (!c) return;
-    navigate({ to: "/sala/$code", params: { code: c }, search: { role } });
+    navigate({
+      to: "/sala/$code",
+      params: { code: c },
+      search: { role: "paciente" },
+    });
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-5xl grid md:grid-cols-2 gap-8 items-center">
-        <section>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/15 text-accent-foreground text-xs font-semibold mb-5">
-            <Sparkles className="w-3.5 h-3.5" /> Ferramentas para sessão online
+    <main className="min-h-screen px-4 py-10 md:py-14">
+      <div className="max-w-6xl mx-auto">
+        <header className="mb-10 text-center md:text-left">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/15 text-accent-foreground text-xs font-semibold mb-4">
+            <Sparkles className="w-3.5 h-3.5" /> Estante de jogos terapêuticos
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold leading-[1.05] text-foreground">
-            Brincar é
-            <span className="block text-primary">linguagem clínica.</span>
+          <h1 className="text-4xl md:text-5xl font-bold leading-[1.05] text-foreground">
+            Brincar é <span className="text-primary">linguagem clínica.</span>
           </h1>
-          <p className="mt-5 text-lg text-muted-foreground max-w-md">
-            Um quadro branco colaborativo em tempo real para psicólogas
-            infantojuvenis usarem em sessões online com seus pacientes.
+          <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto md:mx-0">
+            Escolha um recurso, abra a sala e compartilhe o código com seu
+            paciente. Tudo ao vivo, sem download.
           </p>
-          <div className="mt-8 flex flex-wrap gap-4 text-sm text-muted-foreground">
-            <span className="inline-flex items-center gap-2"><Heart className="w-4 h-4 text-accent" /> Vínculo</span>
-            <span className="inline-flex items-center gap-2"><Users className="w-4 h-4 text-accent" /> Interação ao vivo</span>
-            <span className="inline-flex items-center gap-2"><Sparkles className="w-4 h-4 text-accent" /> Sem download</span>
+        </header>
+
+        <section className="mb-12">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">
+            Sou psicóloga — escolher recurso
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {GAMES.map((g) => (
+              <Card
+                key={g.id}
+                className={`p-5 flex flex-col gap-3 border-2 transition-all ${
+                  g.available
+                    ? "hover:border-primary hover:shadow-xl cursor-pointer hover:-translate-y-0.5"
+                    : "opacity-60"
+                }`}
+                onClick={() => g.available && openGame(g.id)}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="text-4xl">{g.emoji}</div>
+                  {!g.available && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
+                      <Lock className="w-3 h-3" /> em breve
+                    </span>
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold leading-tight">{g.title}</h3>
+                  <div className="flex flex-wrap gap-1.5 mt-1.5">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                      {g.approach}
+                    </span>
+                    <span className="text-[10px] font-semibold uppercase tracking-wider bg-accent/15 text-accent-foreground px-2 py-0.5 rounded-full">
+                      {g.ageRange}
+                    </span>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground flex-1">
+                  {g.description}
+                </p>
+                {g.available && (
+                  <Button
+                    size="sm"
+                    className="w-full mt-1"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openGame(g.id);
+                    }}
+                  >
+                    Abrir sala
+                  </Button>
+                )}
+              </Card>
+            ))}
           </div>
         </section>
 
-        <Card className="p-7 shadow-xl border-2 border-border/60 backdrop-blur bg-card/95">
-          <h2 className="text-2xl font-bold mb-1">Iniciar sessão</h2>
-          <p className="text-sm text-muted-foreground mb-6">
-            A psicóloga cria a sala e compartilha o código com o paciente.
-          </p>
-
-          <div className="space-y-3 mb-6">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Sou psicóloga
-            </label>
-            <Button
-              size="lg"
-              className="w-full text-base font-semibold"
-              onClick={() => enter("psi", genCode())}
-            >
-              Criar nova sala
-            </Button>
-          </div>
-
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
-            <div className="relative flex justify-center"><span className="bg-card px-3 text-xs text-muted-foreground">ou</span></div>
-          </div>
-
-          <div className="space-y-3">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <section className="max-w-md mx-auto">
+          <Card className="p-6 border-2 border-border/60 bg-card/95 backdrop-blur">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-3">
               Sou paciente — entrar com código
-            </label>
+            </h2>
             <div className="flex gap-2">
               <Input
                 value={code}
@@ -94,14 +133,20 @@ function Home() {
               <Button
                 size="lg"
                 variant="secondary"
-                onClick={() => enter("paciente")}
+                onClick={enterAsPaciente}
                 disabled={!code.trim()}
               >
                 Entrar
               </Button>
             </div>
+          </Card>
+
+          <div className="mt-6 flex flex-wrap gap-4 justify-center text-sm text-muted-foreground">
+            <span className="inline-flex items-center gap-2"><Heart className="w-4 h-4 text-accent" /> Vínculo</span>
+            <span className="inline-flex items-center gap-2"><Users className="w-4 h-4 text-accent" /> Ao vivo</span>
+            <span className="inline-flex items-center gap-2"><Sparkles className="w-4 h-4 text-accent" /> Sem download</span>
           </div>
-        </Card>
+        </section>
       </div>
     </main>
   );
