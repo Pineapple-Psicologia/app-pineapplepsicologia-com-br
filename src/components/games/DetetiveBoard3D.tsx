@@ -236,10 +236,10 @@ export default function DetetiveBoard3D({ locations, currentIdx, completed, onSe
       dpr={[1, 2]}
       camera={{ position: [0, 9, 11], fov: 42 }}
       style={{ width: "100%", height: "100%" }}
-      gl={{ antialias: true }}
+      gl={{ antialias: true, alpha: true }}
     >
-      <color attach="background" args={["#fef3c7"]} />
-      <fog attach="fog" args={["#fef3c7", 18, 38]} />
+      {/* transparent background to let the Pixar diorama scene show through */}
+      <fog attach="fog" args={["#fde6c2", 22, 42]} />
 
       <Suspense fallback={null}>
         <Environment preset="sunset" />
@@ -261,21 +261,16 @@ export default function DetetiveBoard3D({ locations, currentIdx, completed, onSe
         <pointLight position={[6, 5, 5]} intensity={15} color="#f472b6" distance={18} decay={1.5} />
         <MovingLight />
 
-        {/* board */}
+        {/* soft floating board (no heavy table — diorama scene shows behind) */}
         <group>
-          {/* table top */}
-          <mesh receiveShadow position={[0, -0.05, 0]} castShadow>
-            <boxGeometry args={[16.5, 0.6, 16.5]} />
-            <meshStandardMaterial color="#92400e" roughness={0.7} />
-          </mesh>
-          {/* board surface */}
+          {/* subtle round platform */}
           <mesh receiveShadow position={[0, 0.27, 0]}>
-            <boxGeometry args={[15.5, 0.15, 15.5]} />
-            <meshStandardMaterial color="#fef3c7" roughness={0.5} />
+            <cylinderGeometry args={[7.6, 7.8, 0.35, 64]} />
+            <meshStandardMaterial color="#fef3c7" roughness={0.6} transparent opacity={0.92} />
           </mesh>
           {/* decorative inner border */}
-          <mesh position={[0, 0.36, 0]}>
-            <ringGeometry args={[7.0, 7.3, 64]} />
+          <mesh position={[0, 0.46, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[7.0, 7.35, 64]} />
             <meshStandardMaterial color="#b45309" side={THREE.DoubleSide} />
           </mesh>
         </group>
