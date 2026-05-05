@@ -624,3 +624,62 @@ function isNear(o: Obj, p: { x: number; y: number }, r: number): boolean {
   }
   return false;
 }
+
+// Recognize whether a freehand pen stroke is meant to be a circle, rectangle or straight line.
+function recognizeShape(d: Path): Shape | null {
+  const pts = d.points;
+  if (pts.length < 8) return null;
+  let minX = 1, minY = 1, maxX = 0, maxY = 0;
+  for (const p of pts) {
+    if (p.x < minX) minX = p.x;
+    if (p.y < minY) minY = p.y;
+    if (p.x > maxX) maxX = p.x;
+    if (p.y > maxY) maxY = p.y;
+  }
+  const w = maxX - minX, h = maxY - minY;
+  if (w < 0.02 && h < 0.02) return null;
+
+  const first = pts[0], last = pts[pts.length - 1];
+  const closeDist = Math.hypot(last.x - first.x, last.y - first.y);
+  const diag = Math.hypot(w, h);
+  const closed = closeDist < diag * 0.25;
+
+  // Straight line: small bbox in one dimension OR very direct path
+  let pathLen = 0;
+  for (let i = 1; i < pts.length; i++) pathLen += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y);
+  const directness = diag / Math.max(pathLen, 0.0001);
+  if (!closed && directness > 0.92 && pathLen > 0.05) {
+    return { type: "line", color: d.color, size: d.size, x1: first.x, y1: first.y, x2: last.x, y2: last.y };
+  }
+
+  if (!closed) return null;
+
+  // Circle vs rectangle: measure how well points fit a circle around centroid
+  const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+  const rx = w / 2, ry = h / 2;
+  const r = (rx + ry) / 2;
+  let circleErr = 0;
+  for (const p of pts) {
+    const dist = Math.hypot(p.x - cx, p.y - cy);
+    circleErr += Math.abs(dist - r);
+  }
+  circleErr /= pts.length;
+  // Rectangle: most points near the bbox edges
+  let rectErr = 0;
+  for (const p of pts) {
+    const dx = Math.min(Math.abs(p.x - minX), Math.abs(p.x - maxX));
+    const dy = Math.min(Math.abs(p.y - minY), Math.abs(p.y - maxY));
+    rectErr += Math.min(dx, dy);
+  }
+  rectErr /= pts.length;
+
+  const aspect = Math.min(w, h) / Math.max(w, h);
+  // Prefer circle when aspect is roughly square AND fit is tight
+  if (circleErr < r * 0.22 && circleErr < rectErr * 1.1) {
+    return { type: "circle", color: d.color, size: d.size, x1: minX, y1: minY, x2: maxX, y2: maxY };
+  }
+  if (rectErr < diag * 0.04 && aspect > 0.25) {
+    return { type: "rect", color: d.color, size: d.size, x1: minX, y1: minY, x2: maxX, y2: maxY };
+  }
+  return null;
+}
