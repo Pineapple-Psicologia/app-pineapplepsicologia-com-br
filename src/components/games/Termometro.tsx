@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
 import { Thermometer, RotateCcw } from "lucide-react";
+import SceneBackdrop from "./SceneBackdrop";
+import sceneBg from "@/assets/scene-termometro.jpg";
 
 type Props = { room: ReturnType<typeof useRoom> };
 
