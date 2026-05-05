@@ -55,26 +55,92 @@ const DISTORTIONS = [
   { id: "emocional", emoji: "💭", label: "Raciocínio emocional" },
 ];
 
-type EventCardKind = "ajuda" | "desafio" | "revelacao" | "atalho";
-type EventCard = { kind: EventCardKind; title: string; text: string; bonus: number };
+// Per-location hints — the dice picks one of these to support the patient
+// answering the question of the current tile. Unlimited use, but each use
+// reduces the points earned for that tile (see HINT_PENALTY).
+const HINT_PENALTY = 5; // points subtracted per hint used (per location)
+const HINT_MIN_RATIO = 0.5; // never reward below half of the base value
 
-const EVENT_DECK: Record<EventCardKind, EventCard[]> = {
-  ajuda: [
-    { kind: "ajuda", title: "🤝 Aliado inesperado", text: "Lembre-se de uma vez em que você lidou bem com algo parecido. O que ajudou?", bonus: 10 },
-    { kind: "ajuda", title: "🌬️ Pausa do detetive", text: "Respire fundo 3 vezes antes de responder. Reduza 1 ponto na intensidade emocional.", bonus: 10 },
-    { kind: "ajuda", title: "💡 Pista extra", text: "Se um amigo querido vivesse isso, o que você diria pra ele?", bonus: 10 },
+const LOCATION_HINTS: Record<LocationId, string[]> = {
+  cena: [
+    "Foque nos fatos: o que aconteceu, quando, quem estava?",
+    "Imagine que você é uma câmera — descreva sem julgamento.",
+    "Comece com: 'Eu estava... e então...'",
+    "Evite 'sempre' ou 'nunca' — fale só desse momento.",
+    "O que alguém de fora veria nessa cena?",
+    "Resuma em 2 frases se estiver longo.",
   ],
-  desafio: [
-    { kind: "desafio", title: "🌀 Pegadinha cognitiva", text: "Encontre PELO MENOS uma evidência contrária ao pensamento — mesmo que pequena.", bonus: 15 },
-    { kind: "desafio", title: "🎭 Troca de papéis", text: "Reescreva o pensamento como se fosse uma manchete de jornal sensacionalista. Depois reescreva sóbria.", bonus: 15 },
-    { kind: "desafio", title: "⏳ Viagem no tempo", text: "Como você verá esse pensamento daqui a 1 ano?", bonus: 15 },
+  emocao: [
+    "Não existe emoção errada. Aponte a primeira que veio.",
+    "Pode haver mais de uma emoção misturada — marque todas.",
+    "Tristeza tem peso, raiva tem pressão. Qual combina?",
+    "Pense em uma cor pra essa emoção.",
+    "Intensidade 0 = nada · 100 = a mais forte que já sentiu.",
+    "Se está difícil nomear, escolha pelo emoji.",
   ],
-  revelacao: [
-    { kind: "revelacao", title: "✨ Revelação do caso", text: "Identifique uma distorção a mais que você não tinha visto.", bonus: 25 },
-    { kind: "revelacao", title: "🔓 Cofre aberto", text: "Que crença mais antiga está por trás desse pensamento?", bonus: 25 },
+  corpo: [
+    "Feche os olhos por 5s e escaneie de cima a baixo.",
+    "Aperto, calor, tremor, peso — qualquer sinal serve.",
+    "Onde sua respiração mudou?",
+    "Existe algum lugar 'travado'?",
+    "Compare com como o corpo está agora.",
+    "Pode marcar mais de uma região.",
   ],
-  atalho: [
-    { kind: "atalho", title: "🛤️ Atalho secreto", text: "Avance +1 casa extra! Mas você precisa explicar em uma frase o que aprendeu até aqui.", bonus: 20 },
+  interrogatorio: [
+    "Pensamento automático costuma ser curto e cru.",
+    "Comece com 'Eu...' ou 'Ele/ela...'",
+    "Não filtre — escreva o que veio mesmo.",
+    "Pergunta-chave: o que isso significou pra você?",
+    "Pode ser uma frase, uma imagem ou uma previsão.",
+    "Se vieram vários, escreva o mais 'quente'.",
+  ],
+  cartas: [
+    "Tudo ou nada: você usou 'sempre/nunca/nada'?",
+    "Catastrofização: imaginou o pior cenário possível?",
+    "Leitura mental: assumiu o que o outro pensa?",
+    "Adivinhação: previu o futuro sem prova?",
+    "Rotulação: colou um rótulo fixo em alguém (ou em você)?",
+    "Pode marcar mais de uma carta.",
+  ],
+  evidencias: [
+    "Evidência = fato observável, não opinião.",
+    "A FAVOR: o que de fato sustenta o pensamento?",
+    "CONTRA: já vi isso ser diferente alguma vez?",
+    "Pergunte: 'Que prova eu levaria a um tribunal?'",
+    "Mesmo evidências fracas valem — anote.",
+    "Se o lado CONTRA está vazio, pense em exceções.",
+  ],
+  valores: [
+    "Valor ≠ meta. É o tipo de pessoa que você quer ser.",
+    "O que importa pra mim AQUI, nessa situação?",
+    "Pense em alguém que admira — que valor ele carrega?",
+    "Coragem, cuidado, honestidade, curiosidade — cabe algum?",
+    "Não precisa ser nobre, só verdadeiro pra você.",
+    "Complete: 'Eu queria agir como alguém que...'",
+  ],
+  reframe: [
+    "Reframe não é pensamento positivo forçado.",
+    "Junte evidências CONTRA + seus valores.",
+    "Comece com 'Talvez...' ou 'É possível que...'",
+    "Mais justo, não mais bonito.",
+    "Se um amigo dissesse isso, como você responderia?",
+    "Realista — sem negar o que é difícil.",
+  ],
+  plano: [
+    "Pequeno > grande. O que dá pra fazer hoje?",
+    "Concreto: quando, onde, como?",
+    "Algo que dependa SÓ de você.",
+    "Alinhado com o valor da bússola.",
+    "Se está grande, quebre em 1 passo bem pequeno.",
+    "Termine com uma hora ou data.",
+  ],
+  arquivo: [
+    "Releia o caminho — algo te surpreende?",
+    "O que você leva dessa sessão?",
+    "Em uma palavra: como você se sente agora?",
+    "Note a diferença entre o pensamento antigo e o novo.",
+    "Esse caso fica arquivado pra consultar depois.",
+    "Você cumpriu o ciclo. Bom trabalho. 🏆",
   ],
 };
 
