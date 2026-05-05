@@ -3,23 +3,34 @@ import { Button } from "@/components/ui/button";
 import {
   Eraser, Trash2, Pencil, Undo2, Download, Brush, Highlighter,
   Square, Circle as CircleIcon, Minus, ArrowRight, Type, Smile,
-  LayoutGrid, Sparkles, Wand2, Waves,
+  LayoutGrid, Sparkles, Wand2, Waves, Zap, Rainbow, SprayCan, PaintBucket, Plus,
 } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { useRoom, RoomMessage } from "@/lib/useRoom";
 import { TEMPLATES, buildTemplate, type TemplateId } from "@/lib/whiteboardTemplates";
 
-type Tool = "pen" | "marker" | "brush" | "rect" | "circle" | "line" | "arrow" | "text" | "sticker" | "eraser";
+type BrushTool = "pen" | "marker" | "brush" | "neon" | "rainbow" | "spray";
+type Tool = BrushTool | "rect" | "circle" | "line" | "arrow" | "text" | "sticker" | "eraser" | "fill";
 
-type Path = { type: "path"; tool: "pen" | "marker" | "brush"; color: string; size: number; points: { x: number; y: number; w?: number }[] };
+type Path = { type: "path"; tool: BrushTool; color: string; size: number; points: { x: number; y: number; w?: number }[] };
 type Shape = { type: "rect" | "circle" | "line" | "arrow"; color: string; size: number; x1: number; y1: number; x2: number; y2: number };
 type TextObj = { type: "text"; color: string; size: number; x: number; y: number; text: string };
 type Sticker = { type: "sticker"; emoji: string; x: number; y: number; size: number };
-type Obj = (Path | Shape | TextObj | Sticker) & { id: string };
+type Fill = { type: "fill"; color: string; x: number; y: number };
+type Obj = (Path | Shape | TextObj | Sticker | Fill) & { id: string };
 
 const COLORS = [
   "#1a1a1a", "#ffffff", "#DF9628", "#8E9337",
   "#e63946", "#f4a261", "#ffd166", "#06d6a0",
   "#3a86ff", "#7b2cbf", "#ff70a6", "#8d5524",
+];
+const EXTRA_COLORS = [
+  "#2b2d42", "#6c757d", "#adb5bd", "#f8edeb",
+  "#ff006e", "#fb5607", "#ffbe0b", "#8338ec",
+  "#3a0ca3", "#4361ee", "#4cc9f0", "#80ed99",
+  "#2a9d8f", "#264653", "#bc6c25", "#dda15e",
+  "#fec5bb", "#cdb4db", "#a2d2ff", "#bde0fe",
+  "#ffafcc", "#ffc8dd", "#b5179e", "#590d22",
 ];
 const STICKERS = ["⭐", "❤️", "😀", "😢", "😡", "😨", "🥰", "🤔", "🎈", "🌈", "☀️", "🌧️", "⚡", "🌸", "🐶", "🐱", "🦄", "🧸", "🎨", "🏠"];
 const BACKGROUNDS = [
@@ -65,21 +76,89 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
     if (o.type === "path") {
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
+      const baseW =
+        o.tool === "marker" ? o.size * 2.5 :
+        o.tool === "brush" ? o.size * 1.6 :
+        o.tool === "neon" ? o.size * 1.2 :
+        o.tool === "spray" ? o.size * 0.6 :
+        o.size;
+      const pts = o.points;
+
+      if (o.tool === "spray") {
+        // spray: scatter dots around each point
+        ctx.fillStyle = o.color;
+        ctx.globalAlpha = 0.55;
+        const radius = o.size * 2.2;
+        for (const p of pts) {
+          const px = p.x * w, py = p.y * h;
+          const dots = Math.max(6, Math.round(o.size * 1.2));
+          for (let i = 0; i < dots; i++) {
+            const a = Math.random() * Math.PI * 2;
+            const r = Math.random() * radius;
+            ctx.beginPath();
+            ctx.arc(px + Math.cos(a) * r, py + Math.sin(a) * r, 1.1, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+        ctx.restore();
+        return;
+      }
+
       ctx.strokeStyle = o.color;
-      const baseW = o.tool === "marker" ? o.size * 2.5 : o.tool === "brush" ? o.size * 1.6 : o.size;
       if (o.tool === "marker") ctx.globalAlpha = 0.35;
       if (o.tool === "brush") {
         ctx.shadowColor = o.color;
         ctx.shadowBlur = o.size * 0.8;
       }
-      const pts = o.points;
+      if (o.tool === "neon") {
+        ctx.shadowColor = o.color;
+        ctx.shadowBlur = o.size * 2.4;
+      }
+
+      const drawSmoothPath = (strokeColor?: string) => {
+        if (strokeColor) ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = baseW;
+        ctx.beginPath();
+        ctx.moveTo(pts[0].x * w, pts[0].y * h);
+        for (let i = 1; i < pts.length - 1; i++) {
+          const cx = (pts[i].x * w + pts[i + 1].x * w) / 2;
+          const cy = (pts[i].y * h + pts[i + 1].y * h) / 2;
+          ctx.quadraticCurveTo(pts[i].x * w, pts[i].y * h, cx, cy);
+        }
+        const last = pts[pts.length - 1];
+        ctx.lineTo(last.x * w, last.y * h);
+        ctx.stroke();
+      };
+
       if (pts.length < 2) {
         ctx.beginPath();
         ctx.arc(pts[0].x * w, pts[0].y * h, baseW / 2, 0, Math.PI * 2);
         ctx.fillStyle = o.color;
         ctx.fill();
+      } else if (o.tool === "rainbow") {
+        // segment-by-segment hue cycling
+        ctx.lineWidth = baseW;
+        for (let i = 1; i < pts.length; i++) {
+          const a = pts[i - 1], b = pts[i];
+          const hue = ((i / pts.length) * 360 + (o.points.length * 7)) % 360;
+          ctx.strokeStyle = `hsl(${hue}, 90%, 55%)`;
+          ctx.beginPath();
+          ctx.moveTo(a.x * w, a.y * h);
+          const next = pts[i + 1] ?? b;
+          const cx = (b.x * w + next.x * w) / 2;
+          const cy = (b.y * h + next.y * h) / 2;
+          ctx.quadraticCurveTo(b.x * w, b.y * h, cx, cy);
+          ctx.stroke();
+        }
+      } else if (o.tool === "neon") {
+        // double-pass: glow then bright white core
+        drawSmoothPath();
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 0.95;
+        drawSmoothPath("#ffffff");
+        ctx.lineWidth = Math.max(1, baseW * 0.4);
+        drawSmoothPath("#ffffff");
       } else if (o.tool === "brush" && pts.some((p) => p.w !== undefined)) {
-        // variable-width brush: draw segment-by-segment with smoothed widths
         for (let i = 1; i < pts.length; i++) {
           const a = pts[i - 1], b = pts[i];
           const wa = (a.w ?? 1) * baseW;
@@ -94,19 +173,11 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
           ctx.stroke();
         }
       } else {
-        // smoothed quadratic curve through midpoints
-        ctx.lineWidth = baseW;
-        ctx.beginPath();
-        ctx.moveTo(pts[0].x * w, pts[0].y * h);
-        for (let i = 1; i < pts.length - 1; i++) {
-          const cx = (pts[i].x * w + pts[i + 1].x * w) / 2;
-          const cy = (pts[i].y * h + pts[i + 1].y * h) / 2;
-          ctx.quadraticCurveTo(pts[i].x * w, pts[i].y * h, cx, cy);
-        }
-        const last = pts[pts.length - 1];
-        ctx.lineTo(last.x * w, last.y * h);
-        ctx.stroke();
+        drawSmoothPath();
       }
+    } else if (o.type === "fill") {
+      ctx.fillStyle = o.color;
+      ctx.fillRect(0, 0, w, h);
     } else if (o.type === "rect" || o.type === "circle" || o.type === "line" || o.type === "arrow") {
       ctx.strokeStyle = o.color;
       ctx.lineWidth = o.size;
@@ -244,11 +315,16 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
         }
         // local brush preview
         const lc = localCursor.current;
-        const isBrushTool = tool === "pen" || tool === "marker" || tool === "brush" || tool === "eraser";
+        const isBrushTool = tool === "pen" || tool === "marker" || tool === "brush" || tool === "neon" || tool === "rainbow" || tool === "spray" || tool === "eraser";
         if (lc && lc.inside && isBrushTool) {
           const x = lc.x * o.width, y = lc.y * o.height;
           const dpr = window.devicePixelRatio || 1;
-          const baseW = tool === "marker" ? size * 2.5 : tool === "brush" ? size * 1.6 : size;
+          const baseW =
+            tool === "marker" ? size * 2.5 :
+            tool === "brush" ? size * 1.6 :
+            tool === "neon" ? size * 1.2 :
+            tool === "spray" ? size * 2.2 :
+            size;
           const r = (tool === "eraser" ? 14 : baseW / 2) * dpr;
 
           // "Lazy brush" leash: while drawing with stabilizer on, show the line
@@ -346,6 +422,10 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
       setTextInput({ x: p.x, y: p.y, value: "" });
       return;
     }
+    if (activeTool === "fill") {
+      commit({ id: uid(), type: "fill", color, x: p.x, y: p.y });
+      return;
+    }
     if (activeTool === "eraser") {
       const r = 0.02;
       const hit = [...objectsRef.current].reverse().find((o) => isNear(o, p, r));
@@ -362,10 +442,11 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
     startRef.current = p;
     lastPoint.current = { x: p.x, y: p.y, t: performance.now() };
     smoothedRef.current = { x: p.x, y: p.y };
-    if (activeTool === "pen" || activeTool === "marker" || activeTool === "brush") {
+    const isBrush = activeTool === "pen" || activeTool === "marker" || activeTool === "brush" || activeTool === "neon" || activeTool === "rainbow" || activeTool === "spray";
+    if (isBrush) {
       const pressure = e.pressure && e.pressure > 0 && e.pressure !== 0.5 ? e.pressure : 1;
       const w = activeTool === "brush" ? pressure : 1;
-      draftRef.current = { id: uid(), type: "path", tool: activeTool, color, size, points: [{ x: p.x, y: p.y, w }] };
+      draftRef.current = { id: uid(), type: "path", tool: activeTool as BrushTool, color, size, points: [{ x: p.x, y: p.y, w }] };
     } else {
       draftRef.current = { id: uid(), type: activeTool as any, color, size, x1: p.x, y1: p.y, x2: p.x, y2: p.y };
     }
@@ -520,6 +601,13 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
         </div>
         <div className="w-px bg-border" />
         <div className="flex gap-1.5">
+          <ToolBtn id="neon" label="Neon" icon={Zap} />
+          <ToolBtn id="rainbow" label="Arco-íris" icon={Rainbow} />
+          <ToolBtn id="spray" label="Spray" icon={SprayCan} />
+          <ToolBtn id="fill" label="Balde" icon={PaintBucket} />
+        </div>
+        <div className="w-px bg-border" />
+        <div className="flex gap-1.5">
           <ToolBtn id="line" label="Linha" icon={Minus} />
           <ToolBtn id="arrow" label="Seta" icon={ArrowRight} />
           <ToolBtn id="rect" label="Quadrado" icon={Square} />
@@ -534,16 +622,54 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
         <div className="w-px bg-border" />
 
         <div className="flex flex-col justify-center gap-1">
-          <div className="grid grid-cols-6 gap-1">
-            {COLORS.map((c) => (
-              <button
-                key={c}
-                onClick={() => setColor(c)}
-                className={`w-6 h-6 rounded-full border-2 ${color === c ? "border-foreground scale-110" : "border-border/60"} transition-transform`}
-                style={{ background: c }}
-                aria-label={`Cor ${c}`}
-              />
-            ))}
+          <div className="flex items-center gap-1">
+            <div className="grid grid-cols-6 gap-1">
+              {COLORS.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setColor(c)}
+                  className={`w-6 h-6 rounded-full border-2 ${color === c ? "border-foreground scale-110" : "border-border/60"} transition-transform`}
+                  style={{ background: c }}
+                  aria-label={`Cor ${c}`}
+                />
+              ))}
+            </div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  title="Mais cores"
+                  className="w-6 h-6 rounded-full border-2 border-dashed border-border/80 flex items-center justify-center hover:border-primary"
+                  style={{ background: "conic-gradient(#e63946,#f4a261,#ffd166,#06d6a0,#3a86ff,#7b2cbf,#ff70a6,#e63946)" }}
+                >
+                  <Plus className="w-3 h-3 text-white drop-shadow" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-2">
+                <div className="grid grid-cols-8 gap-1.5">
+                  {EXTRA_COLORS.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => setColor(c)}
+                      className={`w-6 h-6 rounded-full border-2 ${color === c ? "border-foreground scale-110" : "border-border/60"} transition-transform`}
+                      style={{ background: c }}
+                      aria-label={`Cor ${c}`}
+                    />
+                  ))}
+                  <label
+                    className="w-6 h-6 rounded-full border-2 border-dashed border-border/80 flex items-center justify-center cursor-pointer hover:border-primary"
+                    title="Cor personalizada"
+                  >
+                    <Plus className="w-3 h-3 text-muted-foreground" />
+                    <input
+                      type="color"
+                      value={color}
+                      onChange={(e) => setColor(e.target.value)}
+                      className="sr-only"
+                    />
+                  </label>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
 
@@ -642,7 +768,8 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
             cursor:
               tool === "sticker" ? "copy"
               : tool === "text" ? "text"
-              : (tool === "pen" || tool === "marker" || tool === "brush" || tool === "eraser") ? "none"
+              : (tool === "pen" || tool === "marker" || tool === "brush" || tool === "neon" || tool === "rainbow" || tool === "spray" || tool === "eraser") ? "none"
+              : tool === "fill" ? "crosshair"
               : "crosshair"
           }}
         />
