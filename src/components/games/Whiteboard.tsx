@@ -464,7 +464,6 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
   const onDown = (e: React.PointerEvent) => {
     if (textInput) return;
     const p = pos(e);
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
 
     // right-click = eraser shortcut
     const rightClick = e.button === 2;
@@ -476,16 +475,19 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
       return;
     }
     if (activeTool === "text") {
+      // Don't capture pointer in text mode — it would steal focus from the textarea.
       // Check if clicking on an existing text to edit/move it
       const c = canvasRef.current!;
       const hit = [...objectsRef.current].reverse().find((o) => o.type === "text" && hitText(o as TextObj & { id: string }, p, c.width, c.height)) as (TextObj & { id: string }) | undefined;
       if (hit) {
+        (e.target as HTMLElement).setPointerCapture(e.pointerId);
         textDragRef.current = { id: hit.id, offsetX: p.x - hit.x, offsetY: p.y - hit.y, moved: false, startX: p.x, startY: p.y };
         return;
       }
       setTextInput({ x: p.x, y: p.y, value: "" });
       return;
     }
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
     if (activeTool === "fill") {
       commit({ id: uid(), type: "fill", color, x: p.x, y: p.y });
       return;
