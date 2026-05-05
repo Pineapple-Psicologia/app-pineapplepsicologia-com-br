@@ -12,15 +12,16 @@ const LOCATIONS: {
   name: string;
   emoji: string;
   hint: string;
-  // position on 100x100 viewBox
+  color: string; // tailwind bg color for tile
+  ring: string;  // ring color
   x: number;
   y: number;
 }[] = [
-  { id: "cena", name: "Cena do Crime", emoji: "🔍", hint: "Descreva o que aconteceu", x: 18, y: 78 },
-  { id: "interrogatorio", name: "Sala de Interrogatório", emoji: "💭", hint: "Qual pensamento foi flagrado?", x: 38, y: 32 },
-  { id: "cartas", name: "Mesa de Cartas", emoji: "🃏", hint: "Identifique as armadilhas mentais", x: 62, y: 70 },
-  { id: "evidencias", name: "Sala de Evidências", emoji: "⚖️", hint: "Liste provas a favor e contra", x: 80, y: 28 },
-  { id: "arquivo", name: "Arquivo Final", emoji: "📁", hint: "Arquive o pensamento reescrito", x: 92, y: 88 },
+  { id: "cena",           name: "Cena do Crime",         emoji: "🔍", hint: "Descreva o que aconteceu",        color: "bg-rose-400",    ring: "ring-rose-600",    x: 14, y: 82 },
+  { id: "interrogatorio", name: "Sala de Interrogatório", emoji: "💭", hint: "Qual pensamento foi flagrado?",   color: "bg-sky-400",     ring: "ring-sky-600",     x: 32, y: 42 },
+  { id: "cartas",         name: "Mesa de Cartas",        emoji: "🃏", hint: "Identifique as armadilhas",       color: "bg-violet-400",  ring: "ring-violet-600",  x: 56, y: 70 },
+  { id: "evidencias",     name: "Sala de Evidências",    emoji: "⚖️", hint: "Pese provas a favor e contra",     color: "bg-emerald-400", ring: "ring-emerald-600", x: 78, y: 32 },
+  { id: "arquivo",        name: "Arquivo Final",         emoji: "🏆", hint: "Arquive o pensamento reescrito",  color: "bg-amber-400",   ring: "ring-amber-600",   x: 90, y: 78 },
 ];
 
 const DISTORTIONS = [
@@ -116,87 +117,114 @@ export default function DetetiveTabuleiro({ room }: Props) {
   const pathD = LOCATIONS.map((l, i) => `${i === 0 ? "M" : "L"} ${l.x} ${l.y}`).join(" ");
 
   return (
-    <div className="h-full w-full bg-gradient-to-br from-amber-50 to-stone-100 dark:from-stone-900 dark:to-stone-950 rounded-xl border-2 border-border/60 p-3 md:p-5 flex flex-col gap-3 overflow-auto">
+    <div
+      className="h-full w-full rounded-xl border-4 border-amber-900/30 p-3 md:p-5 flex flex-col gap-3 overflow-auto"
+      style={{
+        backgroundImage:
+          "radial-gradient(circle at 20% 15%, #fde68a 0%, transparent 40%), radial-gradient(circle at 85% 85%, #fbcfe8 0%, transparent 40%), radial-gradient(circle at 70% 20%, #bae6fd 0%, transparent 35%), linear-gradient(135deg, #fff7ed 0%, #ecfeff 100%)",
+      }}
+    >
       <header className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-xl font-bold flex items-center gap-2">
-            🕵️‍♀️ Mapa de Investigação
+          <h2 className="text-xl md:text-2xl font-bold flex items-center gap-2 text-amber-900">
+            🎲 Detetive dos Pensamentos
           </h2>
-          <p className="text-xs text-muted-foreground">
-            Visite cada local pra desvendar o caso. Casa atual: <b>{currentLoc.name}</b>
+          <p className="text-xs text-amber-900/70 font-semibold">
+            Avance pelas casas e desvende o caso! Casa atual: <b>{currentLoc.name}</b>
           </p>
         </div>
-        <Button size="sm" variant="outline" onClick={reset}>
+        <Button size="sm" variant="outline" onClick={reset} className="bg-white/80 border-amber-700 text-amber-900 hover:bg-white">
           <RotateCcw className="w-4 h-4 mr-1" /> Novo caso
         </Button>
       </header>
 
-      {/* Board map */}
-      <div className="relative flex-1 min-h-[420px] rounded-2xl border-4 border-amber-900/30 dark:border-amber-100/20 overflow-hidden shadow-inner"
+      {/* Board */}
+      <div
+        className="relative flex-1 min-h-[440px] rounded-3xl border-[6px] border-amber-900/40 overflow-hidden shadow-[inset_0_4px_20px_rgba(0,0,0,0.15),0_8px_24px_rgba(0,0,0,0.15)]"
         style={{
           backgroundImage:
-            "radial-gradient(circle at 30% 20%, rgba(120,80,40,0.08), transparent 50%), radial-gradient(circle at 80% 70%, rgba(60,30,10,0.08), transparent 50%), repeating-linear-gradient(45deg, rgba(0,0,0,0.02) 0 2px, transparent 2px 8px)",
-          backgroundColor: "#f5e9d0",
+            "radial-gradient(circle at 25% 30%, #a7f3d0 0%, transparent 35%), radial-gradient(circle at 75% 70%, #fecaca 0%, transparent 35%), radial-gradient(circle at 50% 50%, #fef3c7 0%, transparent 60%), linear-gradient(135deg, #fef9c3 0%, #fce7f3 100%)",
         }}
       >
-        {/* "old map" decorations */}
-        <div className="absolute top-2 right-3 text-[10px] font-bold tracking-widest opacity-40 text-amber-900">
-          ARQUIVO #{Math.abs(state.thought.length * 7 + 1) % 9999}
-        </div>
-        <div className="absolute bottom-2 left-3 text-2xl opacity-30">🧭</div>
+        {/* confetti dots */}
+        <div className="absolute inset-0 opacity-50 pointer-events-none"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle, #f472b6 1.5px, transparent 1.5px), radial-gradient(circle, #60a5fa 1.5px, transparent 1.5px), radial-gradient(circle, #34d399 1.5px, transparent 1.5px)",
+            backgroundSize: "40px 40px, 60px 60px, 80px 80px",
+            backgroundPosition: "0 0, 20px 20px, 40px 10px",
+          }}
+        />
+
+        {/* corners */}
+        <div className="absolute top-2 left-3 text-2xl rotate-[-12deg]">🎯</div>
+        <div className="absolute top-2 right-3 text-2xl rotate-[12deg]">🎲</div>
+        <div className="absolute bottom-2 left-3 text-2xl">🧭</div>
+        <div className="absolute bottom-2 right-3 text-2xl">🏁</div>
 
         <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+          {/* trail shadow */}
+          <path d={pathD} fill="none" stroke="#78350f" strokeWidth="2.4" strokeLinecap="round" opacity="0.25" />
           {/* dashed trail */}
           <path
             d={pathD}
             fill="none"
-            stroke="#7c4a1e"
-            strokeWidth="0.6"
-            strokeDasharray="1.5 1.2"
+            stroke="#fff"
+            strokeWidth="1.6"
+            strokeDasharray="2 1.6"
             strokeLinecap="round"
-            opacity="0.55"
+            opacity="0.95"
           />
-          {/* completed trail in solid color */}
+          {/* completed trail */}
           {state.completed.length > 0 && (
             <path
               d={LOCATIONS.slice(0, state.completed.length + 1)
                 .map((l, i) => `${i === 0 ? "M" : "L"} ${l.x} ${l.y}`)
                 .join(" ")}
               fill="none"
-              stroke="hsl(var(--primary))"
-              strokeWidth="0.8"
+              stroke="#16a34a"
+              strokeWidth="1.8"
               strokeLinecap="round"
-              opacity="0.7"
+              opacity="0.9"
             />
           )}
         </svg>
 
-        {/* Location markers */}
+        {/* Location tiles */}
         {LOCATIONS.map((loc, i) => {
           const done = state.completed.includes(loc.id);
           const unlocked = i <= state.currentIdx;
+          const isCurrent = i === state.currentIdx && !done;
           return (
             <button
               key={loc.id}
               disabled={!unlocked}
               onClick={() => openLocation(loc.id)}
               className={`absolute -translate-x-1/2 -translate-y-1/2 group transition-transform ${
-                unlocked ? "hover:scale-110 cursor-pointer" : "cursor-not-allowed opacity-50"
+                unlocked ? "hover:scale-110 cursor-pointer" : "cursor-not-allowed opacity-60"
               }`}
               style={{ left: `${loc.x}%`, top: `${loc.y}%` }}
             >
+              {/* tile shadow */}
+              <div className="absolute inset-0 translate-y-1.5 rounded-2xl bg-black/30 blur-sm" />
               <div
-                className={`w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center text-2xl md:text-3xl border-4 shadow-lg ${
-                  done
-                    ? "bg-primary border-primary text-primary-foreground"
-                    : unlocked
-                      ? "bg-card border-amber-700 dark:border-amber-300 animate-pulse"
-                      : "bg-muted border-muted-foreground/40"
-                }`}
+                className={`relative w-16 h-16 md:w-[72px] md:h-[72px] rounded-2xl flex flex-col items-center justify-center border-[3px] border-white shadow-lg ${
+                  done ? "bg-green-500" : loc.color
+                } ${isCurrent ? `ring-4 ring-offset-2 ring-offset-transparent ${loc.ring} animate-pulse` : ""}`}
               >
-                {done ? <Check className="w-6 h-6" /> : !unlocked ? <Lock className="w-5 h-5" /> : loc.emoji}
+                {/* number badge */}
+                <div className="absolute -top-2 -left-2 w-6 h-6 rounded-full bg-white border-2 border-amber-900 text-amber-900 text-[11px] font-black flex items-center justify-center shadow">
+                  {i + 1}
+                </div>
+                {done ? (
+                  <Check className="w-7 h-7 text-white" strokeWidth={3} />
+                ) : !unlocked ? (
+                  <Lock className="w-5 h-5 text-white/90" />
+                ) : (
+                  <span className="text-3xl md:text-[34px] drop-shadow">{loc.emoji}</span>
+                )}
               </div>
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 whitespace-nowrap text-[10px] md:text-xs font-bold bg-amber-900/90 text-amber-50 px-2 py-0.5 rounded shadow">
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1.5 whitespace-nowrap text-[10px] md:text-xs font-black bg-white text-amber-900 px-2 py-0.5 rounded-full shadow border border-amber-900/30">
                 {loc.name}
               </div>
             </button>
@@ -206,31 +234,36 @@ export default function DetetiveTabuleiro({ room }: Props) {
         {/* Detective pawn */}
         <div
           className="absolute -translate-x-1/2 -translate-y-1/2 transition-all duration-700 ease-out pointer-events-none z-10"
-          style={{ left: `${pawn.x}%`, top: `${pawn.y - 10}%` }}
+          style={{ left: `${pawn.x}%`, top: `${pawn.y - 12}%` }}
         >
-          <div className="text-4xl md:text-5xl drop-shadow-lg animate-bounce">🕵️</div>
+          <div className="relative">
+            <div className="absolute left-1/2 -translate-x-1/2 top-full w-6 h-1.5 bg-black/30 rounded-full blur-sm" />
+            <div className="text-4xl md:text-5xl drop-shadow-[0_4px_2px_rgba(0,0,0,0.35)] animate-bounce">🕵️</div>
+          </div>
         </div>
       </div>
 
       {/* Status bar */}
       {state.caseClosed ? (
-        <div className="rounded-xl p-4 bg-primary/15 border-2 border-primary text-center">
-          <div className="text-2xl">🏆 Caso encerrado, Detetive!</div>
-          <div className="text-sm mt-1">
+        <div className="rounded-2xl p-4 bg-gradient-to-r from-amber-300 to-yellow-200 border-4 border-amber-600 text-center shadow-lg">
+          <div className="text-2xl font-black text-amber-900">🏆 Caso encerrado, Detetive!</div>
+          <div className="text-sm mt-1 text-amber-900/90">
             "<b>{state.thought}</b>" virou "<b>{state.reframe}</b>"
           </div>
         </div>
       ) : (
-        <div className="rounded-xl p-3 bg-card border-2 border-border/60 flex items-center gap-3">
-          <div className="text-3xl">{currentLoc.emoji}</div>
-          <div className="flex-1 min-w-0">
-            <div className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
-              Próxima missão
-            </div>
-            <div className="font-bold text-sm truncate">{currentLoc.hint}</div>
+        <div className="rounded-2xl p-3 bg-white border-4 border-amber-700/60 flex items-center gap-3 shadow-md">
+          <div className={`text-3xl w-12 h-12 rounded-xl flex items-center justify-center border-2 border-white shadow ${currentLoc.color}`}>
+            {currentLoc.emoji}
           </div>
-          <Button size="sm" onClick={() => openLocation(currentLoc.id)}>
-            Entrar <ChevronRight className="w-4 h-4 ml-1" />
+          <div className="flex-1 min-w-0">
+            <div className="text-[10px] uppercase font-black tracking-wider text-amber-700">
+              Próxima casa · {state.currentIdx + 1}/{LOCATIONS.length}
+            </div>
+            <div className="font-bold text-sm truncate text-amber-900">{currentLoc.hint}</div>
+          </div>
+          <Button size="sm" onClick={() => openLocation(currentLoc.id)} className="bg-amber-600 hover:bg-amber-700 text-white font-bold">
+            Jogar <ChevronRight className="w-4 h-4 ml-1" />
           </Button>
         </div>
       )}
