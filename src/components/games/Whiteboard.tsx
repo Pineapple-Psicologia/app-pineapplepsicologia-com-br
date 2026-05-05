@@ -595,6 +595,27 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
     eraseModeRef.current = false;
     lastPoint.current = null;
     smoothedRef.current = null;
+    // Finalize text drag/click-to-edit
+    if (textDragRef.current) {
+      const td = textDragRef.current;
+      const obj = objectsRef.current.find((o) => o.id === td.id) as (TextObj & { id: string }) | undefined;
+      textDragRef.current = null;
+      if (obj) {
+        if (!td.moved) {
+          // Click without drag → open editor pre-filled with the text content
+          objectsRef.current = objectsRef.current.filter((o) => o.id !== obj.id);
+          room.send("wb:undo", { id: obj.id });
+          setTextInput({ x: obj.x, y: obj.y, value: obj.text, color: obj.color, size: obj.size });
+          redraw();
+        } else {
+          // Persist new position by replacing the object on peers
+          room.send("wb:undo", { id: obj.id });
+          room.send("wb:add", obj);
+          redraw();
+        }
+      }
+      return;
+    }
     const d = draftRef.current;
     if (!d) return;
     if (d.type === "path" && d.points.length < 2) { draftRef.current = null; redraw(); return; }
