@@ -527,6 +527,19 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
       lastSentCursor.current = now;
       room.send("wb:cursor", { x: p.x, y: p.y });
     }
+    // Text drag-to-reposition
+    if (textDragRef.current) {
+      const td = textDragRef.current;
+      const obj = objectsRef.current.find((o) => o.id === td.id) as (TextObj & { id: string }) | undefined;
+      if (obj) {
+        const nx = Math.max(0, Math.min(1, p.x - td.offsetX));
+        const ny = Math.max(0, Math.min(1, p.y - td.offsetY));
+        if (Math.hypot(p.x - td.startX, p.y - td.startY) > 0.005) td.moved = true;
+        obj.x = nx; obj.y = ny;
+        redraw();
+      }
+      return;
+    }
     if (!drawingRef.current) return;
     const activeTool: Tool = eraseModeRef.current ? "eraser" : tool;
     if (activeTool === "eraser") {
