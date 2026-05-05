@@ -612,6 +612,8 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
           objectsRef.current = objectsRef.current.filter((o) => o.id !== obj.id);
           room.send("wb:undo", { id: obj.id });
           setTextInput({ x: obj.x, y: obj.y, value: obj.text, color: obj.color, size: obj.size });
+          const ta = textareaRef.current;
+          if (ta) { ta.value = obj.text; ta.focus(); }
           redraw();
         } else {
           // Persist new position by replacing the object on peers
