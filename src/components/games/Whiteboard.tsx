@@ -969,3 +969,17 @@ function recognizeShape(d: Path): Shape | null {
   }
   return null;
 }
+
+// Pixel-accurate hit-test for text objects (matches drawObj font metrics).
+function hitText(o: { x: number; y: number; size: number; text: string }, p: { x: number; y: number }, w: number, h: number): boolean {
+  const fontPx = o.size * 4;
+  const lineH = o.size * 4.6;
+  const lines = o.text.split("\n");
+  const x0 = o.x * w, y0 = o.y * h;
+  const px = p.x * w, py = p.y * h;
+  if (py < y0 - 4 || py > y0 + lines.length * lineH + 4) return false;
+  // Approximate width: 0.6 * fontPx per char on widest line
+  const maxChars = Math.max(...lines.map((l) => l.length));
+  const width = Math.max(20, maxChars * fontPx * 0.6);
+  return px >= x0 - 4 && px <= x0 + width + 4;
+}
