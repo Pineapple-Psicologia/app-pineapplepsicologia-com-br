@@ -525,7 +525,21 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
           ))}
         </div>
 
-        <div className="ml-auto flex gap-1.5">
+        <div className="ml-auto flex flex-wrap gap-1.5 items-center">
+          <button
+            onClick={() => setStabilize((v) => !v)}
+            title="Estabilizador: deixa o traço suave e firme, sem tremer"
+            className={`flex items-center gap-1 text-[11px] font-bold px-2 py-1.5 rounded-md border-2 transition ${stabilize ? "bg-accent/20 border-accent text-foreground" : "bg-card border-border text-muted-foreground"}`}
+          >
+            <Waves className="w-3.5 h-3.5" />Firme
+          </button>
+          <button
+            onClick={() => setShapeAssist((v) => !v)}
+            title="Forma Mágica: endireita círculos, quadrados e linhas desenhados à mão"
+            className={`flex items-center gap-1 text-[11px] font-bold px-2 py-1.5 rounded-md border-2 transition ${shapeAssist ? "bg-accent/20 border-accent text-foreground" : "bg-card border-border text-muted-foreground"}`}
+          >
+            <Wand2 className="w-3.5 h-3.5" />Forma Mágica
+          </button>
           <Button
             size="sm"
             variant={showTemplates ? "default" : "outline"}
