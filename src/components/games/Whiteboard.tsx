@@ -353,6 +353,16 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
     }
     const d = draftRef.current; if (!d) return;
     if (d.type === "path") {
+      // stabilizer (lazy brush): smooth target point toward cursor
+      let sx = p.x, sy = p.y;
+      if (stabilize && smoothedRef.current) {
+        const alpha = 0.35; // lower = more smoothing
+        sx = smoothedRef.current.x + (p.x - smoothedRef.current.x) * alpha;
+        sy = smoothedRef.current.y + (p.y - smoothedRef.current.y) * alpha;
+        smoothedRef.current = { x: sx, y: sy };
+      } else {
+        smoothedRef.current = { x: p.x, y: p.y };
+      }
       // velocity-based width for brush; pressure overrides if available
       let w = 1;
       if (d.tool === "brush") {
@@ -364,17 +374,16 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
           const tNow = performance.now();
           if (lp) {
             const dt = Math.max(1, tNow - lp.t);
-            const dist = Math.hypot(p.x - lp.x, p.y - lp.y);
-            const speed = dist / dt; // normalized units / ms
-            // map speed to width: slow = thick (1.0), fast = thin (0.35)
+            const dist = Math.hypot(sx - lp.x, sy - lp.y);
+            const speed = dist / dt;
             const target = Math.max(0.35, Math.min(1, 1 - speed * 80));
             const prev = (d.points[d.points.length - 1]?.w ?? 1);
-            w = prev * 0.7 + target * 0.3; // smooth
+            w = prev * 0.7 + target * 0.3;
           }
         }
       }
-      d.points.push({ x: p.x, y: p.y, w });
-      lastPoint.current = { x: p.x, y: p.y, t: performance.now() };
+      d.points.push({ x: sx, y: sy, w });
+      lastPoint.current = { x: sx, y: sy, t: performance.now() };
     } else if ("x2" in d) { d.x2 = p.x; d.y2 = p.y; }
     redraw();
     if (now - (lastSentCursor.current - 40) > 60) room.send("wb:draft", d);
@@ -384,11 +393,18 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
     drawingRef.current = false;
     eraseModeRef.current = false;
     lastPoint.current = null;
+    smoothedRef.current = null;
     const d = draftRef.current;
     if (!d) return;
     if (d.type === "path" && d.points.length < 2) { draftRef.current = null; redraw(); return; }
     if ("x2" in d && Math.hypot((d.x2 - d.x1), (d.y2 - d.y1)) < 0.005) { draftRef.current = null; redraw(); return; }
-    commit(d);
+    // shape recognition: convert pen strokes into clean shapes if user drew one
+    let toCommit: Obj = d;
+    if (shapeAssist && d.type === "path" && d.tool === "pen" && d.points.length > 8) {
+      const recognized = recognizeShape(d);
+      if (recognized) toCommit = { ...recognized, id: d.id };
+    }
+    commit(toCommit);
     room.send("wb:draft", null);
   };
 
