@@ -557,17 +557,54 @@ function LocationContent({
 
   if (locId === "emocao") {
     const emocoes = ["😢 Tristeza", "😡 Raiva", "😨 Medo", "😰 Ansiedade", "😞 Vergonha", "😔 Culpa", "😶 Vazio"];
+    const selectedList = state.emocao
+      .split("|")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const isSelected = (e: string) => selectedList.includes(e);
+    const toggleEmo = (e: string) => {
+      const next = isSelected(e)
+        ? selectedList.filter((x) => x !== e)
+        : [...selectedList, e];
+      update({ emocao: next.join(" | ") });
+    };
     return (
       <>
         {Header}
         <div className="p-4 flex flex-col gap-3">
-          <p className="text-sm">Que emoção principal apareceu? E o quanto ela pesa (0–100)?</p>
+          <p className="text-sm">Quais emoções apareceram? (pode escolher mais de uma) E o quanto pesam no geral (0–100)?</p>
           <div className="flex flex-wrap gap-1.5">
             {emocoes.map((e) => (
-              <button key={e} onClick={() => update({ emocao: e })} className={`text-sm px-3 py-1.5 rounded-full border-2 font-semibold ${state.emocao === e ? "bg-orange-500 text-white border-orange-700" : "bg-card border-border/60 hover:border-border"}`}>{e}</button>
+              <button
+                key={e}
+                onClick={() => toggleEmo(e)}
+                className={`text-sm px-3 py-1.5 rounded-full border-2 font-semibold transition-all ${
+                  isSelected(e)
+                    ? "bg-orange-500 text-white border-orange-700 shadow"
+                    : "bg-card border-border/60 hover:border-border opacity-80"
+                }`}
+              >
+                {e} {isSelected(e) && <span className="ml-1 text-[10px]">✓</span>}
+              </button>
             ))}
           </div>
-          <input value={state.emocao} onChange={(e) => update({ emocao: e.target.value })} placeholder="Ou descreva..." className="p-2 rounded-lg border-2 border-border/60 bg-background" />
+          {selectedList.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 p-2 rounded-lg bg-orange-50 border border-orange-200">
+              <span className="text-xs font-bold uppercase tracking-wider text-orange-700 mr-1 self-center">Selecionadas:</span>
+              {selectedList.map((e) => (
+                <span key={e} className="text-xs px-2 py-0.5 rounded-full bg-orange-200 text-orange-900 font-semibold flex items-center gap-1">
+                  {e}
+                  <button onClick={() => toggleEmo(e)} className="hover:text-orange-700" aria-label={`Remover ${e}`}>×</button>
+                </span>
+              ))}
+            </div>
+          )}
+          <input
+            value={state.emocao}
+            onChange={(e) => update({ emocao: e.target.value })}
+            placeholder="Ou descreva (separe múltiplas com | )..."
+            className="p-2 rounded-lg border-2 border-border/60 bg-background"
+          />
           <div>
             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Intensidade: {state.emocaoIntensidade}/100</label>
             <input type="range" min={0} max={100} value={state.emocaoIntensidade} onChange={(e) => update({ emocaoIntensidade: Number(e.target.value) })} className="w-full" />
