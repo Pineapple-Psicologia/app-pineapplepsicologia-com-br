@@ -476,6 +476,13 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
       return;
     }
     if (activeTool === "text") {
+      // Check if clicking on an existing text to edit/move it
+      const c = canvasRef.current!;
+      const hit = [...objectsRef.current].reverse().find((o) => o.type === "text" && hitText(o as TextObj & { id: string }, p, c.width, c.height)) as (TextObj & { id: string }) | undefined;
+      if (hit) {
+        textDragRef.current = { id: hit.id, offsetX: p.x - hit.x, offsetY: p.y - hit.y, moved: false, startX: p.x, startY: p.y };
+        return;
+      }
       setTextInput({ x: p.x, y: p.y, value: "" });
       return;
     }
