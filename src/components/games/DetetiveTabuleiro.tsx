@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
 import { RotateCcw, Check, ChevronRight, Dices, Sparkles, Trophy, History, Award } from "lucide-react";
@@ -183,6 +183,8 @@ export default function DetetiveTabuleiro({ room }: Props) {
   const [openLoc, setOpenLoc] = useState<LocationId | null>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<CaseHistoryItem[]>(() => loadHistory());
+  const [showCelebration, setShowCelebration] = useState(false);
+  const celebratedRef = useRef(false);
 
   // Determine if this user is the game master (psi)
   // We infer role from URL search params since useRoom doesn't expose it directly here.
@@ -198,6 +200,16 @@ export default function DetetiveTabuleiro({ room }: Props) {
     });
     return off;
   }, [room]);
+
+  useEffect(() => {
+    if (state.caseClosed && !celebratedRef.current) {
+      celebratedRef.current = true;
+      setShowCelebration(true);
+    }
+    if (!state.caseClosed) {
+      celebratedRef.current = false;
+    }
+  }, [state.caseClosed]);
 
   const update = (patch: Partial<State>) => {
     const next = { ...state, ...patch };
@@ -396,6 +408,9 @@ export default function DetetiveTabuleiro({ room }: Props) {
           <div className="text-xs mt-2 text-amber-900/80">
             +{state.points} pontos · {state.earnedBadges.length} medalhas · Nível {level}
           </div>
+          <Button size="sm" onClick={() => setShowCelebration(true)} className="mt-3 bg-amber-700 hover:bg-amber-800 text-white font-bold">
+            🎉 Ver cerimônia de medalhas
+          </Button>
         </div>
       ) : (
         <div className="rounded-2xl p-3 bg-white border-4 border-amber-700/60 flex items-center gap-3 shadow-md">
@@ -476,6 +491,16 @@ export default function DetetiveTabuleiro({ room }: Props) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Celebration overlay */}
+      {showCelebration && state.caseClosed && (
+        <CelebrationOverlay
+          points={state.points}
+          level={level}
+          earnedBadges={BADGES.filter((b) => state.earnedBadges.includes(b.id))}
+          onClose={() => setShowCelebration(false)}
+        />
       )}
 
       {/* Location modal */}
@@ -807,5 +832,143 @@ function LocationContent({
         <FinishButton label="🏆 Arquivar caso" />
       </div>
     </>
+  );
+}
+
+function CelebrationOverlay({
+  points,
+  level,
+  earnedBadges,
+  onClose,
+}: {
+  points: number;
+  level: number;
+  earnedBadges: { id: string; emoji: string; label: string }[];
+  onClose: () => void;
+}) {
+  // Generate confetti pieces once
+  const confetti = useMemo(
+    () =>
+      Array.from({ length: 60 }, (_, i) => ({
+        id: i,
+        left: Math.random() * 100,
+        delay: Math.random() * 1.5,
+        duration: 2.5 + Math.random() * 2.5,
+        color: [
+          "#fbbf24", "#f472b6", "#60a5fa", "#34d399", "#a78bfa", "#fb7185", "#facc15", "#22d3ee",
+        ][Math.floor(Math.random() * 8)],
+        size: 6 + Math.random() * 8,
+        rotate: Math.random() * 360,
+      })),
+    []
+  );
+
+  return (
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4 animate-fade-in overflow-hidden"
+      style={{
+        background:
+          "radial-gradient(circle at 50% 30%, rgba(251,191,36,0.35) 0%, rgba(0,0,0,0.7) 70%)",
+      }}
+      onClick={onClose}
+    >
+      {/* Confetti */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {confetti.map((c) => (
+          <span
+            key={c.id}
+            className="absolute block rounded-sm"
+            style={{
+              left: `${c.left}%`,
+              top: "-20px",
+              width: `${c.size}px`,
+              height: `${c.size * 1.6}px`,
+              background: c.color,
+              transform: `rotate(${c.rotate}deg)`,
+              animation: `confetti-fall ${c.duration}s linear ${c.delay}s infinite`,
+            }}
+          />
+        ))}
+      </div>
+
+      <style>{`
+        @keyframes confetti-fall {
+          0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+          100% { transform: translateY(110vh) rotate(720deg); opacity: 0.8; }
+        }
+        @keyframes trophy-bounce {
+          0%, 100% { transform: translateY(0) scale(1); }
+          50% { transform: translateY(-12px) scale(1.05); }
+        }
+        @keyframes badge-pop {
+          0% { transform: scale(0) rotate(-30deg); opacity: 0; }
+          70% { transform: scale(1.15) rotate(8deg); opacity: 1; }
+          100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+      `}</style>
+
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative max-w-lg w-full rounded-3xl border-4 border-amber-400 bg-gradient-to-br from-amber-50 via-yellow-50 to-rose-50 shadow-[0_30px_80px_-10px_rgba(0,0,0,0.6)] p-6 text-center animate-scale-in"
+      >
+        <div
+          className="text-7xl inline-block"
+          style={{ animation: "trophy-bounce 1.4s ease-in-out infinite" }}
+        >
+          🏆
+        </div>
+        <h2 className="text-3xl font-black text-amber-900 mt-2 leading-tight">
+          Parabéns, Detetive!
+        </h2>
+        <p className="text-sm text-amber-800/90 mt-1 font-semibold">
+          Você fechou o caso com brilho. 🎉✨
+        </p>
+
+        <div className="mt-4 grid grid-cols-3 gap-2">
+          <div className="rounded-xl bg-white/80 border-2 border-amber-400 p-2">
+            <div className="text-[9px] uppercase font-black text-amber-700">Pontos</div>
+            <div className="text-xl font-black text-amber-900">{points}</div>
+          </div>
+          <div className="rounded-xl bg-white/80 border-2 border-violet-400 p-2">
+            <div className="text-[9px] uppercase font-black text-violet-700">Nível</div>
+            <div className="text-xl font-black text-violet-900">{level}</div>
+          </div>
+          <div className="rounded-xl bg-white/80 border-2 border-emerald-400 p-2">
+            <div className="text-[9px] uppercase font-black text-emerald-700">Medalhas</div>
+            <div className="text-xl font-black text-emerald-900">{earnedBadges.length}</div>
+          </div>
+        </div>
+
+        <div className="mt-5">
+          <div className="text-[11px] uppercase font-black tracking-wider text-amber-700 mb-2">
+            🎖️ Cerimônia de Medalhas
+          </div>
+          <div className="flex flex-wrap gap-2 justify-center">
+            {earnedBadges.length === 0 && (
+              <span className="text-xs text-muted-foreground">Nenhuma medalha desta vez — mas você completou o caso! 💪</span>
+            )}
+            {earnedBadges.map((b, i) => (
+              <div
+                key={b.id}
+                className="flex flex-col items-center gap-1 w-20"
+                style={{ animation: `badge-pop 0.5s ease-out ${0.2 + i * 0.15}s both` }}
+              >
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-300 via-yellow-200 to-amber-400 border-4 border-amber-600 shadow-lg flex items-center justify-center text-2xl">
+                  {b.emoji}
+                </div>
+                <div className="text-[9px] font-bold text-amber-900 leading-tight">{b.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <Button
+          onClick={onClose}
+          className="mt-6 w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white font-black text-base py-5 shadow-lg"
+        >
+          Continuar 🎊
+        </Button>
+      </div>
+    </div>
   );
 }
