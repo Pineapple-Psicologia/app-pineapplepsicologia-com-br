@@ -578,7 +578,17 @@ export default function DetetiveTabuleiro({ room }: Props) {
       {openLoc && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in" onClick={closeLocation}>
           <div className="bg-card rounded-2xl border-2 border-border shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-auto animate-scale-in" onClick={(e) => e.stopPropagation()}>
-            <LocationContent locId={openLoc} state={state} update={update} onComplete={() => completeLocation(openLoc)} onClose={closeLocation} isPsi={isPsi} />
+            <LocationContent
+              locId={openLoc}
+              state={state}
+              update={update}
+              onComplete={() => completeLocation(openLoc)}
+              onClose={closeLocation}
+              isPsi={isPsi}
+              onAskHelp={() => rollDice(openLoc)}
+              hintsUsed={state.hintsUsed[openLoc] ?? 0}
+              diceRolling={state.diceRolling}
+            />
           </div>
         </div>
       )}
