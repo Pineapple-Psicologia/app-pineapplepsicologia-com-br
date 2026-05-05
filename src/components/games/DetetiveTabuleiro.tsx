@@ -112,10 +112,6 @@ export default function DetetiveTabuleiro({ room }: Props) {
   };
 
   const currentLoc = LOCATIONS[state.currentIdx];
-  const pawn = currentLoc;
-
-  // Build path string between locations
-  const pathD = LOCATIONS.map((l, i) => `${i === 0 ? "M" : "L"} ${l.x} ${l.y}`).join(" ");
 
   return (
     <div
