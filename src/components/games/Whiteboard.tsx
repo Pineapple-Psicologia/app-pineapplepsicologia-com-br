@@ -57,7 +57,7 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
   const [showTemplates, setShowTemplates] = useState(false);
   const [stabilize, setStabilize] = useState(true);
   const [shapeAssist, setShapeAssist] = useState(true);
-  const [textInput, setTextInput] = useState<{ x: number; y: number; value: string } | null>(null);
+  const [textInput, setTextInput] = useState<{ x: number; y: number; value: string; id?: string; color?: string; size?: number } | null>(null);
 
   const objectsRef = useRef<Obj[]>([]);
   const draftRef = useRef<Obj | null>(null);
@@ -69,6 +69,7 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
   const lastPoint = useRef<{ x: number; y: number; t: number } | null>(null);
   const smoothedRef = useRef<{ x: number; y: number } | null>(null);
   const eraseModeRef = useRef(false);
+  const textDragRef = useRef<{ id: string; offsetX: number; offsetY: number; moved: boolean; startX: number; startY: number } | null>(null);
 
   // ---------- drawing ----------
   const drawObj = useCallback((ctx: CanvasRenderingContext2D, w: number, h: number, o: Obj) => {
@@ -475,6 +476,13 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
       return;
     }
     if (activeTool === "text") {
+      // Check if clicking on an existing text to edit/move it
+      const c = canvasRef.current!;
+      const hit = [...objectsRef.current].reverse().find((o) => o.type === "text" && hitText(o as TextObj & { id: string }, p, c.width, c.height)) as (TextObj & { id: string }) | undefined;
+      if (hit) {
+        textDragRef.current = { id: hit.id, offsetX: p.x - hit.x, offsetY: p.y - hit.y, moved: false, startX: p.x, startY: p.y };
+        return;
+      }
       setTextInput({ x: p.x, y: p.y, value: "" });
       return;
     }
@@ -518,6 +526,19 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
     if (now - lastSentCursor.current > 40) {
       lastSentCursor.current = now;
       room.send("wb:cursor", { x: p.x, y: p.y });
+    }
+    // Text drag-to-reposition
+    if (textDragRef.current) {
+      const td = textDragRef.current;
+      const obj = objectsRef.current.find((o) => o.id === td.id) as (TextObj & { id: string }) | undefined;
+      if (obj) {
+        const nx = Math.max(0, Math.min(1, p.x - td.offsetX));
+        const ny = Math.max(0, Math.min(1, p.y - td.offsetY));
+        if (Math.hypot(p.x - td.startX, p.y - td.startY) > 0.005) td.moved = true;
+        obj.x = nx; obj.y = ny;
+        redraw();
+      }
+      return;
     }
     if (!drawingRef.current) return;
     const activeTool: Tool = eraseModeRef.current ? "eraser" : tool;
@@ -574,6 +595,27 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
     eraseModeRef.current = false;
     lastPoint.current = null;
     smoothedRef.current = null;
+    // Finalize text drag/click-to-edit
+    if (textDragRef.current) {
+      const td = textDragRef.current;
+      const obj = objectsRef.current.find((o) => o.id === td.id) as (TextObj & { id: string }) | undefined;
+      textDragRef.current = null;
+      if (obj) {
+        if (!td.moved) {
+          // Click without drag → open editor pre-filled with the text content
+          objectsRef.current = objectsRef.current.filter((o) => o.id !== obj.id);
+          room.send("wb:undo", { id: obj.id });
+          setTextInput({ x: obj.x, y: obj.y, value: obj.text, color: obj.color, size: obj.size });
+          redraw();
+        } else {
+          // Persist new position by replacing the object on peers
+          room.send("wb:undo", { id: obj.id });
+          room.send("wb:add", obj);
+          redraw();
+        }
+      }
+      return;
+    }
     const d = draftRef.current;
     if (!d) return;
     if (d.type === "path" && d.points.length < 2) { draftRef.current = null; redraw(); return; }
@@ -627,7 +669,11 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
   const submitText = () => {
     if (!textInput) return;
     const t = textInput.value.trim();
-    if (t) commit({ id: uid(), type: "text", color, size, x: textInput.x, y: textInput.y, text: t });
+    if (t) {
+      const useColor = textInput.color ?? color;
+      const useSize = textInput.size ?? size;
+      commit({ id: textInput.id ?? uid(), type: "text", color: useColor, size: useSize, x: textInput.x, y: textInput.y, text: t });
+    }
     setTextInput(null);
   };
 
@@ -842,7 +888,7 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
               onBlur={submitText}
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submitText(); } if (e.key === "Escape") setTextInput(null); }}
               className="bg-white/90 border-2 border-primary rounded-md px-2 py-1 text-sm font-semibold outline-none shadow-lg"
-              style={{ color, fontSize: size * 4 }}
+              style={{ color: textInput.color ?? color, fontSize: (textInput.size ?? size) * 4 }}
               placeholder="Digite..."
               rows={2}
             />
@@ -922,4 +968,18 @@ function recognizeShape(d: Path): Shape | null {
     return { type: "rect", color: d.color, size: d.size, x1: minX, y1: minY, x2: maxX, y2: maxY };
   }
   return null;
+}
+
+// Pixel-accurate hit-test for text objects (matches drawObj font metrics).
+function hitText(o: { x: number; y: number; size: number; text: string }, p: { x: number; y: number }, w: number, h: number): boolean {
+  const fontPx = o.size * 4;
+  const lineH = o.size * 4.6;
+  const lines = o.text.split("\n");
+  const x0 = o.x * w, y0 = o.y * h;
+  const px = p.x * w, py = p.y * h;
+  if (py < y0 - 4 || py > y0 + lines.length * lineH + 4) return false;
+  // Approximate width: 0.6 * fontPx per char on widest line
+  const maxChars = Math.max(...lines.map((l) => l.length));
+  const width = Math.max(20, maxChars * fontPx * 0.6);
+  return px >= x0 - 4 && px <= x0 + width + 4;
 }
