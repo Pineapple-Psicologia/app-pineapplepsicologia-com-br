@@ -287,16 +287,20 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
     const p = pos(e);
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
 
-    if (tool === "sticker") {
+    // right-click = eraser shortcut
+    const rightClick = e.button === 2;
+    eraseModeRef.current = rightClick;
+    const activeTool: Tool = rightClick ? "eraser" : tool;
+
+    if (activeTool === "sticker") {
       commit({ id: uid(), type: "sticker", emoji: sticker, x: p.x, y: p.y, size });
       return;
     }
-    if (tool === "text") {
+    if (activeTool === "text") {
       setTextInput({ x: p.x, y: p.y, value: "" });
       return;
     }
-    if (tool === "eraser") {
-      // hit-test near point (small radius)
+    if (activeTool === "eraser") {
       const r = 0.02;
       const hit = [...objectsRef.current].reverse().find((o) => isNear(o, p, r));
       if (hit) {
@@ -310,24 +314,30 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
 
     drawingRef.current = true;
     startRef.current = p;
-    if (tool === "pen" || tool === "marker" || tool === "brush") {
-      draftRef.current = { id: uid(), type: "path", tool, color, size, points: [p] };
+    lastPoint.current = { x: p.x, y: p.y, t: performance.now() };
+    if (activeTool === "pen" || activeTool === "marker" || activeTool === "brush") {
+      const pressure = e.pressure && e.pressure > 0 && e.pressure !== 0.5 ? e.pressure : 1;
+      const w = activeTool === "brush" ? pressure : 1;
+      draftRef.current = { id: uid(), type: "path", tool: activeTool, color, size, points: [{ x: p.x, y: p.y, w }] };
     } else {
-      draftRef.current = { id: uid(), type: tool, color, size, x1: p.x, y1: p.y, x2: p.x, y2: p.y };
+      draftRef.current = { id: uid(), type: activeTool as any, color, size, x1: p.x, y1: p.y, x2: p.x, y2: p.y };
     }
     redraw();
   };
 
   const onMove = (e: React.PointerEvent) => {
     const p = pos(e);
-    // throttle cursor
     const now = Date.now();
+    // local cursor preview (immediate)
+    localCursor.current = { x: p.x, y: p.y, t: now, inside: true };
+    // throttled remote cursor
     if (now - lastSentCursor.current > 40) {
       lastSentCursor.current = now;
       room.send("wb:cursor", { x: p.x, y: p.y });
     }
     if (!drawingRef.current) return;
-    if (tool === "eraser") {
+    const activeTool: Tool = eraseModeRef.current ? "eraser" : tool;
+    if (activeTool === "eraser") {
       const r = 0.02;
       const hit = [...objectsRef.current].reverse().find((o) => isNear(o, p, r));
       if (hit) {
@@ -338,8 +348,30 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
       return;
     }
     const d = draftRef.current; if (!d) return;
-    if (d.type === "path") d.points.push(p);
-    else if ("x2" in d) { d.x2 = p.x; d.y2 = p.y; }
+    if (d.type === "path") {
+      // velocity-based width for brush; pressure overrides if available
+      let w = 1;
+      if (d.tool === "brush") {
+        const usePressure = e.pressure && e.pressure > 0 && e.pressure !== 0.5;
+        if (usePressure) {
+          w = e.pressure;
+        } else {
+          const lp = lastPoint.current;
+          const tNow = performance.now();
+          if (lp) {
+            const dt = Math.max(1, tNow - lp.t);
+            const dist = Math.hypot(p.x - lp.x, p.y - lp.y);
+            const speed = dist / dt; // normalized units / ms
+            // map speed to width: slow = thick (1.0), fast = thin (0.35)
+            const target = Math.max(0.35, Math.min(1, 1 - speed * 80));
+            const prev = (d.points[d.points.length - 1]?.w ?? 1);
+            w = prev * 0.7 + target * 0.3; // smooth
+          }
+        }
+      }
+      d.points.push({ x: p.x, y: p.y, w });
+      lastPoint.current = { x: p.x, y: p.y, t: performance.now() };
+    } else if ("x2" in d) { d.x2 = p.x; d.y2 = p.y; }
     redraw();
     if (now - (lastSentCursor.current - 40) > 60) room.send("wb:draft", d);
   };
