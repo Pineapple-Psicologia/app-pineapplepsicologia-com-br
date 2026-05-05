@@ -318,6 +318,7 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
     drawingRef.current = true;
     startRef.current = p;
     lastPoint.current = { x: p.x, y: p.y, t: performance.now() };
+    smoothedRef.current = { x: p.x, y: p.y };
     if (activeTool === "pen" || activeTool === "marker" || activeTool === "brush") {
       const pressure = e.pressure && e.pressure > 0 && e.pressure !== 0.5 ? e.pressure : 1;
       const w = activeTool === "brush" ? pressure : 1;
