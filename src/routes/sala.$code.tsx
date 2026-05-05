@@ -6,13 +6,14 @@ import { useRoom, type Role } from "@/lib/useRoom";
 import Whiteboard from "@/components/games/Whiteboard";
 import Termometro from "@/components/games/Termometro";
 import Detetive from "@/components/games/Detetive";
+import DetetiveTabuleiro from "@/components/games/DetetiveTabuleiro";
 import { Copy, Check, ArrowLeft, Wifi, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 import { getGame } from "@/lib/games";
 
 const searchSchema = z.object({
   role: z.enum(["psi", "paciente"]).default("paciente"),
-  game: z.enum(["whiteboard", "termometro", "detetive"]).default("whiteboard"),
+  game: z.enum(["whiteboard", "termometro", "detetive", "detetive-tabuleiro"]).default("whiteboard"),
 });
 
 export const Route = createFileRoute("/sala/$code")({
@@ -77,6 +78,8 @@ function SalaPage() {
           <Termometro room={room} />
         ) : game === "detetive" ? (
           <Detetive room={room} />
+        ) : game === "detetive-tabuleiro" ? (
+          <DetetiveTabuleiro room={room} />
         ) : (
           <Whiteboard room={room} />
         )}

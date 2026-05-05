@@ -1,4 +1,4 @@
-export type GameId = "whiteboard" | "termometro" | "detetive";
+export type GameId = "whiteboard" | "termometro" | "detetive" | "detetive-tabuleiro";
 
 export type GameMeta = {
   id: GameId;
@@ -39,6 +39,16 @@ export const GAMES: GameMeta[] = [
       "Investigar pensamentos automáticos com cartas de distorções cognitivas. Reescrever junto, em 4 etapas.",
     ageRange: "11–17 anos",
     approach: "TCC",
+    available: true,
+  },
+  {
+    id: "detetive-tabuleiro",
+    title: "Detetive: Mapa de Investigação",
+    emoji: "🗺️",
+    description:
+      "Versão tabuleiro do Detetive: percorra cena do crime, sala de interrogatório, mesa de cartas, evidências e arquivo. Mais lúdico e imersivo.",
+    ageRange: "9–15 anos",
+    approach: "TCC + jogo de tabuleiro",
     available: true,
   },
   {
