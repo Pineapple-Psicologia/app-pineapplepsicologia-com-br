@@ -144,45 +144,89 @@ function Pawn({ x, z }: { x: number; z: number }) {
 
   return (
     <group ref={ref}>
-      {/* body */}
-      <mesh castShadow position={[0, 0, 0]}>
-        <sphereGeometry args={[0.42, 32, 32]} />
-        <meshStandardMaterial color="#1f2937" roughness={0.3} metalness={0.4} />
+      {/* legs */}
+      <mesh castShadow position={[-0.12, -0.55, 0]}>
+        <capsuleGeometry args={[0.08, 0.25, 8, 16]} />
+        <meshStandardMaterial color="#1e3a8a" roughness={0.6} />
       </mesh>
-      {/* hat */}
-      <mesh castShadow position={[0, 0.45, 0]}>
-        <cylinderGeometry args={[0.45, 0.45, 0.08, 24]} />
-        <meshStandardMaterial color="#111827" roughness={0.3} />
+      <mesh castShadow position={[0.12, -0.55, 0]}>
+        <capsuleGeometry args={[0.08, 0.25, 8, 16]} />
+        <meshStandardMaterial color="#1e3a8a" roughness={0.6} />
       </mesh>
-      <mesh castShadow position={[0, 0.6, 0]}>
-        <cylinderGeometry args={[0.28, 0.32, 0.3, 24]} />
-        <meshStandardMaterial color="#111827" roughness={0.3} />
+      {/* shoes */}
+      <mesh castShadow position={[-0.12, -0.78, 0.05]}>
+        <sphereGeometry args={[0.12, 16, 16]} />
+        <meshStandardMaterial color="#78350f" roughness={0.4} />
       </mesh>
-      {/* eyes */}
-      <mesh position={[-0.13, 0.05, 0.36]}>
+      <mesh castShadow position={[0.12, -0.78, 0.05]}>
+        <sphereGeometry args={[0.12, 16, 16]} />
+        <meshStandardMaterial color="#78350f" roughness={0.4} />
+      </mesh>
+      {/* trench coat body (rounded) */}
+      <mesh castShadow position={[0, -0.18, 0]}>
+        <sphereGeometry args={[0.4, 24, 24]} />
+        <meshStandardMaterial color="#d97706" roughness={0.55} />
+      </mesh>
+      {/* coat collar */}
+      <mesh castShadow position={[0, 0.05, 0.0]}>
+        <coneGeometry args={[0.32, 0.25, 16, 1, true]} />
+        <meshStandardMaterial color="#b45309" roughness={0.55} side={THREE.DoubleSide} />
+      </mesh>
+      {/* head */}
+      <mesh castShadow position={[0, 0.3, 0]}>
+        <sphereGeometry args={[0.32, 32, 32]} />
+        <meshStandardMaterial color="#fcd9b8" roughness={0.5} />
+      </mesh>
+      {/* nose */}
+      <mesh position={[0, 0.28, 0.3]}>
+        <sphereGeometry args={[0.06, 16, 16]} />
+        <meshStandardMaterial color="#f4a886" roughness={0.5} />
+      </mesh>
+      {/* eyes whites */}
+      <mesh position={[-0.11, 0.36, 0.27]}>
         <sphereGeometry args={[0.07, 16, 16]} />
         <meshStandardMaterial color="#fff" />
       </mesh>
-      <mesh position={[0.13, 0.05, 0.36]}>
+      <mesh position={[0.11, 0.36, 0.27]}>
         <sphereGeometry args={[0.07, 16, 16]} />
         <meshStandardMaterial color="#fff" />
       </mesh>
-      <mesh position={[-0.13, 0.05, 0.41]}>
+      {/* pupils */}
+      <mesh position={[-0.11, 0.36, 0.33]}>
         <sphereGeometry args={[0.03, 16, 16]} />
-        <meshStandardMaterial color="#000" />
+        <meshStandardMaterial color="#1f2937" />
       </mesh>
-      <mesh position={[0.13, 0.05, 0.41]}>
+      <mesh position={[0.11, 0.36, 0.33]}>
         <sphereGeometry args={[0.03, 16, 16]} />
-        <meshStandardMaterial color="#000" />
+        <meshStandardMaterial color="#1f2937" />
       </mesh>
-      {/* magnifier */}
-      <group position={[0.45, -0.05, 0.35]} rotation={[0, 0, -0.5]}>
+      {/* fedora brim */}
+      <mesh castShadow position={[0, 0.55, 0]}>
+        <cylinderGeometry args={[0.5, 0.5, 0.06, 32]} />
+        <meshStandardMaterial color="#7c2d12" roughness={0.5} />
+      </mesh>
+      {/* fedora crown */}
+      <mesh castShadow position={[0, 0.7, 0]}>
+        <cylinderGeometry args={[0.28, 0.32, 0.28, 32]} />
+        <meshStandardMaterial color="#7c2d12" roughness={0.5} />
+      </mesh>
+      {/* hat band */}
+      <mesh position={[0, 0.59, 0]}>
+        <cylinderGeometry args={[0.33, 0.33, 0.06, 32]} />
+        <meshStandardMaterial color="#fbbf24" roughness={0.4} metalness={0.2} />
+      </mesh>
+      {/* magnifier in hand */}
+      <group position={[0.5, 0.0, 0.2]} rotation={[0, 0, -0.4]}>
         <mesh castShadow>
-          <torusGeometry args={[0.16, 0.04, 12, 24]} />
-          <meshStandardMaterial color="#a16207" metalness={0.7} roughness={0.3} />
+          <torusGeometry args={[0.18, 0.04, 12, 24]} />
+          <meshStandardMaterial color="#fbbf24" metalness={0.7} roughness={0.3} />
         </mesh>
-        <mesh position={[0.18, -0.18, 0]} rotation={[0, 0, -0.8]} castShadow>
-          <cylinderGeometry args={[0.03, 0.03, 0.3, 12]} />
+        <mesh position={[0, 0, 0]}>
+          <circleGeometry args={[0.15, 24]} />
+          <meshStandardMaterial color="#bae6fd" transparent opacity={0.5} />
+        </mesh>
+        <mesh position={[0.2, -0.2, 0]} rotation={[0, 0, -0.8]} castShadow>
+          <cylinderGeometry args={[0.035, 0.035, 0.32, 12]} />
           <meshStandardMaterial color="#78350f" />
         </mesh>
       </group>
