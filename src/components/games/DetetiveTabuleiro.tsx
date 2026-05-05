@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
-import { RotateCcw, Check, ChevronRight, Lock } from "lucide-react";
+import { RotateCcw, Check, ChevronRight } from "lucide-react";
+import DetetiveBoard3D from "./DetetiveBoard3D";
 
 type Props = { room: ReturnType<typeof useRoom> };
 
@@ -12,16 +13,16 @@ const LOCATIONS: {
   name: string;
   emoji: string;
   hint: string;
-  color: string; // tailwind bg color for tile
-  ring: string;  // ring color
+  color: string; // hex for 3D
+  tw: string;    // tailwind bg for status bar
   x: number;
   y: number;
 }[] = [
-  { id: "cena",           name: "Cena do Crime",         emoji: "🔍", hint: "Descreva o que aconteceu",        color: "bg-rose-400",    ring: "ring-rose-600",    x: 14, y: 82 },
-  { id: "interrogatorio", name: "Sala de Interrogatório", emoji: "💭", hint: "Qual pensamento foi flagrado?",   color: "bg-sky-400",     ring: "ring-sky-600",     x: 32, y: 42 },
-  { id: "cartas",         name: "Mesa de Cartas",        emoji: "🃏", hint: "Identifique as armadilhas",       color: "bg-violet-400",  ring: "ring-violet-600",  x: 56, y: 70 },
-  { id: "evidencias",     name: "Sala de Evidências",    emoji: "⚖️", hint: "Pese provas a favor e contra",     color: "bg-emerald-400", ring: "ring-emerald-600", x: 78, y: 32 },
-  { id: "arquivo",        name: "Arquivo Final",         emoji: "🏆", hint: "Arquive o pensamento reescrito",  color: "bg-amber-400",   ring: "ring-amber-600",   x: 90, y: 78 },
+  { id: "cena",           name: "Cena do Crime",          emoji: "🔍", hint: "Descreva o que aconteceu",       color: "#fb7185", tw: "bg-rose-400",    x: 14, y: 82 },
+  { id: "interrogatorio", name: "Sala de Interrogatório", emoji: "💭", hint: "Qual pensamento foi flagrado?",  color: "#38bdf8", tw: "bg-sky-400",     x: 32, y: 42 },
+  { id: "cartas",         name: "Mesa de Cartas",         emoji: "🃏", hint: "Identifique as armadilhas",      color: "#a78bfa", tw: "bg-violet-400",  x: 56, y: 70 },
+  { id: "evidencias",     name: "Sala de Evidências",     emoji: "⚖️", hint: "Pese provas a favor e contra",    color: "#34d399", tw: "bg-emerald-400", x: 78, y: 32 },
+  { id: "arquivo",        name: "Arquivo Final",          emoji: "🏆", hint: "Arquive o pensamento reescrito", color: "#fbbf24", tw: "bg-amber-400",   x: 90, y: 78 },
 ];
 
 const DISTORTIONS = [
@@ -111,10 +112,6 @@ export default function DetetiveTabuleiro({ room }: Props) {
   };
 
   const currentLoc = LOCATIONS[state.currentIdx];
-  const pawn = currentLoc;
-
-  // Build path string between locations
-  const pathD = LOCATIONS.map((l, i) => `${i === 0 ? "M" : "L"} ${l.x} ${l.y}`).join(" ");
 
   return (
     <div
@@ -138,161 +135,23 @@ export default function DetetiveTabuleiro({ room }: Props) {
         </Button>
       </header>
 
-      {/* Board – perspective wrapper */}
-      <div
-        className="relative flex-1 min-h-[480px] rounded-3xl"
-        style={{ perspective: "1100px", perspectiveOrigin: "50% 30%" }}
-      >
-        <div
-          className="absolute inset-0 rounded-3xl border-[6px] border-amber-900/50 overflow-hidden"
-          style={{
-            transform: "rotateX(38deg) scale(1.02)",
-            transformOrigin: "50% 60%",
-            backgroundImage:
-              "radial-gradient(ellipse at 25% 30%, #a7f3d0 0%, transparent 40%), radial-gradient(ellipse at 75% 70%, #fecaca 0%, transparent 40%), radial-gradient(ellipse at 50% 50%, #fef3c7 0%, transparent 60%), linear-gradient(135deg, #fef9c3 0%, #fce7f3 100%)",
-            boxShadow:
-              "0 30px 60px -20px rgba(0,0,0,0.45), inset 0 2px 0 rgba(255,255,255,0.7), inset 0 -10px 20px rgba(120,53,15,0.18)",
-          }}
-        >
-          {/* wood grain overlay */}
-          <div
-            className="absolute inset-0 opacity-30 pointer-events-none mix-blend-multiply"
-            style={{
-              backgroundImage:
-                "repeating-linear-gradient(90deg, rgba(120,53,15,0.05) 0 2px, transparent 2px 6px), repeating-linear-gradient(0deg, rgba(120,53,15,0.04) 0 1px, transparent 1px 4px)",
-            }}
-          />
-          {/* confetti dots */}
-          <div
-            className="absolute inset-0 opacity-50 pointer-events-none"
-            style={{
-              backgroundImage:
-                "radial-gradient(circle, #f472b6 1.5px, transparent 1.5px), radial-gradient(circle, #60a5fa 1.5px, transparent 1.5px), radial-gradient(circle, #34d399 1.5px, transparent 1.5px)",
-              backgroundSize: "40px 40px, 60px 60px, 80px 80px",
-              backgroundPosition: "0 0, 20px 20px, 40px 10px",
-            }}
-          />
-
-          {/* corners */}
-          <div className="absolute top-2 left-3 text-2xl rotate-[-12deg] drop-shadow">🎯</div>
-          <div className="absolute top-2 right-3 text-2xl rotate-[12deg] drop-shadow">🎲</div>
-          <div className="absolute bottom-2 left-3 text-2xl drop-shadow">🧭</div>
-          <div className="absolute bottom-2 right-3 text-2xl drop-shadow">🏁</div>
-
-          <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
-            <path d={pathD} fill="none" stroke="#78350f" strokeWidth="2.4" strokeLinecap="round" opacity="0.25" />
-            <path
-              d={pathD}
-              fill="none"
-              stroke="#fff"
-              strokeWidth="1.6"
-              strokeDasharray="2 1.6"
-              strokeLinecap="round"
-              opacity="0.95"
-            />
-            {state.completed.length > 0 && (
-              <path
-                d={LOCATIONS.slice(0, state.completed.length + 1)
-                  .map((l, i) => `${i === 0 ? "M" : "L"} ${l.x} ${l.y}`)
-                  .join(" ")}
-                fill="none"
-                stroke="#16a34a"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                opacity="0.9"
-              />
-            )}
-          </svg>
-        </div>
-
-        {/* 3D pieces float above the tilted board (counter-rotated so they look upright) */}
-        <div
-          className="absolute inset-0"
-          style={{
-            transform: "rotateX(38deg) scale(1.02)",
-            transformStyle: "preserve-3d",
-            transformOrigin: "50% 60%",
-          }}
-        >
-          {LOCATIONS.map((loc, i) => {
-            const done = state.completed.includes(loc.id);
-            const unlocked = i <= state.currentIdx;
-            const isCurrent = i === state.currentIdx && !done;
-            return (
-              <button
-                key={loc.id}
-                disabled={!unlocked}
-                onClick={() => openLocation(loc.id)}
-                className={`absolute -translate-x-1/2 -translate-y-1/2 ${
-                  unlocked ? "cursor-pointer" : "cursor-not-allowed opacity-70"
-                }`}
-                style={{
-                  left: `${loc.x}%`,
-                  top: `${loc.y}%`,
-                  transform: "translate(-50%, -50%) rotateX(-38deg) translateZ(18px)",
-                  transition: "transform 200ms",
-                }}
-                onMouseEnter={(e) => {
-                  if (unlocked)
-                    e.currentTarget.style.transform =
-                      "translate(-50%, -50%) rotateX(-38deg) translateZ(28px) scale(1.08)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform =
-                    "translate(-50%, -50%) rotateX(-38deg) translateZ(18px)";
-                }}
-              >
-                <div className="relative">
-                  {/* drop shadow on board */}
-                  <div className="absolute left-1/2 -translate-x-1/2 top-full w-14 h-3 bg-black/40 rounded-[50%] blur-md" />
-                  {/* chunky 3D side stack */}
-                  <div className={`absolute inset-0 translate-y-2 rounded-2xl ${loc.color} brightness-50`} />
-                  <div className={`absolute inset-0 translate-y-1.5 rounded-2xl ${loc.color} brightness-75`} />
-                  <div className={`absolute inset-0 translate-y-1 rounded-2xl ${loc.color} brightness-90`} />
-                  {/* top face */}
-                  <div
-                    className={`relative w-16 h-16 md:w-[72px] md:h-[72px] rounded-2xl flex flex-col items-center justify-center border-[3px] border-white ${
-                      done ? "bg-green-500" : loc.color
-                    } ${isCurrent ? `ring-4 ${loc.ring} animate-pulse` : ""}`}
-                    style={{
-                      boxShadow:
-                        "inset 0 4px 8px rgba(255,255,255,0.45), inset 0 -4px 8px rgba(0,0,0,0.18), 0 6px 12px rgba(0,0,0,0.25)",
-                    }}
-                  >
-                    <div className="absolute -top-2 -left-2 w-6 h-6 rounded-full bg-white border-2 border-amber-900 text-amber-900 text-[11px] font-black flex items-center justify-center shadow-md">
-                      {i + 1}
-                    </div>
-                    {done ? (
-                      <Check className="w-7 h-7 text-white drop-shadow" strokeWidth={3} />
-                    ) : !unlocked ? (
-                      <Lock className="w-5 h-5 text-white/90" />
-                    ) : (
-                      <span className="text-3xl md:text-[34px] drop-shadow-md">{loc.emoji}</span>
-                    )}
-                  </div>
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 whitespace-nowrap text-[10px] md:text-xs font-black bg-white text-amber-900 px-2 py-0.5 rounded-full shadow-lg border border-amber-900/30">
-                    {loc.name}
-                  </div>
-                </div>
-              </button>
-            );
-          })}
-
-          {/* Detective pawn — 3D, lifted off the board */}
-          <div
-            className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none z-20"
-            style={{
-              left: `${pawn.x}%`,
-              top: `${pawn.y - 8}%`,
-              transform: "translate(-50%, -50%) rotateX(-38deg) translateZ(60px)",
-              transition: "left 700ms ease-out, top 700ms ease-out",
-            }}
-          >
-            <div className="relative">
-              <div className="absolute left-1/2 -translate-x-1/2 top-full w-8 h-2 bg-black/45 rounded-[50%] blur-md" />
-              <div className="text-5xl md:text-6xl drop-shadow-[0_8px_6px_rgba(0,0,0,0.4)] animate-bounce">🕵️</div>
-            </div>
-          </div>
+      {/* 3D Board */}
+      <div className="relative flex-1 min-h-[480px] rounded-3xl border-[6px] border-amber-900/50 overflow-hidden shadow-[0_30px_60px_-20px_rgba(0,0,0,0.45)]">
+        <DetetiveBoard3D
+          locations={LOCATIONS.map((l) => ({
+            id: l.id,
+            name: l.name,
+            emoji: l.emoji,
+            color: l.color,
+            x: l.x,
+            y: l.y,
+          }))}
+          currentIdx={state.currentIdx}
+          completed={state.completed}
+          onSelect={(id) => openLocation(id as LocationId)}
+        />
+        <div className="absolute top-2 left-3 text-[10px] font-black tracking-wider bg-white/80 text-amber-900 px-2 py-0.5 rounded-full shadow border border-amber-900/30 pointer-events-none">
+          🎲 Arraste para girar · scroll para zoom
         </div>
       </div>
 
@@ -306,7 +165,7 @@ export default function DetetiveTabuleiro({ room }: Props) {
         </div>
       ) : (
         <div className="rounded-2xl p-3 bg-white border-4 border-amber-700/60 flex items-center gap-3 shadow-md">
-          <div className={`text-3xl w-12 h-12 rounded-xl flex items-center justify-center border-2 border-white shadow ${currentLoc.color}`}>
+          <div className={`text-3xl w-12 h-12 rounded-xl flex items-center justify-center border-2 border-white shadow ${currentLoc.tw}`}>
             {currentLoc.emoji}
           </div>
           <div className="flex-1 min-w-0">
