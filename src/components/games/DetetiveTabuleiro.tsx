@@ -3,6 +3,7 @@ import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
 import { RotateCcw, Check, ChevronRight } from "lucide-react";
 import DetetiveBoard3D from "./DetetiveBoard3D";
+import sceneBg from "@/assets/scene-detetive-tabuleiro.jpg";
 
 type Props = { room: ReturnType<typeof useRoom> };
 
@@ -135,22 +136,39 @@ export default function DetetiveTabuleiro({ room }: Props) {
         </Button>
       </header>
 
-      {/* 3D Board */}
+      {/* 3D Board over Pixar diorama scene */}
       <div className="relative flex-1 min-h-[480px] rounded-3xl border-[6px] border-amber-900/50 overflow-hidden shadow-[0_30px_60px_-20px_rgba(0,0,0,0.45)]">
-        <DetetiveBoard3D
-          locations={LOCATIONS.map((l) => ({
-            id: l.id,
-            name: l.name,
-            emoji: l.emoji,
-            color: l.color,
-            x: l.x,
-            y: l.y,
-          }))}
-          currentIdx={state.currentIdx}
-          completed={state.completed}
-          onSelect={(id) => openLocation(id as LocationId)}
+        {/* Pixar diorama background */}
+        <img
+          src={sceneBg}
+          alt=""
+          aria-hidden
+          className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
         />
-        <div className="absolute top-2 left-3 text-[10px] font-black tracking-wider bg-white/80 text-amber-900 px-2 py-0.5 rounded-full shadow border border-amber-900/30 pointer-events-none">
+        {/* warm vignette to blend the 3D board with the scene */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(ellipse at 50% 75%, rgba(254,243,199,0.55) 0%, rgba(254,215,170,0.25) 35%, rgba(0,0,0,0.35) 100%)",
+          }}
+        />
+        <div className="absolute inset-0">
+          <DetetiveBoard3D
+            locations={LOCATIONS.map((l) => ({
+              id: l.id,
+              name: l.name,
+              emoji: l.emoji,
+              color: l.color,
+              x: l.x,
+              y: l.y,
+            }))}
+            currentIdx={state.currentIdx}
+            completed={state.completed}
+            onSelect={(id) => openLocation(id as LocationId)}
+          />
+        </div>
+        <div className="absolute top-2 left-3 text-[10px] font-black tracking-wider bg-white/85 text-amber-900 px-2 py-0.5 rounded-full shadow border border-amber-900/30 pointer-events-none">
           🎲 Arraste para girar · scroll para zoom
         </div>
       </div>

@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
 import { Thermometer, RotateCcw } from "lucide-react";
+import SceneBackdrop from "./SceneBackdrop";
+import sceneBg from "@/assets/scene-termometro.jpg";
 
 type Props = { room: ReturnType<typeof useRoom> };
 
@@ -74,8 +76,9 @@ export default function Termometro({ room }: Props) {
   const fillPct = (level / 10) * 100;
 
   return (
-    <div className="h-full w-full bg-gradient-to-br from-background to-muted/40 rounded-xl border-2 border-border/60 p-4 md:p-6 flex flex-col gap-4 overflow-auto">
-      <header className="flex items-center justify-between flex-wrap gap-3">
+    <SceneBackdrop src={sceneBg} vignette={0.35} tint="rgba(186,230,253,0.45)">
+    <div className="h-full w-full p-4 md:p-6 flex flex-col gap-4">
+      <header className="flex items-center justify-between flex-wrap gap-3 bg-white/85 backdrop-blur rounded-2xl border-2 border-white shadow-lg px-4 py-2">
         <div className="flex items-center gap-2">
           <Thermometer className="w-5 h-5 text-primary" />
           <h2 className="text-xl font-bold">Termômetro das Emoções</h2>
@@ -201,5 +204,6 @@ export default function Termometro({ room }: Props) {
         </div>
       </div>
     </div>
+    </SceneBackdrop>
   );
 }
