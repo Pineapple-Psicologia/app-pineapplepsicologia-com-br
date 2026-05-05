@@ -899,8 +899,14 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
             onChange={(e) => textInput && setTextInput({ ...textInput, value: e.target.value })}
             onBlur={() => { if (textInput) submitText(); }}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submitText(); } if (e.key === "Escape") setTextInput(null); }}
-            className="bg-white/90 border-2 border-primary rounded-md px-2 py-1 text-sm font-semibold outline-none shadow-lg"
-            style={{ color: textInput?.color ?? color, fontSize: ((textInput?.size ?? size)) * 4 }}
+            className="bg-white/90 border-2 border-primary rounded-md px-2 py-1 font-semibold outline-none shadow-lg leading-tight"
+            style={{
+              color: textInput?.color ?? color,
+              fontSize: ((textInput?.size ?? size)) * 4,
+              minWidth: 120,
+              minHeight: ((textInput?.size ?? size)) * 4 * 1.6,
+              resize: "both",
+            }}
             placeholder="Digite..."
             rows={2}
           />
