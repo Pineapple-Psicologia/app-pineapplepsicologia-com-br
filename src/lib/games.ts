@@ -1,4 +1,4 @@
-export type GameId = "whiteboard" | "termometro";
+export type GameId = "whiteboard" | "termometro" | "detetive";
 
 export type GameMeta = {
   id: GameId;
@@ -32,14 +32,14 @@ export const GAMES: GameMeta[] = [
     available: true,
   },
   {
-    id: "detetive" as GameId,
+    id: "detetive",
     title: "Detetive de Pensamentos",
     emoji: "🕵️",
     description:
-      "Investigar pensamentos automáticos com cartas de distorções cognitivas. Reescrever junto.",
+      "Investigar pensamentos automáticos com cartas de distorções cognitivas. Reescrever junto, em 4 etapas.",
     ageRange: "11–17 anos",
     approach: "TCC",
-    available: false,
+    available: true,
   },
   {
     id: "mapa" as GameId,
