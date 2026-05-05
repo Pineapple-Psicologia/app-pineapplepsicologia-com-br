@@ -183,6 +183,8 @@ export default function DetetiveTabuleiro({ room }: Props) {
   const [openLoc, setOpenLoc] = useState<LocationId | null>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<CaseHistoryItem[]>(() => loadHistory());
+  const [showCelebration, setShowCelebration] = useState(false);
+  const celebratedRef = useRef(false);
 
   // Determine if this user is the game master (psi)
   // We infer role from URL search params since useRoom doesn't expose it directly here.
