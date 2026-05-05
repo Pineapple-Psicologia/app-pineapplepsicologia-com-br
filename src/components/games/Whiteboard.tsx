@@ -885,25 +885,68 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
         />
         <canvas ref={overlayRef} className="absolute inset-0 w-full h-full pointer-events-none" />
         <div
-          className="absolute z-10"
+          className="absolute z-10 flex flex-col rounded-md border-2 border-primary shadow-lg bg-white/95 overflow-hidden"
           style={{
             left: `${(textInput?.x ?? 0) * 100}%`,
             top: `${(textInput?.y ?? 0) * 100}%`,
             visibility: textInput ? "visible" : "hidden",
             pointerEvents: textInput ? "auto" : "none",
+            transform: "translate(0,0)",
           }}
         >
+          <div
+            className="flex items-center justify-between gap-2 px-2 py-1 bg-primary/90 text-primary-foreground text-[11px] font-bold cursor-move select-none"
+            onMouseDown={(e) => e.preventDefault()}
+            onPointerDown={(e) => {
+              if (!textInput || !wrapperRef.current) return;
+              e.preventDefault();
+              e.stopPropagation();
+              const wrap = wrapperRef.current.getBoundingClientRect();
+              const startPx = { x: textInput.x * wrap.width, y: textInput.y * wrap.height };
+              const startMouse = { x: e.clientX, y: e.clientY };
+              const target = e.currentTarget;
+              target.setPointerCapture(e.pointerId);
+              const move = (ev: PointerEvent) => {
+                const nx = Math.max(0, Math.min(wrap.width - 20, startPx.x + (ev.clientX - startMouse.x)));
+                const ny = Math.max(0, Math.min(wrap.height - 20, startPx.y + (ev.clientY - startMouse.y)));
+                setTextInput((cur) => cur ? { ...cur, x: nx / wrap.width, y: ny / wrap.height } : cur);
+              };
+              const up = (ev: PointerEvent) => {
+                target.releasePointerCapture?.(ev.pointerId);
+                window.removeEventListener("pointermove", move);
+                window.removeEventListener("pointerup", up);
+                textareaRef.current?.focus();
+              };
+              window.addEventListener("pointermove", move);
+              window.addEventListener("pointerup", up);
+            }}
+          >
+            <span>✥ mover</span>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => submitText()}
+                className="px-1.5 py-0.5 rounded bg-white/20 hover:bg-white/30"
+              >OK</button>
+              <button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => setTextInput(null)}
+                className="px-1.5 py-0.5 rounded bg-white/20 hover:bg-white/30"
+              >✕</button>
+            </div>
+          </div>
           <textarea
             ref={textareaRef}
             value={textInput?.value ?? ""}
             onChange={(e) => textInput && setTextInput({ ...textInput, value: e.target.value })}
-            onBlur={() => { if (textInput) submitText(); }}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submitText(); } if (e.key === "Escape") setTextInput(null); }}
-            className="bg-white/90 border-2 border-primary rounded-md px-2 py-1 font-semibold outline-none shadow-lg leading-tight"
+            className="px-2 py-1 font-semibold outline-none leading-tight bg-transparent"
             style={{
               color: textInput?.color ?? color,
               fontSize: ((textInput?.size ?? size)) * 4,
-              minWidth: 120,
+              minWidth: 140,
               minHeight: ((textInput?.size ?? size)) * 4 * 1.6,
               resize: "both",
             }}
