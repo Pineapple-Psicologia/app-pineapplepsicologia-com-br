@@ -490,6 +490,16 @@ export default function DetetiveTabuleiro({ room }: Props) {
         </div>
       )}
 
+      {/* Celebration overlay */}
+      {showCelebration && state.caseClosed && (
+        <CelebrationOverlay
+          points={state.points}
+          level={level}
+          earnedBadges={BADGES.filter((b) => state.earnedBadges.includes(b.id))}
+          onClose={() => setShowCelebration(false)}
+        />
+      )}
+
       {/* Location modal */}
       {openLoc && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in" onClick={closeLocation}>
