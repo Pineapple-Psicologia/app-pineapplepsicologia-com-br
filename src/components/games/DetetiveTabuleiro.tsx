@@ -297,33 +297,6 @@ export default function DetetiveTabuleiro({ room }: Props) {
     }, 80);
   };
 
-  const rollDice = () => {
-    if (state.diceRolling || state.caseClosed) return;
-    update({ diceRolling: true, diceValue: null });
-    let ticks = 0;
-    const interval = setInterval(() => {
-      ticks++;
-      const v = 1 + Math.floor(Math.random() * 6);
-      if (ticks >= 12) {
-        clearInterval(interval);
-        const finalVal = 1 + Math.floor(Math.random() * 6);
-        const card = pickEventCard(finalVal);
-        const advanceBy = finalVal === 5 && card?.kind === "atalho" ? 2 : 1;
-        const bonus = card?.bonus ?? 0;
-        update({
-          diceRolling: false,
-          diceValue: finalVal,
-          pendingAdvance: advanceBy,
-          activeEvent: card,
-          points: state.points + bonus,
-        });
-      } else {
-        // visual flicker
-        setState((s) => ({ ...s, diceValue: v }));
-      }
-    }, 80);
-  };
-
   const dismissEvent = () => update({ activeEvent: null });
 
   const reset = () => {
