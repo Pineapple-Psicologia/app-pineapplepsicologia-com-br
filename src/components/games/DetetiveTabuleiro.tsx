@@ -12,15 +12,16 @@ const LOCATIONS: {
   name: string;
   emoji: string;
   hint: string;
-  // position on 100x100 viewBox
+  color: string; // tailwind bg color for tile
+  ring: string;  // ring color
   x: number;
   y: number;
 }[] = [
-  { id: "cena", name: "Cena do Crime", emoji: "🔍", hint: "Descreva o que aconteceu", x: 18, y: 78 },
-  { id: "interrogatorio", name: "Sala de Interrogatório", emoji: "💭", hint: "Qual pensamento foi flagrado?", x: 38, y: 32 },
-  { id: "cartas", name: "Mesa de Cartas", emoji: "🃏", hint: "Identifique as armadilhas mentais", x: 62, y: 70 },
-  { id: "evidencias", name: "Sala de Evidências", emoji: "⚖️", hint: "Liste provas a favor e contra", x: 80, y: 28 },
-  { id: "arquivo", name: "Arquivo Final", emoji: "📁", hint: "Arquive o pensamento reescrito", x: 92, y: 88 },
+  { id: "cena",           name: "Cena do Crime",         emoji: "🔍", hint: "Descreva o que aconteceu",        color: "bg-rose-400",    ring: "ring-rose-600",    x: 14, y: 82 },
+  { id: "interrogatorio", name: "Sala de Interrogatório", emoji: "💭", hint: "Qual pensamento foi flagrado?",   color: "bg-sky-400",     ring: "ring-sky-600",     x: 32, y: 42 },
+  { id: "cartas",         name: "Mesa de Cartas",        emoji: "🃏", hint: "Identifique as armadilhas",       color: "bg-violet-400",  ring: "ring-violet-600",  x: 56, y: 70 },
+  { id: "evidencias",     name: "Sala de Evidências",    emoji: "⚖️", hint: "Pese provas a favor e contra",     color: "bg-emerald-400", ring: "ring-emerald-600", x: 78, y: 32 },
+  { id: "arquivo",        name: "Arquivo Final",         emoji: "🏆", hint: "Arquive o pensamento reescrito",  color: "bg-amber-400",   ring: "ring-amber-600",   x: 90, y: 78 },
 ];
 
 const DISTORTIONS = [
