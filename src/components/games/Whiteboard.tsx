@@ -885,17 +885,18 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
         />
         <canvas ref={overlayRef} className="absolute inset-0 w-full h-full pointer-events-none" />
         <div
-          className="absolute z-10 flex flex-col rounded-md border-2 border-primary shadow-lg bg-white/95 overflow-hidden"
+          className="absolute z-10 flex flex-col rounded-xl shadow-2xl bg-white/95 backdrop-blur-sm overflow-hidden ring-1 ring-black/5"
           style={{
             left: `${(textInput?.x ?? 0) * 100}%`,
             top: `${(textInput?.y ?? 0) * 100}%`,
             visibility: textInput ? "visible" : "hidden",
             pointerEvents: textInput ? "auto" : "none",
-            transform: "translate(0,0)",
+            border: `2px solid ${textInput?.color ?? color}`,
           }}
         >
           <div
-            className="flex items-center justify-between gap-2 px-2 py-1 bg-primary/90 text-primary-foreground text-[11px] font-bold cursor-move select-none"
+            className="flex items-center justify-between gap-2 px-2 py-1 text-white text-[11px] font-bold cursor-move select-none"
+            style={{ background: `linear-gradient(90deg, ${textInput?.color ?? color}, ${textInput?.color ?? color}cc)` }}
             onMouseDown={(e) => e.preventDefault()}
             onPointerDown={(e) => {
               if (!textInput || !wrapperRef.current) return;
@@ -921,19 +922,52 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
               window.addEventListener("pointerup", up);
             }}
           >
-            <span>✥ mover</span>
-            <div className="flex items-center gap-1">
+            <span className="flex items-center gap-1.5">
+              <Move className="w-3 h-3" />
+              <span className="opacity-90">arrastar</span>
+            </span>
+            <div className="flex items-center gap-1" onPointerDown={(e) => e.stopPropagation()}>
               <button
                 type="button"
+                title="Diminuir fonte"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => textInput && setTextInput({ ...textInput, size: Math.max(2, (textInput.size ?? size) - 1) })}
+                className="w-5 h-5 flex items-center justify-center rounded bg-white/25 hover:bg-white/40 text-xs leading-none"
+              >−</button>
+              <span className="px-1 tabular-nums">{textInput?.size ?? size}</span>
+              <button
+                type="button"
+                title="Aumentar fonte"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => textInput && setTextInput({ ...textInput, size: Math.min(40, (textInput.size ?? size) + 1) })}
+                className="w-5 h-5 flex items-center justify-center rounded bg-white/25 hover:bg-white/40 text-xs leading-none"
+              >+</button>
+              <div className="w-px h-4 bg-white/30 mx-1" />
+              {COLORS.slice(0, 6).map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  title={c}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => textInput && setTextInput({ ...textInput, color: c })}
+                  className={`w-4 h-4 rounded-full border ${ (textInput?.color ?? color) === c ? "border-white ring-1 ring-white" : "border-white/40"}`}
+                  style={{ background: c }}
+                />
+              ))}
+              <div className="w-px h-4 bg-white/30 mx-1" />
+              <button
+                type="button"
+                title="Confirmar (Enter)"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => submitText()}
-                className="px-1.5 py-0.5 rounded bg-white/20 hover:bg-white/30"
-              >OK</button>
+                className="px-2 py-0.5 rounded bg-white/25 hover:bg-white/40 font-bold"
+              >✓</button>
               <button
                 type="button"
+                title="Cancelar (Esc)"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => setTextInput(null)}
-                className="px-1.5 py-0.5 rounded bg-white/20 hover:bg-white/30"
+                className="px-2 py-0.5 rounded bg-white/25 hover:bg-white/40 font-bold"
               >✕</button>
             </div>
           </div>
@@ -942,15 +976,15 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
             value={textInput?.value ?? ""}
             onChange={(e) => textInput && setTextInput({ ...textInput, value: e.target.value })}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submitText(); } if (e.key === "Escape") setTextInput(null); }}
-            className="px-2 py-1 font-semibold outline-none leading-tight bg-transparent"
+            className="px-3 py-2 font-semibold outline-none leading-tight bg-transparent placeholder:text-muted-foreground/50"
             style={{
               color: textInput?.color ?? color,
               fontSize: ((textInput?.size ?? size)) * 4,
-              minWidth: 140,
+              minWidth: 180,
               minHeight: ((textInput?.size ?? size)) * 4 * 1.6,
               resize: "both",
             }}
-            placeholder="Digite..."
+            placeholder="Digite seu texto..."
             rows={2}
           />
         </div>
