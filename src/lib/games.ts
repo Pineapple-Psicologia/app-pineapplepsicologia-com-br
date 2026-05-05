@@ -42,6 +42,16 @@ export const GAMES: GameMeta[] = [
     available: true,
   },
   {
+    id: "detetive-tabuleiro",
+    title: "Detetive: Mapa de Investigação",
+    emoji: "🗺️",
+    description:
+      "Versão tabuleiro do Detetive: percorra cena do crime, sala de interrogatório, mesa de cartas, evidências e arquivo. Mais lúdico e imersivo.",
+    ageRange: "9–15 anos",
+    approach: "TCC + jogo de tabuleiro",
+    available: true,
+  },
+  {
     id: "mapa" as GameId,
     title: "Mapa Corporal",
     emoji: "🧍",
