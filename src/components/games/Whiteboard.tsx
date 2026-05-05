@@ -3,23 +3,34 @@ import { Button } from "@/components/ui/button";
 import {
   Eraser, Trash2, Pencil, Undo2, Download, Brush, Highlighter,
   Square, Circle as CircleIcon, Minus, ArrowRight, Type, Smile,
-  LayoutGrid, Sparkles, Wand2, Waves,
+  LayoutGrid, Sparkles, Wand2, Waves, Zap, Rainbow, SprayCan, PaintBucket, Plus,
 } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { useRoom, RoomMessage } from "@/lib/useRoom";
 import { TEMPLATES, buildTemplate, type TemplateId } from "@/lib/whiteboardTemplates";
 
-type Tool = "pen" | "marker" | "brush" | "rect" | "circle" | "line" | "arrow" | "text" | "sticker" | "eraser";
+type BrushTool = "pen" | "marker" | "brush" | "neon" | "rainbow" | "spray";
+type Tool = BrushTool | "rect" | "circle" | "line" | "arrow" | "text" | "sticker" | "eraser" | "fill";
 
-type Path = { type: "path"; tool: "pen" | "marker" | "brush"; color: string; size: number; points: { x: number; y: number; w?: number }[] };
+type Path = { type: "path"; tool: BrushTool; color: string; size: number; points: { x: number; y: number; w?: number }[] };
 type Shape = { type: "rect" | "circle" | "line" | "arrow"; color: string; size: number; x1: number; y1: number; x2: number; y2: number };
 type TextObj = { type: "text"; color: string; size: number; x: number; y: number; text: string };
 type Sticker = { type: "sticker"; emoji: string; x: number; y: number; size: number };
-type Obj = (Path | Shape | TextObj | Sticker) & { id: string };
+type Fill = { type: "fill"; color: string; x: number; y: number };
+type Obj = (Path | Shape | TextObj | Sticker | Fill) & { id: string };
 
 const COLORS = [
   "#1a1a1a", "#ffffff", "#DF9628", "#8E9337",
   "#e63946", "#f4a261", "#ffd166", "#06d6a0",
   "#3a86ff", "#7b2cbf", "#ff70a6", "#8d5524",
+];
+const EXTRA_COLORS = [
+  "#2b2d42", "#6c757d", "#adb5bd", "#f8edeb",
+  "#ff006e", "#fb5607", "#ffbe0b", "#8338ec",
+  "#3a0ca3", "#4361ee", "#4cc9f0", "#80ed99",
+  "#2a9d8f", "#264653", "#bc6c25", "#dda15e",
+  "#fec5bb", "#cdb4db", "#a2d2ff", "#bde0fe",
+  "#ffafcc", "#ffc8dd", "#b5179e", "#590d22",
 ];
 const STICKERS = ["⭐", "❤️", "😀", "😢", "😡", "😨", "🥰", "🤔", "🎈", "🌈", "☀️", "🌧️", "⚡", "🌸", "🐶", "🐱", "🦄", "🧸", "🎨", "🏠"];
 const BACKGROUNDS = [
