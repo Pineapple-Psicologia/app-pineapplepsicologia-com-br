@@ -378,12 +378,22 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
 
   const onUp = () => {
     drawingRef.current = false;
+    eraseModeRef.current = false;
+    lastPoint.current = null;
     const d = draftRef.current;
     if (!d) return;
     if (d.type === "path" && d.points.length < 2) { draftRef.current = null; redraw(); return; }
     if ("x2" in d && Math.hypot((d.x2 - d.x1), (d.y2 - d.y1)) < 0.005) { draftRef.current = null; redraw(); return; }
     commit(d);
     room.send("wb:draft", null);
+  };
+
+  const onLeave = () => {
+    if (localCursor.current) localCursor.current.inside = false;
+  };
+  const onEnter = (e: React.PointerEvent) => {
+    const p = pos(e);
+    localCursor.current = { x: p.x, y: p.y, t: Date.now(), inside: true };
   };
 
   const undo = () => {
