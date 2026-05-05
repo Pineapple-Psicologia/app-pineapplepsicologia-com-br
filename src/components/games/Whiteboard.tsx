@@ -223,26 +223,51 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
     });
   }, [room, redraw, bg]);
 
-  // peer cursor render loop
+  // overlay render loop (peer cursor + local brush preview)
   useEffect(() => {
     let raf = 0;
     const loop = () => {
-      const o = overlayRef.current; if (o) {
+      const o = overlayRef.current;
+      if (o) {
         const ctx = o.getContext("2d")!;
         ctx.clearRect(0, 0, o.width, o.height);
-        const c = peerCursor.current;
-        if (c && Date.now() - c.t < 3000) {
-          const x = c.x * o.width, y = c.y * o.height;
+        // peer cursor
+        const pc = peerCursor.current;
+        if (pc && Date.now() - pc.t < 3000) {
+          const x = pc.x * o.width, y = pc.y * o.height;
           ctx.fillStyle = "#DF9628";
           ctx.beginPath(); ctx.arc(x, y, 8, 0, Math.PI * 2); ctx.fill();
           ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
+        }
+        // local brush preview
+        const lc = localCursor.current;
+        if (lc && lc.inside && (tool === "pen" || tool === "marker" || tool === "brush" || tool === "eraser")) {
+          const x = lc.x * o.width, y = lc.y * o.height;
+          const dpr = window.devicePixelRatio || 1;
+          const baseW = tool === "marker" ? size * 2.5 : tool === "brush" ? size * 1.6 : size;
+          const r = (tool === "eraser" ? 14 : baseW / 2) * dpr;
+          ctx.beginPath();
+          ctx.arc(x, y, r, 0, Math.PI * 2);
+          if (tool === "eraser") {
+            ctx.strokeStyle = "rgba(230, 57, 70, 0.9)";
+            ctx.lineWidth = 2 * dpr;
+            ctx.setLineDash([4 * dpr, 4 * dpr]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+          } else {
+            ctx.fillStyle = color + (tool === "marker" ? "59" : "33");
+            ctx.fill();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 1.5 * dpr;
+            ctx.stroke();
+          }
         }
       }
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, []);
+  }, [tool, size, color]);
 
   // ---------- input ----------
   const pos = (e: React.PointerEvent) => {
