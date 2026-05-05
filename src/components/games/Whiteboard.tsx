@@ -10,7 +10,7 @@ import { TEMPLATES, buildTemplate, type TemplateId } from "@/lib/whiteboardTempl
 
 type Tool = "pen" | "marker" | "brush" | "rect" | "circle" | "line" | "arrow" | "text" | "sticker" | "eraser";
 
-type Path = { type: "path"; tool: "pen" | "marker" | "brush"; color: string; size: number; points: { x: number; y: number }[] };
+type Path = { type: "path"; tool: "pen" | "marker" | "brush"; color: string; size: number; points: { x: number; y: number; w?: number }[] };
 type Shape = { type: "rect" | "circle" | "line" | "arrow"; color: string; size: number; x1: number; y1: number; x2: number; y2: number };
 type TextObj = { type: "text"; color: string; size: number; x: number; y: number; text: string };
 type Sticker = { type: "sticker"; emoji: string; x: number; y: number; size: number };
