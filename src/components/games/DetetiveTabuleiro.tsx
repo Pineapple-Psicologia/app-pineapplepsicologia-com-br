@@ -501,16 +501,9 @@ export default function DetetiveTabuleiro({ room }: Props) {
 
           {isPsi ? (
             <div className="flex items-center gap-2">
-              <DiceWidget value={state.diceValue} rolling={state.diceRolling} />
-              {state.pendingAdvance > 0 || state.activeEvent ? (
-                <Button size="sm" onClick={() => openLocation(currentLoc.id)} className="bg-amber-600 hover:bg-amber-700 text-white font-bold">
-                  Jogar <ChevronRight className="w-4 h-4 ml-1" />
-                </Button>
-              ) : (
-                <Button size="sm" onClick={rollDice} disabled={state.diceRolling} className="bg-violet-600 hover:bg-violet-700 text-white font-bold">
-                  <Dices className="w-4 h-4 mr-1" /> Rolar
-                </Button>
-              )}
+              <Button size="sm" onClick={() => openLocation(currentLoc.id)} className="bg-amber-600 hover:bg-amber-700 text-white font-bold">
+                Abrir casa <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
             </div>
           ) : (
             <DiceWidget value={state.diceValue} rolling={state.diceRolling} />
@@ -518,26 +511,29 @@ export default function DetetiveTabuleiro({ room }: Props) {
         </div>
       )}
 
-      {/* Event card popup */}
-      {state.activeEvent && (
-        <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in" onClick={dismissEvent}>
+      {/* Hint popup (dice result) */}
+      {state.activeHint && (
+        <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in" onClick={dismissHint}>
           <div
             onClick={(e) => e.stopPropagation()}
-            className={`max-w-md w-full rounded-2xl border-4 shadow-2xl p-5 animate-scale-in ${
-              state.activeEvent.kind === "ajuda" ? "bg-gradient-to-br from-emerald-100 to-teal-50 border-emerald-500" :
-              state.activeEvent.kind === "desafio" ? "bg-gradient-to-br from-rose-100 to-orange-50 border-rose-500" :
-              state.activeEvent.kind === "atalho" ? "bg-gradient-to-br from-sky-100 to-cyan-50 border-sky-500" :
-              "bg-gradient-to-br from-violet-100 to-fuchsia-50 border-violet-500"
-            }`}
+            className="max-w-md w-full rounded-2xl border-4 shadow-2xl p-5 animate-scale-in bg-gradient-to-br from-emerald-100 to-teal-50 border-emerald-500"
           >
-            <div className="text-[10px] uppercase font-black tracking-wider opacity-70">
-              Carta de {state.activeEvent.kind} · +{state.activeEvent.bonus} pts
+            <div className="flex items-center justify-between">
+              <div className="text-[10px] uppercase font-black tracking-wider text-emerald-800">
+                💡 Ajuda do Detetive · {LOCATIONS.find((l) => l.id === state.activeHint!.locId)?.name}
+              </div>
+              <DiceWidget value={state.activeHint.diceValue} rolling={false} />
             </div>
-            <h3 className="text-xl font-black mt-1">{state.activeEvent.title}</h3>
-            <p className="mt-2 text-sm leading-relaxed">{state.activeEvent.text}</p>
+            <p className="mt-3 text-base leading-relaxed text-emerald-950 font-medium">
+              {state.activeHint.text}
+            </p>
+            <div className="mt-3 text-[11px] text-emerald-800/80">
+              Ajudas usadas nesta casa: <b>{state.hintsUsed[state.activeHint.locId] ?? 0}</b> · cada
+              ajuda reduz <b>{HINT_PENALTY} pts</b> do prêmio (mínimo {Math.round(HINT_MIN_RATIO * 100)}% garantido).
+            </div>
             {isPsi && (
-              <Button onClick={dismissEvent} className="mt-4 w-full bg-stone-800 hover:bg-stone-900 text-white font-bold">
-                Continuar caso
+              <Button onClick={dismissHint} className="mt-4 w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold">
+                Entendi, voltar ao caso
               </Button>
             )}
           </div>
