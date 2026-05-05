@@ -55,26 +55,92 @@ const DISTORTIONS = [
   { id: "emocional", emoji: "💭", label: "Raciocínio emocional" },
 ];
 
-type EventCardKind = "ajuda" | "desafio" | "revelacao" | "atalho";
-type EventCard = { kind: EventCardKind; title: string; text: string; bonus: number };
+// Per-location hints — the dice picks one of these to support the patient
+// answering the question of the current tile. Unlimited use, but each use
+// reduces the points earned for that tile (see HINT_PENALTY).
+const HINT_PENALTY = 5; // points subtracted per hint used (per location)
+const HINT_MIN_RATIO = 0.5; // never reward below half of the base value
 
-const EVENT_DECK: Record<EventCardKind, EventCard[]> = {
-  ajuda: [
-    { kind: "ajuda", title: "🤝 Aliado inesperado", text: "Lembre-se de uma vez em que você lidou bem com algo parecido. O que ajudou?", bonus: 10 },
-    { kind: "ajuda", title: "🌬️ Pausa do detetive", text: "Respire fundo 3 vezes antes de responder. Reduza 1 ponto na intensidade emocional.", bonus: 10 },
-    { kind: "ajuda", title: "💡 Pista extra", text: "Se um amigo querido vivesse isso, o que você diria pra ele?", bonus: 10 },
+const LOCATION_HINTS: Record<LocationId, string[]> = {
+  cena: [
+    "Foque nos fatos: o que aconteceu, quando, quem estava?",
+    "Imagine que você é uma câmera — descreva sem julgamento.",
+    "Comece com: 'Eu estava... e então...'",
+    "Evite 'sempre' ou 'nunca' — fale só desse momento.",
+    "O que alguém de fora veria nessa cena?",
+    "Resuma em 2 frases se estiver longo.",
   ],
-  desafio: [
-    { kind: "desafio", title: "🌀 Pegadinha cognitiva", text: "Encontre PELO MENOS uma evidência contrária ao pensamento — mesmo que pequena.", bonus: 15 },
-    { kind: "desafio", title: "🎭 Troca de papéis", text: "Reescreva o pensamento como se fosse uma manchete de jornal sensacionalista. Depois reescreva sóbria.", bonus: 15 },
-    { kind: "desafio", title: "⏳ Viagem no tempo", text: "Como você verá esse pensamento daqui a 1 ano?", bonus: 15 },
+  emocao: [
+    "Não existe emoção errada. Aponte a primeira que veio.",
+    "Pode haver mais de uma emoção misturada — marque todas.",
+    "Tristeza tem peso, raiva tem pressão. Qual combina?",
+    "Pense em uma cor pra essa emoção.",
+    "Intensidade 0 = nada · 100 = a mais forte que já sentiu.",
+    "Se está difícil nomear, escolha pelo emoji.",
   ],
-  revelacao: [
-    { kind: "revelacao", title: "✨ Revelação do caso", text: "Identifique uma distorção a mais que você não tinha visto.", bonus: 25 },
-    { kind: "revelacao", title: "🔓 Cofre aberto", text: "Que crença mais antiga está por trás desse pensamento?", bonus: 25 },
+  corpo: [
+    "Feche os olhos por 5s e escaneie de cima a baixo.",
+    "Aperto, calor, tremor, peso — qualquer sinal serve.",
+    "Onde sua respiração mudou?",
+    "Existe algum lugar 'travado'?",
+    "Compare com como o corpo está agora.",
+    "Pode marcar mais de uma região.",
   ],
-  atalho: [
-    { kind: "atalho", title: "🛤️ Atalho secreto", text: "Avance +1 casa extra! Mas você precisa explicar em uma frase o que aprendeu até aqui.", bonus: 20 },
+  interrogatorio: [
+    "Pensamento automático costuma ser curto e cru.",
+    "Comece com 'Eu...' ou 'Ele/ela...'",
+    "Não filtre — escreva o que veio mesmo.",
+    "Pergunta-chave: o que isso significou pra você?",
+    "Pode ser uma frase, uma imagem ou uma previsão.",
+    "Se vieram vários, escreva o mais 'quente'.",
+  ],
+  cartas: [
+    "Tudo ou nada: você usou 'sempre/nunca/nada'?",
+    "Catastrofização: imaginou o pior cenário possível?",
+    "Leitura mental: assumiu o que o outro pensa?",
+    "Adivinhação: previu o futuro sem prova?",
+    "Rotulação: colou um rótulo fixo em alguém (ou em você)?",
+    "Pode marcar mais de uma carta.",
+  ],
+  evidencias: [
+    "Evidência = fato observável, não opinião.",
+    "A FAVOR: o que de fato sustenta o pensamento?",
+    "CONTRA: já vi isso ser diferente alguma vez?",
+    "Pergunte: 'Que prova eu levaria a um tribunal?'",
+    "Mesmo evidências fracas valem — anote.",
+    "Se o lado CONTRA está vazio, pense em exceções.",
+  ],
+  valores: [
+    "Valor ≠ meta. É o tipo de pessoa que você quer ser.",
+    "O que importa pra mim AQUI, nessa situação?",
+    "Pense em alguém que admira — que valor ele carrega?",
+    "Coragem, cuidado, honestidade, curiosidade — cabe algum?",
+    "Não precisa ser nobre, só verdadeiro pra você.",
+    "Complete: 'Eu queria agir como alguém que...'",
+  ],
+  reframe: [
+    "Reframe não é pensamento positivo forçado.",
+    "Junte evidências CONTRA + seus valores.",
+    "Comece com 'Talvez...' ou 'É possível que...'",
+    "Mais justo, não mais bonito.",
+    "Se um amigo dissesse isso, como você responderia?",
+    "Realista — sem negar o que é difícil.",
+  ],
+  plano: [
+    "Pequeno > grande. O que dá pra fazer hoje?",
+    "Concreto: quando, onde, como?",
+    "Algo que dependa SÓ de você.",
+    "Alinhado com o valor da bússola.",
+    "Se está grande, quebre em 1 passo bem pequeno.",
+    "Termine com uma hora ou data.",
+  ],
+  arquivo: [
+    "Releia o caminho — algo te surpreende?",
+    "O que você leva dessa sessão?",
+    "Em uma palavra: como você se sente agora?",
+    "Note a diferença entre o pensamento antigo e o novo.",
+    "Esse caso fica arquivado pra consultar depois.",
+    "Você cumpriu o ciclo. Bom trabalho. 🏆",
   ],
 };
 
@@ -91,6 +157,8 @@ const BADGES: { id: string; emoji: string; label: string; check: (s: State) => b
   { id: "caso-fechado",    emoji: "🏆", label: "Caso encerrado",             check: (s) => s.caseClosed },
 ];
 
+type ActiveHint = { locId: LocationId; text: string; index: number; diceValue: number };
+
 type State = {
   currentIdx: number;
   completed: LocationId[];
@@ -106,11 +174,11 @@ type State = {
   reframe: string;
   plano: string;
   caseClosed: boolean;
-  // game master mechanics
+  // dice / hint mechanics
   diceValue: number | null;
   diceRolling: boolean;
-  pendingAdvance: number; // tiles still to advance from last roll
-  activeEvent: EventCard | null;
+  hintsUsed: Partial<Record<LocationId, number>>;
+  activeHint: ActiveHint | null;
   points: number;
   earnedBadges: string[];
 };
@@ -132,8 +200,8 @@ const INITIAL: State = {
   caseClosed: false,
   diceValue: null,
   diceRolling: false,
-  pendingAdvance: 0,
-  activeEvent: null,
+  hintsUsed: {},
+  activeHint: null,
   points: 0,
   earnedBadges: [],
 };
@@ -163,19 +231,11 @@ function saveHistory(item: CaseHistoryItem) {
   localStorage.setItem(HISTORY_KEY, JSON.stringify(list.slice(0, 20)));
 }
 
-function pickEventCard(diceVal: number): EventCard | null {
-  if (diceVal <= 2) return null;
-  if (diceVal === 3 || diceVal === 4) {
-    const deck = EVENT_DECK.ajuda;
-    return deck[Math.floor(Math.random() * deck.length)];
-  }
-  if (diceVal === 5) {
-    const deck = Math.random() < 0.7 ? EVENT_DECK.desafio : EVENT_DECK.atalho;
-    return deck[Math.floor(Math.random() * deck.length)];
-  }
-  // 6
-  const deck = EVENT_DECK.revelacao;
-  return deck[Math.floor(Math.random() * deck.length)];
+function pickHintForLocation(locId: LocationId, used: number): { text: string; index: number } {
+  const pool = LOCATION_HINTS[locId] ?? [];
+  if (pool.length === 0) return { text: "Sem dica disponível.", index: 0 };
+  const index = used < pool.length ? used : Math.floor(Math.random() * pool.length);
+  return { text: pool[index] ?? pool[0], index };
 }
 
 export default function DetetiveTabuleiro({ room }: Props) {
@@ -186,11 +246,12 @@ export default function DetetiveTabuleiro({ room }: Props) {
   const [showCelebration, setShowCelebration] = useState(false);
   const celebratedRef = useRef(false);
 
-  // Determine if this user is the game master (psi)
-  // We infer role from URL search params since useRoom doesn't expose it directly here.
-  const isPsi = useMemo(() => {
-    if (typeof window === "undefined") return false;
-    return new URLSearchParams(window.location.search).get("role") === "psi";
+  // Determine if this user is the game master (psi). We start as `false` so
+  // the SSR markup matches the initial client render, then upgrade after
+  // mount based on the URL — avoids React hydration mismatch.
+  const [isPsi, setIsPsi] = useState(false);
+  useEffect(() => {
+    setIsPsi(new URLSearchParams(window.location.search).get("role") === "psi");
   }, []);
 
   useEffect(() => {
@@ -238,14 +299,19 @@ export default function DetetiveTabuleiro({ room }: Props) {
     setState((prev) => {
       const wasCompleted = prev.completed.includes(id);
       const completed = wasCompleted ? prev.completed : [...prev.completed, id];
-      const earnedPoints = wasCompleted ? 0 : LOCATIONS[idx].points;
+      // Hint penalty: each hint used in this location reduces the points,
+      // but never below HINT_MIN_RATIO of the base value.
+      const base = LOCATIONS[idx].points;
+      const used = prev.hintsUsed[id] ?? 0;
+      const minPts = Math.ceil(base * HINT_MIN_RATIO);
+      const earnedPoints = wasCompleted ? 0 : Math.max(minPts, base - used * HINT_PENALTY);
       const next: State = {
         ...prev,
         completed,
         currentIdx: Math.min(Math.max(prev.currentIdx, idx + 1), LOCATIONS.length - 1),
         caseClosed: isLast || prev.caseClosed,
         points: prev.points + earnedPoints,
-        pendingAdvance: Math.max(0, prev.pendingAdvance - 1),
+        activeHint: null,
       };
       next.earnedBadges = BADGES.filter((b) => b.check(next)).map((b) => b.id);
       room.send("detective-board:state", next);
@@ -270,34 +336,37 @@ export default function DetetiveTabuleiro({ room }: Props) {
     }
   };
 
-  const rollDice = () => {
+  // Roll the dice to get a hint for the CURRENT (or given) location.
+  // Unlimited use; each call increments hintsUsed[locId] which will reduce
+  // the final points awarded for that tile.
+  const rollDice = (forLocId?: LocationId) => {
     if (state.diceRolling || state.caseClosed) return;
-    update({ diceRolling: true, diceValue: null });
+    const targetLoc = forLocId ?? LOCATIONS[state.currentIdx].id;
+    update({ diceRolling: true, diceValue: null, activeHint: null });
     let ticks = 0;
     const interval = setInterval(() => {
       ticks++;
       const v = 1 + Math.floor(Math.random() * 6);
-      if (ticks >= 12) {
+      if (ticks >= 10) {
         clearInterval(interval);
         const finalVal = 1 + Math.floor(Math.random() * 6);
-        const card = pickEventCard(finalVal);
-        const advanceBy = finalVal === 5 && card?.kind === "atalho" ? 2 : 1;
-        const bonus = card?.bonus ?? 0;
-        update((prev) => ({
-          diceRolling: false,
-          diceValue: finalVal,
-          pendingAdvance: advanceBy,
-          activeEvent: card,
-          points: prev.points + bonus,
-        }));
+        update((prev) => {
+          const usedBefore = prev.hintsUsed[targetLoc] ?? 0;
+          const { text, index } = pickHintForLocation(targetLoc, usedBefore);
+          return {
+            diceRolling: false,
+            diceValue: finalVal,
+            hintsUsed: { ...prev.hintsUsed, [targetLoc]: usedBefore + 1 },
+            activeHint: { locId: targetLoc, text, index, diceValue: finalVal },
+          };
+        });
       } else {
-        // visual flicker
         setState((s) => ({ ...s, diceValue: v }));
       }
     }, 80);
   };
 
-  const dismissEvent = () => update({ activeEvent: null });
+  const dismissHint = () => update({ activeHint: null });
 
   const reset = () => {
     setState(INITIAL);
@@ -432,16 +501,9 @@ export default function DetetiveTabuleiro({ room }: Props) {
 
           {isPsi ? (
             <div className="flex items-center gap-2">
-              <DiceWidget value={state.diceValue} rolling={state.diceRolling} />
-              {state.pendingAdvance > 0 || state.activeEvent ? (
-                <Button size="sm" onClick={() => openLocation(currentLoc.id)} className="bg-amber-600 hover:bg-amber-700 text-white font-bold">
-                  Jogar <ChevronRight className="w-4 h-4 ml-1" />
-                </Button>
-              ) : (
-                <Button size="sm" onClick={rollDice} disabled={state.diceRolling} className="bg-violet-600 hover:bg-violet-700 text-white font-bold">
-                  <Dices className="w-4 h-4 mr-1" /> Rolar
-                </Button>
-              )}
+              <Button size="sm" onClick={() => openLocation(currentLoc.id)} className="bg-amber-600 hover:bg-amber-700 text-white font-bold">
+                Abrir casa <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
             </div>
           ) : (
             <DiceWidget value={state.diceValue} rolling={state.diceRolling} />
@@ -449,26 +511,29 @@ export default function DetetiveTabuleiro({ room }: Props) {
         </div>
       )}
 
-      {/* Event card popup */}
-      {state.activeEvent && (
-        <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in" onClick={dismissEvent}>
+      {/* Hint popup (dice result) */}
+      {state.activeHint && (
+        <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in" onClick={dismissHint}>
           <div
             onClick={(e) => e.stopPropagation()}
-            className={`max-w-md w-full rounded-2xl border-4 shadow-2xl p-5 animate-scale-in ${
-              state.activeEvent.kind === "ajuda" ? "bg-gradient-to-br from-emerald-100 to-teal-50 border-emerald-500" :
-              state.activeEvent.kind === "desafio" ? "bg-gradient-to-br from-rose-100 to-orange-50 border-rose-500" :
-              state.activeEvent.kind === "atalho" ? "bg-gradient-to-br from-sky-100 to-cyan-50 border-sky-500" :
-              "bg-gradient-to-br from-violet-100 to-fuchsia-50 border-violet-500"
-            }`}
+            className="max-w-md w-full rounded-2xl border-4 shadow-2xl p-5 animate-scale-in bg-gradient-to-br from-emerald-100 to-teal-50 border-emerald-500"
           >
-            <div className="text-[10px] uppercase font-black tracking-wider opacity-70">
-              Carta de {state.activeEvent.kind} · +{state.activeEvent.bonus} pts
+            <div className="flex items-center justify-between">
+              <div className="text-[10px] uppercase font-black tracking-wider text-emerald-800">
+                💡 Ajuda do Detetive · {LOCATIONS.find((l) => l.id === state.activeHint!.locId)?.name}
+              </div>
+              <DiceWidget value={state.activeHint.diceValue} rolling={false} />
             </div>
-            <h3 className="text-xl font-black mt-1">{state.activeEvent.title}</h3>
-            <p className="mt-2 text-sm leading-relaxed">{state.activeEvent.text}</p>
+            <p className="mt-3 text-base leading-relaxed text-emerald-950 font-medium">
+              {state.activeHint.text}
+            </p>
+            <div className="mt-3 text-[11px] text-emerald-800/80">
+              Ajudas usadas nesta casa: <b>{state.hintsUsed[state.activeHint.locId] ?? 0}</b> · cada
+              ajuda reduz <b>{HINT_PENALTY} pts</b> do prêmio (mínimo {Math.round(HINT_MIN_RATIO * 100)}% garantido).
+            </div>
             {isPsi && (
-              <Button onClick={dismissEvent} className="mt-4 w-full bg-stone-800 hover:bg-stone-900 text-white font-bold">
-                Continuar caso
+              <Button onClick={dismissHint} className="mt-4 w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold">
+                Entendi, voltar ao caso
               </Button>
             )}
           </div>
@@ -513,7 +578,17 @@ export default function DetetiveTabuleiro({ room }: Props) {
       {openLoc && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in" onClick={closeLocation}>
           <div className="bg-card rounded-2xl border-2 border-border shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-auto animate-scale-in" onClick={(e) => e.stopPropagation()}>
-            <LocationContent locId={openLoc} state={state} update={update} onComplete={() => completeLocation(openLoc)} onClose={closeLocation} isPsi={isPsi} />
+            <LocationContent
+              locId={openLoc}
+              state={state}
+              update={update}
+              onComplete={() => completeLocation(openLoc)}
+              onClose={closeLocation}
+              isPsi={isPsi}
+              onAskHelp={() => rollDice(openLoc)}
+              hintsUsed={state.hintsUsed[openLoc] ?? 0}
+              diceRolling={state.diceRolling}
+            />
           </div>
         </div>
       )}
@@ -540,25 +615,53 @@ function LocationContent({
   onComplete,
   onClose,
   isPsi,
+  onAskHelp,
+  hintsUsed,
+  diceRolling,
 }: {
   locId: LocationId;
   state: State;
-  update: (p: Partial<State>) => void;
+  update: (p: Partial<State> | ((prev: State) => Partial<State>)) => void;
   onComplete: () => void;
   onClose: () => void;
   isPsi: boolean;
+  onAskHelp: () => void;
+  hintsUsed: number;
+  diceRolling: boolean;
 }) {
   const loc = LOCATIONS.find((l) => l.id === locId)!;
+  const projectedPoints = Math.max(
+    Math.ceil(loc.points * HINT_MIN_RATIO),
+    loc.points - hintsUsed * HINT_PENALTY
+  );
   const Header = (
     <div className="p-4 border-b bg-gradient-to-r from-amber-100 to-amber-50 dark:from-stone-800 dark:to-stone-900 rounded-t-2xl">
       <div className="flex items-start justify-between gap-2">
-        <div>
+        <div className="flex-1">
           <div className="text-3xl">{loc.emoji}</div>
           <h3 className="text-xl font-bold">{loc.name}</h3>
-          <p className="text-xs text-muted-foreground">{loc.hint} · vale {loc.points} pts</p>
+          <p className="text-xs text-muted-foreground">
+            {loc.hint} · vale <b>{projectedPoints}</b> pts
+            {hintsUsed > 0 && <span className="text-orange-700"> (–{loc.points - projectedPoints} por {hintsUsed} ajuda{hintsUsed > 1 ? "s" : ""})</span>}
+          </p>
         </div>
         <button onClick={onClose} className="text-2xl text-muted-foreground hover:text-foreground">✕</button>
       </div>
+      {isPsi && (
+        <div className="mt-3 flex items-center gap-2 flex-wrap">
+          <Button
+            size="sm"
+            onClick={onAskHelp}
+            disabled={diceRolling}
+            className="bg-violet-600 hover:bg-violet-700 text-white font-bold"
+          >
+            <Dices className="w-4 h-4 mr-1" /> Pedir ajuda (rolar dado)
+          </Button>
+          <span className="text-[11px] text-muted-foreground">
+            Pedir ajuda é ótimo — mostra interesse. Cada ajuda reduz {HINT_PENALTY} pts (mín. {Math.ceil(loc.points * HINT_MIN_RATIO)} garantidos).
+          </span>
+        </div>
+      )}
     </div>
   );
 
