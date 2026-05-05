@@ -211,13 +211,14 @@ export default function DetetiveTabuleiro({ room }: Props) {
     }
   }, [state.caseClosed]);
 
-  const update = (patch: Partial<State>) => {
-    const next = { ...state, ...patch };
-    // recompute badges
-    const earned = BADGES.filter((b) => b.check(next)).map((b) => b.id);
-    next.earnedBadges = earned;
-    setState(next);
-    room.send("detective-board:state", next);
+  const update = (patch: Partial<State> | ((prev: State) => Partial<State>)) => {
+    setState((prev) => {
+      const resolvedPatch = typeof patch === "function" ? patch(prev) : patch;
+      const next = { ...prev, ...resolvedPatch };
+      next.earnedBadges = BADGES.filter((b) => b.check(next)).map((b) => b.id);
+      room.send("detective-board:state", next);
+      return next;
+    });
   };
 
   const openLocation = (id: LocationId) => {
@@ -232,36 +233,68 @@ export default function DetetiveTabuleiro({ room }: Props) {
 
   const completeLocation = (id: LocationId) => {
     const idx = LOCATIONS.findIndex((l) => l.id === id);
-    const wasCompleted = state.completed.includes(id);
-    const completed = wasCompleted ? state.completed : [...state.completed, id];
     const isLast = id === "arquivo";
-    const earnedPoints = wasCompleted ? 0 : LOCATIONS[idx].points;
-    const next: State = {
-      ...state,
-      completed,
-      currentIdx: Math.min(Math.max(state.currentIdx, idx + 1), LOCATIONS.length - 1),
-      caseClosed: isLast || state.caseClosed,
-      points: state.points + earnedPoints,
-      pendingAdvance: Math.max(0, state.pendingAdvance - 1),
-    };
-    next.earnedBadges = BADGES.filter((b) => b.check(next)).map((b) => b.id);
-    setState(next);
-    room.send("detective-board:state", next);
+    let snapshot: State | null = null;
+    setState((prev) => {
+      const wasCompleted = prev.completed.includes(id);
+      const completed = wasCompleted ? prev.completed : [...prev.completed, id];
+      const earnedPoints = wasCompleted ? 0 : LOCATIONS[idx].points;
+      const next: State = {
+        ...prev,
+        completed,
+        currentIdx: Math.min(Math.max(prev.currentIdx, idx + 1), LOCATIONS.length - 1),
+        caseClosed: isLast || prev.caseClosed,
+        points: prev.points + earnedPoints,
+        pendingAdvance: Math.max(0, prev.pendingAdvance - 1),
+      };
+      next.earnedBadges = BADGES.filter((b) => b.check(next)).map((b) => b.id);
+      room.send("detective-board:state", next);
+      snapshot = next;
+      return next;
+    });
     setOpenLoc(null);
     room.send("detective-board:open", null);
 
-    if (isLast && !state.caseClosed) {
+    if (isLast && snapshot && !state.caseClosed) {
+      const finalSnap = snapshot as State;
       const item: CaseHistoryItem = {
         date: Date.now(),
-        thought: state.thought,
-        reframe: state.reframe,
-        plano: state.plano,
-        points: next.points,
-        badges: next.earnedBadges.length,
+        thought: finalSnap.thought,
+        reframe: finalSnap.reframe,
+        plano: finalSnap.plano,
+        points: finalSnap.points,
+        badges: finalSnap.earnedBadges.length,
       };
       saveHistory(item);
       setHistory(loadHistory());
     }
+  };
+
+  const rollDice = () => {
+    if (state.diceRolling || state.caseClosed) return;
+    update({ diceRolling: true, diceValue: null });
+    let ticks = 0;
+    const interval = setInterval(() => {
+      ticks++;
+      const v = 1 + Math.floor(Math.random() * 6);
+      if (ticks >= 12) {
+        clearInterval(interval);
+        const finalVal = 1 + Math.floor(Math.random() * 6);
+        const card = pickEventCard(finalVal);
+        const advanceBy = finalVal === 5 && card?.kind === "atalho" ? 2 : 1;
+        const bonus = card?.bonus ?? 0;
+        update((prev) => ({
+          diceRolling: false,
+          diceValue: finalVal,
+          pendingAdvance: advanceBy,
+          activeEvent: card,
+          points: prev.points + bonus,
+        }));
+      } else {
+        // visual flicker
+        setState((s) => ({ ...s, diceValue: v }));
+      }
+    }, 80);
   };
 
   const rollDice = () => {
