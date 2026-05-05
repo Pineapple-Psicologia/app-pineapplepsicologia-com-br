@@ -313,6 +313,14 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
 
   const changeBg = (b: BgId) => { setBg(b); room.send("wb:bg", b); };
 
+  const applyTemplate = (id: TemplateId) => {
+    const objs = buildTemplate(id);
+    objectsRef.current.push(...objs);
+    objs.forEach((o) => room.send("wb:add", o));
+    setShowTemplates(false);
+    redraw();
+  };
+
   const download = () => {
     const c = canvasRef.current!;
     const link = document.createElement("a");
