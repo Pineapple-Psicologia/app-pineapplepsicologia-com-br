@@ -52,6 +52,9 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
   const startRef = useRef<{ x: number; y: number } | null>(null);
   const peerCursor = useRef<{ x: number; y: number; t: number } | null>(null);
   const lastSentCursor = useRef(0);
+  const localCursor = useRef<{ x: number; y: number; t: number; inside: boolean } | null>(null);
+  const lastPoint = useRef<{ x: number; y: number; t: number } | null>(null);
+  const eraseModeRef = useRef(false);
 
   // ---------- drawing ----------
   const drawObj = useCallback((ctx: CanvasRenderingContext2D, w: number, h: number, o: Obj) => {
