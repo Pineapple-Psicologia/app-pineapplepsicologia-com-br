@@ -422,6 +422,10 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
       setTextInput({ x: p.x, y: p.y, value: "" });
       return;
     }
+    if (activeTool === "fill") {
+      commit({ id: uid(), type: "fill", color, x: p.x, y: p.y });
+      return;
+    }
     if (activeTool === "eraser") {
       const r = 0.02;
       const hit = [...objectsRef.current].reverse().find((o) => isNear(o, p, r));
@@ -438,10 +442,11 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
     startRef.current = p;
     lastPoint.current = { x: p.x, y: p.y, t: performance.now() };
     smoothedRef.current = { x: p.x, y: p.y };
-    if (activeTool === "pen" || activeTool === "marker" || activeTool === "brush") {
+    const isBrush = activeTool === "pen" || activeTool === "marker" || activeTool === "brush" || activeTool === "neon" || activeTool === "rainbow" || activeTool === "spray";
+    if (isBrush) {
       const pressure = e.pressure && e.pressure > 0 && e.pressure !== 0.5 ? e.pressure : 1;
       const w = activeTool === "brush" ? pressure : 1;
-      draftRef.current = { id: uid(), type: "path", tool: activeTool, color, size, points: [{ x: p.x, y: p.y, w }] };
+      draftRef.current = { id: uid(), type: "path", tool: activeTool as BrushTool, color, size, points: [{ x: p.x, y: p.y, w }] };
     } else {
       draftRef.current = { id: uid(), type: activeTool as any, color, size, x1: p.x, y1: p.y, x2: p.x, y2: p.y };
     }
