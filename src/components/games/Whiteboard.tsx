@@ -882,24 +882,27 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
           }}
         />
         <canvas ref={overlayRef} className="absolute inset-0 w-full h-full pointer-events-none" />
-        {textInput && (
-          <div
-            className="absolute z-10"
-            style={{ left: `${textInput.x * 100}%`, top: `${textInput.y * 100}%` }}
-          >
-            <textarea
-              autoFocus
-              value={textInput.value}
-              onChange={(e) => setTextInput({ ...textInput, value: e.target.value })}
-              onBlur={submitText}
-              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submitText(); } if (e.key === "Escape") setTextInput(null); }}
-              className="bg-white/90 border-2 border-primary rounded-md px-2 py-1 text-sm font-semibold outline-none shadow-lg"
-              style={{ color: textInput.color ?? color, fontSize: (textInput.size ?? size) * 4 }}
-              placeholder="Digite..."
-              rows={2}
-            />
-          </div>
-        )}
+        <div
+          className="absolute z-10"
+          style={{
+            left: `${(textInput?.x ?? 0) * 100}%`,
+            top: `${(textInput?.y ?? 0) * 100}%`,
+            visibility: textInput ? "visible" : "hidden",
+            pointerEvents: textInput ? "auto" : "none",
+          }}
+        >
+          <textarea
+            ref={textareaRef}
+            value={textInput?.value ?? ""}
+            onChange={(e) => textInput && setTextInput({ ...textInput, value: e.target.value })}
+            onBlur={() => { if (textInput) submitText(); }}
+            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submitText(); } if (e.key === "Escape") setTextInput(null); }}
+            className="bg-white/90 border-2 border-primary rounded-md px-2 py-1 text-sm font-semibold outline-none shadow-lg"
+            style={{ color: textInput?.color ?? color, fontSize: ((textInput?.size ?? size)) * 4 }}
+            placeholder="Digite..."
+            rows={2}
+          />
+        </div>
       </div>
     </div>
   );
