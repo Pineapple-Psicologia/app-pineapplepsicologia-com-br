@@ -78,6 +78,8 @@ function SalaPage() {
           <Termometro room={room} />
         ) : game === "detetive" ? (
           <Detetive room={room} />
+        ) : game === "detetive-tabuleiro" ? (
+          <DetetiveTabuleiro room={room} />
         ) : (
           <Whiteboard room={room} />
         )}
