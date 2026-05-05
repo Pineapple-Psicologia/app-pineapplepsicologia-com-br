@@ -1,4 +1,4 @@
-export type GameId = "whiteboard" | "termometro" | "detetive";
+export type GameId = "whiteboard" | "termometro" | "detetive" | "detetive-tabuleiro";
 
 export type GameMeta = {
   id: GameId;
