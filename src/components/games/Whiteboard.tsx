@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import {
   Eraser, Trash2, Pencil, Undo2, Download, Brush, Highlighter,
   Square, Circle as CircleIcon, Minus, ArrowRight, Type, Smile,
-  LayoutGrid, Sparkles,
+  LayoutGrid, Sparkles, Wand2, Waves,
 } from "lucide-react";
 import type { useRoom, RoomMessage } from "@/lib/useRoom";
 import { TEMPLATES, buildTemplate, type TemplateId } from "@/lib/whiteboardTemplates";
@@ -44,6 +44,8 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
   const [sticker, setSticker] = useState(STICKERS[0]);
   const [showStickers, setShowStickers] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [stabilize, setStabilize] = useState(true);
+  const [shapeAssist, setShapeAssist] = useState(true);
   const [textInput, setTextInput] = useState<{ x: number; y: number; value: string } | null>(null);
 
   const objectsRef = useRef<Obj[]>([]);
@@ -54,6 +56,7 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
   const lastSentCursor = useRef(0);
   const localCursor = useRef<{ x: number; y: number; t: number; inside: boolean } | null>(null);
   const lastPoint = useRef<{ x: number; y: number; t: number } | null>(null);
+  const smoothedRef = useRef<{ x: number; y: number } | null>(null);
   const eraseModeRef = useRef(false);
 
   // ---------- drawing ----------
@@ -315,6 +318,7 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
     drawingRef.current = true;
     startRef.current = p;
     lastPoint.current = { x: p.x, y: p.y, t: performance.now() };
+    smoothedRef.current = { x: p.x, y: p.y };
     if (activeTool === "pen" || activeTool === "marker" || activeTool === "brush") {
       const pressure = e.pressure && e.pressure > 0 && e.pressure !== 0.5 ? e.pressure : 1;
       const w = activeTool === "brush" ? pressure : 1;
@@ -349,6 +353,16 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
     }
     const d = draftRef.current; if (!d) return;
     if (d.type === "path") {
+      // stabilizer (lazy brush): smooth target point toward cursor
+      let sx = p.x, sy = p.y;
+      if (stabilize && smoothedRef.current) {
+        const alpha = 0.35; // lower = more smoothing
+        sx = smoothedRef.current.x + (p.x - smoothedRef.current.x) * alpha;
+        sy = smoothedRef.current.y + (p.y - smoothedRef.current.y) * alpha;
+        smoothedRef.current = { x: sx, y: sy };
+      } else {
+        smoothedRef.current = { x: p.x, y: p.y };
+      }
       // velocity-based width for brush; pressure overrides if available
       let w = 1;
       if (d.tool === "brush") {
@@ -360,17 +374,16 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
           const tNow = performance.now();
           if (lp) {
             const dt = Math.max(1, tNow - lp.t);
-            const dist = Math.hypot(p.x - lp.x, p.y - lp.y);
-            const speed = dist / dt; // normalized units / ms
-            // map speed to width: slow = thick (1.0), fast = thin (0.35)
+            const dist = Math.hypot(sx - lp.x, sy - lp.y);
+            const speed = dist / dt;
             const target = Math.max(0.35, Math.min(1, 1 - speed * 80));
             const prev = (d.points[d.points.length - 1]?.w ?? 1);
-            w = prev * 0.7 + target * 0.3; // smooth
+            w = prev * 0.7 + target * 0.3;
           }
         }
       }
-      d.points.push({ x: p.x, y: p.y, w });
-      lastPoint.current = { x: p.x, y: p.y, t: performance.now() };
+      d.points.push({ x: sx, y: sy, w });
+      lastPoint.current = { x: sx, y: sy, t: performance.now() };
     } else if ("x2" in d) { d.x2 = p.x; d.y2 = p.y; }
     redraw();
     if (now - (lastSentCursor.current - 40) > 60) room.send("wb:draft", d);
@@ -380,11 +393,18 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
     drawingRef.current = false;
     eraseModeRef.current = false;
     lastPoint.current = null;
+    smoothedRef.current = null;
     const d = draftRef.current;
     if (!d) return;
     if (d.type === "path" && d.points.length < 2) { draftRef.current = null; redraw(); return; }
     if ("x2" in d && Math.hypot((d.x2 - d.x1), (d.y2 - d.y1)) < 0.005) { draftRef.current = null; redraw(); return; }
-    commit(d);
+    // shape recognition: convert pen strokes into clean shapes if user drew one
+    let toCommit: Obj = d;
+    if (shapeAssist && d.type === "path" && d.tool === "pen" && d.points.length > 8) {
+      const recognized = recognizeShape(d);
+      if (recognized) toCommit = { ...recognized, id: d.id };
+    }
+    commit(toCommit);
     room.send("wb:draft", null);
   };
 
@@ -505,7 +525,21 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
           ))}
         </div>
 
-        <div className="ml-auto flex gap-1.5">
+        <div className="ml-auto flex flex-wrap gap-1.5 items-center">
+          <button
+            onClick={() => setStabilize((v) => !v)}
+            title="Estabilizador: deixa o traço suave e firme, sem tremer"
+            className={`flex items-center gap-1 text-[11px] font-bold px-2 py-1.5 rounded-md border-2 transition ${stabilize ? "bg-accent/20 border-accent text-foreground" : "bg-card border-border text-muted-foreground"}`}
+          >
+            <Waves className="w-3.5 h-3.5" />Firme
+          </button>
+          <button
+            onClick={() => setShapeAssist((v) => !v)}
+            title="Forma Mágica: endireita círculos, quadrados e linhas desenhados à mão"
+            className={`flex items-center gap-1 text-[11px] font-bold px-2 py-1.5 rounded-md border-2 transition ${shapeAssist ? "bg-accent/20 border-accent text-foreground" : "bg-card border-border text-muted-foreground"}`}
+          >
+            <Wand2 className="w-3.5 h-3.5" />Forma Mágica
+          </button>
           <Button
             size="sm"
             variant={showTemplates ? "default" : "outline"}
@@ -603,4 +637,63 @@ function isNear(o: Obj, p: { x: number; y: number }, r: number): boolean {
     return p.x >= minX && p.x <= maxX && p.y >= minY && p.y <= maxY;
   }
   return false;
+}
+
+// Recognize whether a freehand pen stroke is meant to be a circle, rectangle or straight line.
+function recognizeShape(d: Path): Shape | null {
+  const pts = d.points;
+  if (pts.length < 8) return null;
+  let minX = 1, minY = 1, maxX = 0, maxY = 0;
+  for (const p of pts) {
+    if (p.x < minX) minX = p.x;
+    if (p.y < minY) minY = p.y;
+    if (p.x > maxX) maxX = p.x;
+    if (p.y > maxY) maxY = p.y;
+  }
+  const w = maxX - minX, h = maxY - minY;
+  if (w < 0.02 && h < 0.02) return null;
+
+  const first = pts[0], last = pts[pts.length - 1];
+  const closeDist = Math.hypot(last.x - first.x, last.y - first.y);
+  const diag = Math.hypot(w, h);
+  const closed = closeDist < diag * 0.25;
+
+  // Straight line: small bbox in one dimension OR very direct path
+  let pathLen = 0;
+  for (let i = 1; i < pts.length; i++) pathLen += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y);
+  const directness = diag / Math.max(pathLen, 0.0001);
+  if (!closed && directness > 0.92 && pathLen > 0.05) {
+    return { type: "line", color: d.color, size: d.size, x1: first.x, y1: first.y, x2: last.x, y2: last.y };
+  }
+
+  if (!closed) return null;
+
+  // Circle vs rectangle: measure how well points fit a circle around centroid
+  const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+  const rx = w / 2, ry = h / 2;
+  const r = (rx + ry) / 2;
+  let circleErr = 0;
+  for (const p of pts) {
+    const dist = Math.hypot(p.x - cx, p.y - cy);
+    circleErr += Math.abs(dist - r);
+  }
+  circleErr /= pts.length;
+  // Rectangle: most points near the bbox edges
+  let rectErr = 0;
+  for (const p of pts) {
+    const dx = Math.min(Math.abs(p.x - minX), Math.abs(p.x - maxX));
+    const dy = Math.min(Math.abs(p.y - minY), Math.abs(p.y - maxY));
+    rectErr += Math.min(dx, dy);
+  }
+  rectErr /= pts.length;
+
+  const aspect = Math.min(w, h) / Math.max(w, h);
+  // Prefer circle when aspect is roughly square AND fit is tight
+  if (circleErr < r * 0.22 && circleErr < rectErr * 1.1) {
+    return { type: "circle", color: d.color, size: d.size, x1: minX, y1: minY, x2: maxX, y2: maxY };
+  }
+  if (rectErr < diag * 0.04 && aspect > 0.25) {
+    return { type: "rect", color: d.color, size: d.size, x1: minX, y1: minY, x2: maxX, y2: maxY };
+  }
+  return null;
 }
