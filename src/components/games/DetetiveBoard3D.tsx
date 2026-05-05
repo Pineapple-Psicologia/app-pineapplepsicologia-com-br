@@ -261,18 +261,40 @@ export default function DetetiveBoard3D({ locations, currentIdx, completed, onSe
         <pointLight position={[6, 5, 5]} intensity={15} color="#f472b6" distance={18} decay={1.5} />
         <MovingLight />
 
-        {/* soft floating board (no heavy table — diorama scene shows behind) */}
+        {/* colorful Pixar-style floating board */}
         <group>
-          {/* subtle round platform */}
+          {/* outer pink ring */}
+          <mesh receiveShadow position={[0, 0.18, 0]}>
+            <cylinderGeometry args={[8.0, 8.2, 0.3, 64]} />
+            <meshStandardMaterial color="#f472b6" roughness={0.55} transparent opacity={0.95} />
+          </mesh>
+          {/* mid teal ring */}
           <mesh receiveShadow position={[0, 0.27, 0]}>
-            <cylinderGeometry args={[7.6, 7.8, 0.35, 64]} />
-            <meshStandardMaterial color="#fef3c7" roughness={0.6} transparent opacity={0.92} />
+            <cylinderGeometry args={[7.4, 7.5, 0.32, 64]} />
+            <meshStandardMaterial color="#5eead4" roughness={0.5} transparent opacity={0.95} />
           </mesh>
-          {/* decorative inner border */}
-          <mesh position={[0, 0.46, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-            <ringGeometry args={[7.0, 7.35, 64]} />
-            <meshStandardMaterial color="#b45309" side={THREE.DoubleSide} />
+          {/* inner cream platform */}
+          <mesh receiveShadow position={[0, 0.34, 0]}>
+            <cylinderGeometry args={[6.9, 7.0, 0.34, 64]} />
+            <meshStandardMaterial color="#fff7ed" roughness={0.55} transparent opacity={0.96} />
           </mesh>
+          {/* decorative dashed border */}
+          <mesh position={[0, 0.52, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[6.55, 6.8, 64]} />
+            <meshStandardMaterial color="#a855f7" side={THREE.DoubleSide} />
+          </mesh>
+          {/* colorful confetti dots scattered on the board */}
+          {Array.from({ length: 28 }).map((_, i) => {
+            const a = (i / 28) * Math.PI * 2;
+            const r = 3 + ((i * 1.7) % 3);
+            const colors = ["#fbbf24", "#f87171", "#60a5fa", "#34d399", "#a78bfa", "#fb7185"];
+            return (
+              <mesh key={i} position={[Math.cos(a) * r, 0.53, Math.sin(a) * r]} rotation={[-Math.PI / 2, 0, 0]}>
+                <circleGeometry args={[0.18, 16]} />
+                <meshStandardMaterial color={colors[i % colors.length]} />
+              </mesh>
+            );
+          })}
         </group>
 
         <Trail locations={locations} completedCount={completed.length} />
