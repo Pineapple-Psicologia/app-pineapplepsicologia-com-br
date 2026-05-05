@@ -39,7 +39,7 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
 
   const [tool, setTool] = useState<Tool>("pen");
   const [color, setColor] = useState(COLORS[0]);
-  const [size, setSize] = useState(4);
+  const [size, setSize] = useState(10);
   const [bg, setBg] = useState<BgId>("blank");
   const [sticker, setSticker] = useState(STICKERS[0]);
   const [showStickers, setShowStickers] = useState(false);
