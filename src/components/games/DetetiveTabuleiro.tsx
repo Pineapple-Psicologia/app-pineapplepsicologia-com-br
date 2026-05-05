@@ -557,22 +557,46 @@ function LocationContent({
 
   if (locId === "emocao") {
     const emocoes = ["😢 Tristeza", "😡 Raiva", "😨 Medo", "😰 Ansiedade", "😞 Vergonha", "😔 Culpa", "😶 Vazio"];
-    const selectedList = state.emocao
+    // Parse "label:level | label:level" into array of {label, level}
+    const parsed: { label: string; level: number }[] = state.emocao
       .split("|")
       .map((s) => s.trim())
-      .filter(Boolean);
-    const isSelected = (e: string) => selectedList.includes(e);
-    const toggleEmo = (e: string) => {
-      const next = isSelected(e)
-        ? selectedList.filter((x) => x !== e)
-        : [...selectedList, e];
-      update({ emocao: next.join(" | ") });
+      .filter(Boolean)
+      .map((chunk) => {
+        const m = chunk.match(/^(.*?)(?::(\d{1,3}))?$/);
+        const label = (m?.[1] ?? chunk).trim();
+        const level = Math.min(100, Math.max(0, Number(m?.[2] ?? 0)));
+        return { label, level };
+      })
+      .filter((x) => x.label);
+
+    const serialize = (list: { label: string; level: number }[]) =>
+      list.map((x) => `${x.label}:${x.level}`).join(" | ");
+
+    const commit = (list: { label: string; level: number }[]) => {
+      const maxLevel = list.reduce((acc, x) => Math.max(acc, x.level), 0);
+      update({ emocao: serialize(list), emocaoIntensidade: maxLevel });
     };
+
+    const isSelected = (label: string) => parsed.some((p) => p.label === label);
+    const toggleEmo = (label: string) => {
+      const next = isSelected(label)
+        ? parsed.filter((x) => x.label !== label)
+        : [...parsed, { label, level: 50 }];
+      commit(next);
+    };
+    const setLevel = (label: string, level: number) => {
+      commit(parsed.map((p) => (p.label === label ? { ...p, level } : p)));
+    };
+    const removeEmo = (label: string) => commit(parsed.filter((x) => x.label !== label));
+
+    const allValid = parsed.length > 0 && parsed.every((p) => p.level > 0);
+
     return (
       <>
         {Header}
         <div className="p-4 flex flex-col gap-3">
-          <p className="text-sm">Quais emoções apareceram? (pode escolher mais de uma) E o quanto pesam no geral (0–100)?</p>
+          <p className="text-sm">Quais emoções apareceram? (pode escolher mais de uma) Defina a intensidade de cada uma (0–100).</p>
           <div className="flex flex-wrap gap-1.5">
             {emocoes.map((e) => (
               <button
@@ -588,28 +612,33 @@ function LocationContent({
               </button>
             ))}
           </div>
-          {selectedList.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 p-2 rounded-lg bg-orange-50 border border-orange-200">
-              <span className="text-xs font-bold uppercase tracking-wider text-orange-700 mr-1 self-center">Selecionadas:</span>
-              {selectedList.map((e) => (
-                <span key={e} className="text-xs px-2 py-0.5 rounded-full bg-orange-200 text-orange-900 font-semibold flex items-center gap-1">
-                  {e}
-                  <button onClick={() => toggleEmo(e)} className="hover:text-orange-700" aria-label={`Remover ${e}`}>×</button>
-                </span>
+
+          {parsed.length > 0 && (
+            <div className="flex flex-col gap-2 p-3 rounded-lg bg-orange-50 border border-orange-200">
+              <span className="text-xs font-bold uppercase tracking-wider text-orange-700">Intensidade por emoção</span>
+              {parsed.map((p) => (
+                <div key={p.label} className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-semibold text-orange-900">{p.label}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-orange-800 tabular-nums">{p.level}/100</span>
+                      <button onClick={() => removeEmo(p.label)} className="text-orange-700 hover:text-orange-900 text-lg leading-none" aria-label={`Remover ${p.label}`}>×</button>
+                    </div>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    value={p.level}
+                    onChange={(ev) => setLevel(p.label, Number(ev.target.value))}
+                    className="w-full accent-orange-500"
+                  />
+                </div>
               ))}
             </div>
           )}
-          <input
-            value={state.emocao}
-            onChange={(e) => update({ emocao: e.target.value })}
-            placeholder="Ou descreva (separe múltiplas com | )..."
-            className="p-2 rounded-lg border-2 border-border/60 bg-background"
-          />
-          <div>
-            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Intensidade: {state.emocaoIntensidade}/100</label>
-            <input type="range" min={0} max={100} value={state.emocaoIntensidade} onChange={(e) => update({ emocaoIntensidade: Number(e.target.value) })} className="w-full" />
-          </div>
-          <FinishButton disabled={!state.emocao.trim() || state.emocaoIntensidade === 0} label="Termômetro registrado" />
+
+          <FinishButton disabled={!allValid} label="Termômetro registrado" />
         </div>
       </>
     );
