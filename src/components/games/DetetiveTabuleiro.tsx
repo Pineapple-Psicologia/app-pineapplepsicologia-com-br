@@ -299,14 +299,19 @@ export default function DetetiveTabuleiro({ room }: Props) {
     setState((prev) => {
       const wasCompleted = prev.completed.includes(id);
       const completed = wasCompleted ? prev.completed : [...prev.completed, id];
-      const earnedPoints = wasCompleted ? 0 : LOCATIONS[idx].points;
+      // Hint penalty: each hint used in this location reduces the points,
+      // but never below HINT_MIN_RATIO of the base value.
+      const base = LOCATIONS[idx].points;
+      const used = prev.hintsUsed[id] ?? 0;
+      const minPts = Math.ceil(base * HINT_MIN_RATIO);
+      const earnedPoints = wasCompleted ? 0 : Math.max(minPts, base - used * HINT_PENALTY);
       const next: State = {
         ...prev,
         completed,
         currentIdx: Math.min(Math.max(prev.currentIdx, idx + 1), LOCATIONS.length - 1),
         caseClosed: isLast || prev.caseClosed,
         points: prev.points + earnedPoints,
-        pendingAdvance: Math.max(0, prev.pendingAdvance - 1),
+        activeHint: null,
       };
       next.earnedBadges = BADGES.filter((b) => b.check(next)).map((b) => b.id);
       room.send("detective-board:state", next);
@@ -331,34 +336,37 @@ export default function DetetiveTabuleiro({ room }: Props) {
     }
   };
 
-  const rollDice = () => {
+  // Roll the dice to get a hint for the CURRENT (or given) location.
+  // Unlimited use; each call increments hintsUsed[locId] which will reduce
+  // the final points awarded for that tile.
+  const rollDice = (forLocId?: LocationId) => {
     if (state.diceRolling || state.caseClosed) return;
-    update({ diceRolling: true, diceValue: null });
+    const targetLoc = forLocId ?? LOCATIONS[state.currentIdx].id;
+    update({ diceRolling: true, diceValue: null, activeHint: null });
     let ticks = 0;
     const interval = setInterval(() => {
       ticks++;
       const v = 1 + Math.floor(Math.random() * 6);
-      if (ticks >= 12) {
+      if (ticks >= 10) {
         clearInterval(interval);
         const finalVal = 1 + Math.floor(Math.random() * 6);
-        const card = pickEventCard(finalVal);
-        const advanceBy = finalVal === 5 && card?.kind === "atalho" ? 2 : 1;
-        const bonus = card?.bonus ?? 0;
-        update((prev) => ({
-          diceRolling: false,
-          diceValue: finalVal,
-          pendingAdvance: advanceBy,
-          activeEvent: card,
-          points: prev.points + bonus,
-        }));
+        update((prev) => {
+          const usedBefore = prev.hintsUsed[targetLoc] ?? 0;
+          const { text, index } = pickHintForLocation(targetLoc, usedBefore);
+          return {
+            diceRolling: false,
+            diceValue: finalVal,
+            hintsUsed: { ...prev.hintsUsed, [targetLoc]: usedBefore + 1 },
+            activeHint: { locId: targetLoc, text, index, diceValue: finalVal },
+          };
+        });
       } else {
-        // visual flicker
         setState((s) => ({ ...s, diceValue: v }));
       }
     }, 80);
   };
 
-  const dismissEvent = () => update({ activeEvent: null });
+  const dismissHint = () => update({ activeHint: null });
 
   const reset = () => {
     setState(INITIAL);
