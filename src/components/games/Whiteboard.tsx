@@ -669,7 +669,11 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
   const submitText = () => {
     if (!textInput) return;
     const t = textInput.value.trim();
-    if (t) commit({ id: uid(), type: "text", color, size, x: textInput.x, y: textInput.y, text: t });
+    if (t) {
+      const useColor = textInput.color ?? color;
+      const useSize = textInput.size ?? size;
+      commit({ id: textInput.id ?? uid(), type: "text", color: useColor, size: useSize, x: textInput.x, y: textInput.y, text: t });
+    }
     setTextInput(null);
   };
 
