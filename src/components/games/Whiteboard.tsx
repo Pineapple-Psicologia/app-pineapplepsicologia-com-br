@@ -319,7 +319,12 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
         if (lc && lc.inside && isBrushTool) {
           const x = lc.x * o.width, y = lc.y * o.height;
           const dpr = window.devicePixelRatio || 1;
-          const baseW = tool === "marker" ? size * 2.5 : tool === "brush" ? size * 1.6 : size;
+          const baseW =
+            tool === "marker" ? size * 2.5 :
+            tool === "brush" ? size * 1.6 :
+            tool === "neon" ? size * 1.2 :
+            tool === "spray" ? size * 2.2 :
+            size;
           const r = (tool === "eraser" ? 14 : baseW / 2) * dpr;
 
           // "Lazy brush" leash: while drawing with stabilizer on, show the line
