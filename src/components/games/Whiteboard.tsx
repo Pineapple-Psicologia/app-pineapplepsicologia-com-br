@@ -313,7 +313,7 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [tool, size, color]);
+  }, [tool, size, color, stabilize]);
 
   // ---------- input ----------
   const pos = (e: React.PointerEvent) => {
