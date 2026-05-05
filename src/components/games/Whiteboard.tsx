@@ -768,7 +768,8 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
             cursor:
               tool === "sticker" ? "copy"
               : tool === "text" ? "text"
-              : (tool === "pen" || tool === "marker" || tool === "brush" || tool === "eraser") ? "none"
+              : (tool === "pen" || tool === "marker" || tool === "brush" || tool === "neon" || tool === "rainbow" || tool === "spray" || tool === "eraser") ? "none"
+              : tool === "fill" ? "crosshair"
               : "crosshair"
           }}
         />
