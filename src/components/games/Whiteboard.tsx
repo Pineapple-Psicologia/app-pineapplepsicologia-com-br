@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import {
   Eraser, Trash2, Pencil, Undo2, Download, Brush, Highlighter,
   Square, Circle as CircleIcon, Minus, ArrowRight, Type, Smile,
-  LayoutGrid, Sparkles,
+  LayoutGrid, Sparkles, Wand2, Waves,
 } from "lucide-react";
 import type { useRoom, RoomMessage } from "@/lib/useRoom";
 import { TEMPLATES, buildTemplate, type TemplateId } from "@/lib/whiteboardTemplates";
