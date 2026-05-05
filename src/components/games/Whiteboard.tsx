@@ -3,9 +3,10 @@ import { Button } from "@/components/ui/button";
 import {
   Eraser, Trash2, Pencil, Undo2, Download, Brush, Highlighter,
   Square, Circle as CircleIcon, Minus, ArrowRight, Type, Smile,
-  LayoutGrid,
+  LayoutGrid, Sparkles,
 } from "lucide-react";
 import type { useRoom, RoomMessage } from "@/lib/useRoom";
+import { TEMPLATES, buildTemplate, type TemplateId } from "@/lib/whiteboardTemplates";
 
 type Tool = "pen" | "marker" | "brush" | "rect" | "circle" | "line" | "arrow" | "text" | "sticker" | "eraser";
 
@@ -42,6 +43,7 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
   const [bg, setBg] = useState<BgId>("blank");
   const [sticker, setSticker] = useState(STICKERS[0]);
   const [showStickers, setShowStickers] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
   const [textInput, setTextInput] = useState<{ x: number; y: number; value: string } | null>(null);
 
   const objectsRef = useRef<Obj[]>([]);
@@ -311,6 +313,14 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
 
   const changeBg = (b: BgId) => { setBg(b); room.send("wb:bg", b); };
 
+  const applyTemplate = (id: TemplateId) => {
+    const objs = buildTemplate(id);
+    objectsRef.current.push(...objs);
+    objs.forEach((o) => room.send("wb:add", o));
+    setShowTemplates(false);
+    redraw();
+  };
+
   const download = () => {
     const c = canvasRef.current!;
     const link = document.createElement("a");
@@ -401,11 +411,35 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
         </div>
 
         <div className="ml-auto flex gap-1.5">
+          <Button
+            size="sm"
+            variant={showTemplates ? "default" : "outline"}
+            onClick={() => setShowTemplates((v) => !v)}
+          >
+            <Sparkles className="w-4 h-4 mr-1" />Modelos
+          </Button>
           <Button size="sm" variant="outline" onClick={undo}><Undo2 className="w-4 h-4 mr-1" />Desfazer</Button>
           <Button size="sm" variant="outline" onClick={download}><Download className="w-4 h-4 mr-1" />Salvar</Button>
           <Button size="sm" variant="outline" onClick={clearAll}><Trash2 className="w-4 h-4 mr-1" />Limpar</Button>
         </div>
       </div>
+
+      {/* Templates tray */}
+      {showTemplates && (
+        <div className="flex flex-wrap gap-2 p-2.5 bg-card rounded-xl border-2 border-accent/40">
+          {TEMPLATES.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => applyTemplate(t.id)}
+              title={t.description}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg border-2 border-border bg-background hover:border-accent hover:bg-accent/10 transition"
+            >
+              <span className="text-xl">{t.emoji}</span>
+              <span className="text-xs font-bold">{t.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Sticker tray */}
       {showStickers && (
