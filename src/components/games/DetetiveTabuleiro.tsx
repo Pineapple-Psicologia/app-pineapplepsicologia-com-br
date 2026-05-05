@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
-import { RotateCcw, Check, ChevronRight, Lock } from "lucide-react";
+import { RotateCcw, Check, ChevronRight } from "lucide-react";
+import DetetiveBoard3D from "./DetetiveBoard3D";
 
 type Props = { room: ReturnType<typeof useRoom> };
 
@@ -12,16 +13,16 @@ const LOCATIONS: {
   name: string;
   emoji: string;
   hint: string;
-  color: string; // tailwind bg color for tile
-  ring: string;  // ring color
+  color: string; // hex for 3D
+  tw: string;    // tailwind bg for status bar
   x: number;
   y: number;
 }[] = [
-  { id: "cena",           name: "Cena do Crime",         emoji: "🔍", hint: "Descreva o que aconteceu",        color: "bg-rose-400",    ring: "ring-rose-600",    x: 14, y: 82 },
-  { id: "interrogatorio", name: "Sala de Interrogatório", emoji: "💭", hint: "Qual pensamento foi flagrado?",   color: "bg-sky-400",     ring: "ring-sky-600",     x: 32, y: 42 },
-  { id: "cartas",         name: "Mesa de Cartas",        emoji: "🃏", hint: "Identifique as armadilhas",       color: "bg-violet-400",  ring: "ring-violet-600",  x: 56, y: 70 },
-  { id: "evidencias",     name: "Sala de Evidências",    emoji: "⚖️", hint: "Pese provas a favor e contra",     color: "bg-emerald-400", ring: "ring-emerald-600", x: 78, y: 32 },
-  { id: "arquivo",        name: "Arquivo Final",         emoji: "🏆", hint: "Arquive o pensamento reescrito",  color: "bg-amber-400",   ring: "ring-amber-600",   x: 90, y: 78 },
+  { id: "cena",           name: "Cena do Crime",          emoji: "🔍", hint: "Descreva o que aconteceu",       color: "#fb7185", tw: "bg-rose-400",    x: 14, y: 82 },
+  { id: "interrogatorio", name: "Sala de Interrogatório", emoji: "💭", hint: "Qual pensamento foi flagrado?",  color: "#38bdf8", tw: "bg-sky-400",     x: 32, y: 42 },
+  { id: "cartas",         name: "Mesa de Cartas",         emoji: "🃏", hint: "Identifique as armadilhas",      color: "#a78bfa", tw: "bg-violet-400",  x: 56, y: 70 },
+  { id: "evidencias",     name: "Sala de Evidências",     emoji: "⚖️", hint: "Pese provas a favor e contra",    color: "#34d399", tw: "bg-emerald-400", x: 78, y: 32 },
+  { id: "arquivo",        name: "Arquivo Final",          emoji: "🏆", hint: "Arquive o pensamento reescrito", color: "#fbbf24", tw: "bg-amber-400",   x: 90, y: 78 },
 ];
 
 const DISTORTIONS = [
