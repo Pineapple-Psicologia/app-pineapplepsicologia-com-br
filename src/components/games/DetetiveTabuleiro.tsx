@@ -245,23 +245,25 @@ export default function DetetiveTabuleiro({ room }: Props) {
 
       {/* Status bar */}
       {state.caseClosed ? (
-        <div className="rounded-xl p-4 bg-primary/15 border-2 border-primary text-center">
-          <div className="text-2xl">🏆 Caso encerrado, Detetive!</div>
-          <div className="text-sm mt-1">
+        <div className="rounded-2xl p-4 bg-gradient-to-r from-amber-300 to-yellow-200 border-4 border-amber-600 text-center shadow-lg">
+          <div className="text-2xl font-black text-amber-900">🏆 Caso encerrado, Detetive!</div>
+          <div className="text-sm mt-1 text-amber-900/90">
             "<b>{state.thought}</b>" virou "<b>{state.reframe}</b>"
           </div>
         </div>
       ) : (
-        <div className="rounded-xl p-3 bg-card border-2 border-border/60 flex items-center gap-3">
-          <div className="text-3xl">{currentLoc.emoji}</div>
-          <div className="flex-1 min-w-0">
-            <div className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
-              Próxima missão
-            </div>
-            <div className="font-bold text-sm truncate">{currentLoc.hint}</div>
+        <div className="rounded-2xl p-3 bg-white border-4 border-amber-700/60 flex items-center gap-3 shadow-md">
+          <div className={`text-3xl w-12 h-12 rounded-xl flex items-center justify-center border-2 border-white shadow ${currentLoc.color}`}>
+            {currentLoc.emoji}
           </div>
-          <Button size="sm" onClick={() => openLocation(currentLoc.id)}>
-            Entrar <ChevronRight className="w-4 h-4 ml-1" />
+          <div className="flex-1 min-w-0">
+            <div className="text-[10px] uppercase font-black tracking-wider text-amber-700">
+              Próxima casa · {state.currentIdx + 1}/{LOCATIONS.length}
+            </div>
+            <div className="font-bold text-sm truncate text-amber-900">{currentLoc.hint}</div>
+          </div>
+          <Button size="sm" onClick={() => openLocation(currentLoc.id)} className="bg-amber-600 hover:bg-amber-700 text-white font-bold">
+            Jogar <ChevronRight className="w-4 h-4 ml-1" />
           </Button>
         </div>
       )}
