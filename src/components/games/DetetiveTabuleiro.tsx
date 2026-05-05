@@ -157,6 +157,8 @@ const BADGES: { id: string; emoji: string; label: string; check: (s: State) => b
   { id: "caso-fechado",    emoji: "🏆", label: "Caso encerrado",             check: (s) => s.caseClosed },
 ];
 
+type ActiveHint = { locId: LocationId; text: string; index: number; diceValue: number };
+
 type State = {
   currentIdx: number;
   completed: LocationId[];
@@ -172,11 +174,11 @@ type State = {
   reframe: string;
   plano: string;
   caseClosed: boolean;
-  // game master mechanics
+  // dice / hint mechanics
   diceValue: number | null;
   diceRolling: boolean;
-  pendingAdvance: number; // tiles still to advance from last roll
-  activeEvent: EventCard | null;
+  hintsUsed: Partial<Record<LocationId, number>>;
+  activeHint: ActiveHint | null;
   points: number;
   earnedBadges: string[];
 };
@@ -198,8 +200,8 @@ const INITIAL: State = {
   caseClosed: false,
   diceValue: null,
   diceRolling: false,
-  pendingAdvance: 0,
-  activeEvent: null,
+  hintsUsed: {},
+  activeHint: null,
   points: 0,
   earnedBadges: [],
 };
@@ -229,19 +231,11 @@ function saveHistory(item: CaseHistoryItem) {
   localStorage.setItem(HISTORY_KEY, JSON.stringify(list.slice(0, 20)));
 }
 
-function pickEventCard(diceVal: number): EventCard | null {
-  if (diceVal <= 2) return null;
-  if (diceVal === 3 || diceVal === 4) {
-    const deck = EVENT_DECK.ajuda;
-    return deck[Math.floor(Math.random() * deck.length)];
-  }
-  if (diceVal === 5) {
-    const deck = Math.random() < 0.7 ? EVENT_DECK.desafio : EVENT_DECK.atalho;
-    return deck[Math.floor(Math.random() * deck.length)];
-  }
-  // 6
-  const deck = EVENT_DECK.revelacao;
-  return deck[Math.floor(Math.random() * deck.length)];
+function pickHintForLocation(locId: LocationId, used: number): { text: string; index: number } {
+  const pool = LOCATION_HINTS[locId] ?? [];
+  if (pool.length === 0) return { text: "Sem dica disponível.", index: 0 };
+  const index = used < pool.length ? used : Math.floor(Math.random() * pool.length);
+  return { text: pool[index] ?? pool[0], index };
 }
 
 export default function DetetiveTabuleiro({ room }: Props) {
