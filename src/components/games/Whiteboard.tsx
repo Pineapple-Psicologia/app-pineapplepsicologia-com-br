@@ -60,22 +60,47 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
       ctx.strokeStyle = o.color;
-      ctx.lineWidth = o.size;
-      if (o.tool === "marker") {
-        ctx.globalAlpha = 0.35;
-        ctx.lineWidth = o.size * 2.5;
-      }
+      const baseW = o.tool === "marker" ? o.size * 2.5 : o.tool === "brush" ? o.size * 1.6 : o.size;
+      if (o.tool === "marker") ctx.globalAlpha = 0.35;
       if (o.tool === "brush") {
-        ctx.lineWidth = o.size * 1.6;
         ctx.shadowColor = o.color;
         ctx.shadowBlur = o.size * 0.8;
       }
-      ctx.beginPath();
-      o.points.forEach((p, i) => {
-        const x = p.x * w, y = p.y * h;
-        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-      });
-      ctx.stroke();
+      const pts = o.points;
+      if (pts.length < 2) {
+        ctx.beginPath();
+        ctx.arc(pts[0].x * w, pts[0].y * h, baseW / 2, 0, Math.PI * 2);
+        ctx.fillStyle = o.color;
+        ctx.fill();
+      } else if (o.tool === "brush" && pts.some((p) => p.w !== undefined)) {
+        // variable-width brush: draw segment-by-segment with smoothed widths
+        for (let i = 1; i < pts.length; i++) {
+          const a = pts[i - 1], b = pts[i];
+          const wa = (a.w ?? 1) * baseW;
+          const wb = (b.w ?? 1) * baseW;
+          ctx.lineWidth = (wa + wb) / 2;
+          ctx.beginPath();
+          ctx.moveTo(a.x * w, a.y * h);
+          const next = pts[i + 1] ?? b;
+          const cx = (b.x * w + next.x * w) / 2;
+          const cy = (b.y * h + next.y * h) / 2;
+          ctx.quadraticCurveTo(b.x * w, b.y * h, cx, cy);
+          ctx.stroke();
+        }
+      } else {
+        // smoothed quadratic curve through midpoints
+        ctx.lineWidth = baseW;
+        ctx.beginPath();
+        ctx.moveTo(pts[0].x * w, pts[0].y * h);
+        for (let i = 1; i < pts.length - 1; i++) {
+          const cx = (pts[i].x * w + pts[i + 1].x * w) / 2;
+          const cy = (pts[i].y * h + pts[i + 1].y * h) / 2;
+          ctx.quadraticCurveTo(pts[i].x * w, pts[i].y * h, cx, cy);
+        }
+        const last = pts[pts.length - 1];
+        ctx.lineTo(last.x * w, last.y * h);
+        ctx.stroke();
+      }
     } else if (o.type === "rect" || o.type === "circle" || o.type === "line" || o.type === "arrow") {
       ctx.strokeStyle = o.color;
       ctx.lineWidth = o.size;
