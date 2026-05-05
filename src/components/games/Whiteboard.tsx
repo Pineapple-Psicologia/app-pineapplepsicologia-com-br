@@ -70,6 +70,7 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
   const smoothedRef = useRef<{ x: number; y: number } | null>(null);
   const eraseModeRef = useRef(false);
   const textDragRef = useRef<{ id: string; offsetX: number; offsetY: number; moved: boolean; startX: number; startY: number } | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // ---------- drawing ----------
   const drawObj = useCallback((ctx: CanvasRenderingContext2D, w: number, h: number, o: Obj) => {
@@ -485,6 +486,9 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
         return;
       }
       setTextInput({ x: p.x, y: p.y, value: "" });
+      // Sync focus inside the user gesture so mobile keyboards open.
+      const ta = textareaRef.current;
+      if (ta) { ta.value = ""; ta.focus(); }
       return;
     }
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
@@ -608,6 +612,8 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
           objectsRef.current = objectsRef.current.filter((o) => o.id !== obj.id);
           room.send("wb:undo", { id: obj.id });
           setTextInput({ x: obj.x, y: obj.y, value: obj.text, color: obj.color, size: obj.size });
+          const ta = textareaRef.current;
+          if (ta) { ta.value = obj.text; ta.focus(); }
           redraw();
         } else {
           // Persist new position by replacing the object on peers
@@ -878,24 +884,27 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
           }}
         />
         <canvas ref={overlayRef} className="absolute inset-0 w-full h-full pointer-events-none" />
-        {textInput && (
-          <div
-            className="absolute z-10"
-            style={{ left: `${textInput.x * 100}%`, top: `${textInput.y * 100}%` }}
-          >
-            <textarea
-              autoFocus
-              value={textInput.value}
-              onChange={(e) => setTextInput({ ...textInput, value: e.target.value })}
-              onBlur={submitText}
-              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submitText(); } if (e.key === "Escape") setTextInput(null); }}
-              className="bg-white/90 border-2 border-primary rounded-md px-2 py-1 text-sm font-semibold outline-none shadow-lg"
-              style={{ color: textInput.color ?? color, fontSize: (textInput.size ?? size) * 4 }}
-              placeholder="Digite..."
-              rows={2}
-            />
-          </div>
-        )}
+        <div
+          className="absolute z-10"
+          style={{
+            left: `${(textInput?.x ?? 0) * 100}%`,
+            top: `${(textInput?.y ?? 0) * 100}%`,
+            visibility: textInput ? "visible" : "hidden",
+            pointerEvents: textInput ? "auto" : "none",
+          }}
+        >
+          <textarea
+            ref={textareaRef}
+            value={textInput?.value ?? ""}
+            onChange={(e) => textInput && setTextInput({ ...textInput, value: e.target.value })}
+            onBlur={() => { if (textInput) submitText(); }}
+            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submitText(); } if (e.key === "Escape") setTextInput(null); }}
+            className="bg-white/90 border-2 border-primary rounded-md px-2 py-1 text-sm font-semibold outline-none shadow-lg"
+            style={{ color: textInput?.color ?? color, fontSize: ((textInput?.size ?? size)) * 4 }}
+            placeholder="Digite..."
+            rows={2}
+          />
+        </div>
       </div>
     </div>
   );
