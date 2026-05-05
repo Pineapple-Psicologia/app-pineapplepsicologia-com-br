@@ -10,7 +10,7 @@ import { TEMPLATES, buildTemplate, type TemplateId } from "@/lib/whiteboardTempl
 
 type Tool = "pen" | "marker" | "brush" | "rect" | "circle" | "line" | "arrow" | "text" | "sticker" | "eraser";
 
-type Path = { type: "path"; tool: "pen" | "marker" | "brush"; color: string; size: number; points: { x: number; y: number }[] };
+type Path = { type: "path"; tool: "pen" | "marker" | "brush"; color: string; size: number; points: { x: number; y: number; w?: number }[] };
 type Shape = { type: "rect" | "circle" | "line" | "arrow"; color: string; size: number; x1: number; y1: number; x2: number; y2: number };
 type TextObj = { type: "text"; color: string; size: number; x: number; y: number; text: string };
 type Sticker = { type: "sticker"; emoji: string; x: number; y: number; size: number };
@@ -39,7 +39,7 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
 
   const [tool, setTool] = useState<Tool>("pen");
   const [color, setColor] = useState(COLORS[0]);
-  const [size, setSize] = useState(4);
+  const [size, setSize] = useState(10);
   const [bg, setBg] = useState<BgId>("blank");
   const [sticker, setSticker] = useState(STICKERS[0]);
   const [showStickers, setShowStickers] = useState(false);
@@ -52,6 +52,9 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
   const startRef = useRef<{ x: number; y: number } | null>(null);
   const peerCursor = useRef<{ x: number; y: number; t: number } | null>(null);
   const lastSentCursor = useRef(0);
+  const localCursor = useRef<{ x: number; y: number; t: number; inside: boolean } | null>(null);
+  const lastPoint = useRef<{ x: number; y: number; t: number } | null>(null);
+  const eraseModeRef = useRef(false);
 
   // ---------- drawing ----------
   const drawObj = useCallback((ctx: CanvasRenderingContext2D, w: number, h: number, o: Obj) => {
@@ -60,22 +63,47 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
       ctx.strokeStyle = o.color;
-      ctx.lineWidth = o.size;
-      if (o.tool === "marker") {
-        ctx.globalAlpha = 0.35;
-        ctx.lineWidth = o.size * 2.5;
-      }
+      const baseW = o.tool === "marker" ? o.size * 2.5 : o.tool === "brush" ? o.size * 1.6 : o.size;
+      if (o.tool === "marker") ctx.globalAlpha = 0.35;
       if (o.tool === "brush") {
-        ctx.lineWidth = o.size * 1.6;
         ctx.shadowColor = o.color;
         ctx.shadowBlur = o.size * 0.8;
       }
-      ctx.beginPath();
-      o.points.forEach((p, i) => {
-        const x = p.x * w, y = p.y * h;
-        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-      });
-      ctx.stroke();
+      const pts = o.points;
+      if (pts.length < 2) {
+        ctx.beginPath();
+        ctx.arc(pts[0].x * w, pts[0].y * h, baseW / 2, 0, Math.PI * 2);
+        ctx.fillStyle = o.color;
+        ctx.fill();
+      } else if (o.tool === "brush" && pts.some((p) => p.w !== undefined)) {
+        // variable-width brush: draw segment-by-segment with smoothed widths
+        for (let i = 1; i < pts.length; i++) {
+          const a = pts[i - 1], b = pts[i];
+          const wa = (a.w ?? 1) * baseW;
+          const wb = (b.w ?? 1) * baseW;
+          ctx.lineWidth = (wa + wb) / 2;
+          ctx.beginPath();
+          ctx.moveTo(a.x * w, a.y * h);
+          const next = pts[i + 1] ?? b;
+          const cx = (b.x * w + next.x * w) / 2;
+          const cy = (b.y * h + next.y * h) / 2;
+          ctx.quadraticCurveTo(b.x * w, b.y * h, cx, cy);
+          ctx.stroke();
+        }
+      } else {
+        // smoothed quadratic curve through midpoints
+        ctx.lineWidth = baseW;
+        ctx.beginPath();
+        ctx.moveTo(pts[0].x * w, pts[0].y * h);
+        for (let i = 1; i < pts.length - 1; i++) {
+          const cx = (pts[i].x * w + pts[i + 1].x * w) / 2;
+          const cy = (pts[i].y * h + pts[i + 1].y * h) / 2;
+          ctx.quadraticCurveTo(pts[i].x * w, pts[i].y * h, cx, cy);
+        }
+        const last = pts[pts.length - 1];
+        ctx.lineTo(last.x * w, last.y * h);
+        ctx.stroke();
+      }
     } else if (o.type === "rect" || o.type === "circle" || o.type === "line" || o.type === "arrow") {
       ctx.strokeStyle = o.color;
       ctx.lineWidth = o.size;
@@ -195,26 +223,51 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
     });
   }, [room, redraw, bg]);
 
-  // peer cursor render loop
+  // overlay render loop (peer cursor + local brush preview)
   useEffect(() => {
     let raf = 0;
     const loop = () => {
-      const o = overlayRef.current; if (o) {
+      const o = overlayRef.current;
+      if (o) {
         const ctx = o.getContext("2d")!;
         ctx.clearRect(0, 0, o.width, o.height);
-        const c = peerCursor.current;
-        if (c && Date.now() - c.t < 3000) {
-          const x = c.x * o.width, y = c.y * o.height;
+        // peer cursor
+        const pc = peerCursor.current;
+        if (pc && Date.now() - pc.t < 3000) {
+          const x = pc.x * o.width, y = pc.y * o.height;
           ctx.fillStyle = "#DF9628";
           ctx.beginPath(); ctx.arc(x, y, 8, 0, Math.PI * 2); ctx.fill();
           ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
+        }
+        // local brush preview
+        const lc = localCursor.current;
+        if (lc && lc.inside && (tool === "pen" || tool === "marker" || tool === "brush" || tool === "eraser")) {
+          const x = lc.x * o.width, y = lc.y * o.height;
+          const dpr = window.devicePixelRatio || 1;
+          const baseW = tool === "marker" ? size * 2.5 : tool === "brush" ? size * 1.6 : size;
+          const r = (tool === "eraser" ? 14 : baseW / 2) * dpr;
+          ctx.beginPath();
+          ctx.arc(x, y, r, 0, Math.PI * 2);
+          if (tool === "eraser") {
+            ctx.strokeStyle = "rgba(230, 57, 70, 0.9)";
+            ctx.lineWidth = 2 * dpr;
+            ctx.setLineDash([4 * dpr, 4 * dpr]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+          } else {
+            ctx.fillStyle = color + (tool === "marker" ? "59" : "33");
+            ctx.fill();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 1.5 * dpr;
+            ctx.stroke();
+          }
         }
       }
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, []);
+  }, [tool, size, color]);
 
   // ---------- input ----------
   const pos = (e: React.PointerEvent) => {
@@ -234,16 +287,20 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
     const p = pos(e);
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
 
-    if (tool === "sticker") {
+    // right-click = eraser shortcut
+    const rightClick = e.button === 2;
+    eraseModeRef.current = rightClick;
+    const activeTool: Tool = rightClick ? "eraser" : tool;
+
+    if (activeTool === "sticker") {
       commit({ id: uid(), type: "sticker", emoji: sticker, x: p.x, y: p.y, size });
       return;
     }
-    if (tool === "text") {
+    if (activeTool === "text") {
       setTextInput({ x: p.x, y: p.y, value: "" });
       return;
     }
-    if (tool === "eraser") {
-      // hit-test near point (small radius)
+    if (activeTool === "eraser") {
       const r = 0.02;
       const hit = [...objectsRef.current].reverse().find((o) => isNear(o, p, r));
       if (hit) {
@@ -257,24 +314,30 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
 
     drawingRef.current = true;
     startRef.current = p;
-    if (tool === "pen" || tool === "marker" || tool === "brush") {
-      draftRef.current = { id: uid(), type: "path", tool, color, size, points: [p] };
+    lastPoint.current = { x: p.x, y: p.y, t: performance.now() };
+    if (activeTool === "pen" || activeTool === "marker" || activeTool === "brush") {
+      const pressure = e.pressure && e.pressure > 0 && e.pressure !== 0.5 ? e.pressure : 1;
+      const w = activeTool === "brush" ? pressure : 1;
+      draftRef.current = { id: uid(), type: "path", tool: activeTool, color, size, points: [{ x: p.x, y: p.y, w }] };
     } else {
-      draftRef.current = { id: uid(), type: tool, color, size, x1: p.x, y1: p.y, x2: p.x, y2: p.y };
+      draftRef.current = { id: uid(), type: activeTool as any, color, size, x1: p.x, y1: p.y, x2: p.x, y2: p.y };
     }
     redraw();
   };
 
   const onMove = (e: React.PointerEvent) => {
     const p = pos(e);
-    // throttle cursor
     const now = Date.now();
+    // local cursor preview (immediate)
+    localCursor.current = { x: p.x, y: p.y, t: now, inside: true };
+    // throttled remote cursor
     if (now - lastSentCursor.current > 40) {
       lastSentCursor.current = now;
       room.send("wb:cursor", { x: p.x, y: p.y });
     }
     if (!drawingRef.current) return;
-    if (tool === "eraser") {
+    const activeTool: Tool = eraseModeRef.current ? "eraser" : tool;
+    if (activeTool === "eraser") {
       const r = 0.02;
       const hit = [...objectsRef.current].reverse().find((o) => isNear(o, p, r));
       if (hit) {
@@ -285,20 +348,52 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
       return;
     }
     const d = draftRef.current; if (!d) return;
-    if (d.type === "path") d.points.push(p);
-    else if ("x2" in d) { d.x2 = p.x; d.y2 = p.y; }
+    if (d.type === "path") {
+      // velocity-based width for brush; pressure overrides if available
+      let w = 1;
+      if (d.tool === "brush") {
+        const usePressure = e.pressure && e.pressure > 0 && e.pressure !== 0.5;
+        if (usePressure) {
+          w = e.pressure;
+        } else {
+          const lp = lastPoint.current;
+          const tNow = performance.now();
+          if (lp) {
+            const dt = Math.max(1, tNow - lp.t);
+            const dist = Math.hypot(p.x - lp.x, p.y - lp.y);
+            const speed = dist / dt; // normalized units / ms
+            // map speed to width: slow = thick (1.0), fast = thin (0.35)
+            const target = Math.max(0.35, Math.min(1, 1 - speed * 80));
+            const prev = (d.points[d.points.length - 1]?.w ?? 1);
+            w = prev * 0.7 + target * 0.3; // smooth
+          }
+        }
+      }
+      d.points.push({ x: p.x, y: p.y, w });
+      lastPoint.current = { x: p.x, y: p.y, t: performance.now() };
+    } else if ("x2" in d) { d.x2 = p.x; d.y2 = p.y; }
     redraw();
     if (now - (lastSentCursor.current - 40) > 60) room.send("wb:draft", d);
   };
 
   const onUp = () => {
     drawingRef.current = false;
+    eraseModeRef.current = false;
+    lastPoint.current = null;
     const d = draftRef.current;
     if (!d) return;
     if (d.type === "path" && d.points.length < 2) { draftRef.current = null; redraw(); return; }
     if ("x2" in d && Math.hypot((d.x2 - d.x1), (d.y2 - d.y1)) < 0.005) { draftRef.current = null; redraw(); return; }
     commit(d);
     room.send("wb:draft", null);
+  };
+
+  const onLeave = () => {
+    if (localCursor.current) localCursor.current.inside = false;
+  };
+  const onEnter = (e: React.PointerEvent) => {
+    const p = pos(e);
+    localCursor.current = { x: p.x, y: p.y, t: Date.now(), inside: true };
   };
 
   const undo = () => {
@@ -462,8 +557,17 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
           onPointerMove={onMove}
           onPointerUp={onUp}
           onPointerCancel={onUp}
+          onPointerEnter={onEnter}
+          onPointerLeave={onLeave}
+          onContextMenu={(e) => e.preventDefault()}
           className="absolute inset-0 w-full h-full touch-none"
-          style={{ cursor: tool === "eraser" ? "cell" : tool === "sticker" ? "copy" : "crosshair" }}
+          style={{
+            cursor:
+              tool === "sticker" ? "copy"
+              : tool === "text" ? "text"
+              : (tool === "pen" || tool === "marker" || tool === "brush" || tool === "eraser") ? "none"
+              : "crosshair"
+          }}
         />
         <canvas ref={overlayRef} className="absolute inset-0 w-full h-full pointer-events-none" />
         {textInput && (
