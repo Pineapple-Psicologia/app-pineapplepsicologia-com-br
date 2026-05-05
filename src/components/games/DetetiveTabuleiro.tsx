@@ -169,7 +169,7 @@ export default function DetetiveTabuleiro({ room }: Props) {
         </div>
       ) : (
         <div className="rounded-2xl p-3 bg-white border-4 border-amber-700/60 flex items-center gap-3 shadow-md">
-          <div className={`text-3xl w-12 h-12 rounded-xl flex items-center justify-center border-2 border-white shadow ${currentLoc.color}`}>
+          <div className={`text-3xl w-12 h-12 rounded-xl flex items-center justify-center border-2 border-white shadow ${currentLoc.tw}`}>
             {currentLoc.emoji}
           </div>
           <div className="flex-1 min-w-0">
