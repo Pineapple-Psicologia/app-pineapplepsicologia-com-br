@@ -201,6 +201,16 @@ export default function DetetiveTabuleiro({ room }: Props) {
     return off;
   }, [room]);
 
+  useEffect(() => {
+    if (state.caseClosed && !celebratedRef.current) {
+      celebratedRef.current = true;
+      setShowCelebration(true);
+    }
+    if (!state.caseClosed) {
+      celebratedRef.current = false;
+    }
+  }, [state.caseClosed]);
+
   const update = (patch: Partial<State>) => {
     const next = { ...state, ...patch };
     // recompute badges
