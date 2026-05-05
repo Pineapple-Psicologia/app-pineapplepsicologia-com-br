@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Sparkles, Heart, Users, Lock } from "lucide-react";
+import { Sparkles, Heart, Users, Lock, Video } from "lucide-react";
 import { GAMES, type GameId } from "@/lib/games";
 
 export const Route = createFileRoute("/")({
@@ -61,6 +61,32 @@ function Home() {
             paciente. Tudo ao vivo, sem download.
           </p>
         </header>
+
+        <section className="mb-8">
+          <Card
+            className="p-5 border-2 border-primary/40 bg-primary/5 hover:border-primary hover:shadow-xl cursor-pointer transition-all flex items-center gap-4"
+            onClick={() =>
+              navigate({
+                to: "/v/$code",
+                params: { code: genCode() },
+                search: { role: "psi" },
+              })
+            }
+          >
+            <div className="p-3 rounded-xl bg-primary/15 text-primary">
+              <Video className="w-6 h-6" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-bold leading-tight">
+                Sala de vídeo com 3 câmeras
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Rosto + ambiente (celular do pai) + tela do computador. Você vê a criança como se estivesse do lado dela.
+              </p>
+            </div>
+            <Button>Abrir sala</Button>
+          </Card>
+        </section>
 
         <section className="mb-12">
           <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">
