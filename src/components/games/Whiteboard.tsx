@@ -176,8 +176,64 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
         drawSmoothPath();
       }
     } else if (o.type === "fill") {
-      ctx.fillStyle = o.color;
-      ctx.fillRect(0, 0, w, h);
+      // True flood fill: only fills the connected region at (x,y),
+      // respecting strokes/contours already drawn on the canvas.
+      const sx = Math.max(0, Math.min(w - 1, Math.floor(o.x * w)));
+      const sy = Math.max(0, Math.min(h - 1, Math.floor(o.y * h)));
+      const img = ctx.getImageData(0, 0, w, h);
+      const data = img.data;
+      const idx = (x: number, y: number) => (y * w + x) * 4;
+      const startIdx = idx(sx, sy);
+      const tr = data[startIdx], tg = data[startIdx + 1], tb = data[startIdx + 2], ta = data[startIdx + 3];
+
+      // parse fill color (hex #rrggbb)
+      const hex = o.color.replace("#", "");
+      const fr = parseInt(hex.substring(0, 2), 16);
+      const fg = parseInt(hex.substring(2, 4), 16);
+      const fb = parseInt(hex.substring(4, 6), 16);
+      const fa = 255;
+
+      // skip if already same color
+      if (!(tr === fr && tg === fg && tb === fb && ta === fa)) {
+        const tol = 32; // tolerance to bridge antialiased edges
+        const match = (i: number) =>
+          Math.abs(data[i] - tr) <= tol &&
+          Math.abs(data[i + 1] - tg) <= tol &&
+          Math.abs(data[i + 2] - tb) <= tol &&
+          Math.abs(data[i + 3] - ta) <= tol;
+
+        // scanline flood fill
+        const stack: number[] = [sx, sy];
+        const visited = new Uint8Array(w * h);
+        while (stack.length) {
+          const y = stack.pop()!;
+          let x = stack.pop()!;
+          let i = idx(x, y);
+          if (visited[y * w + x] || !match(i)) continue;
+          // walk left
+          let xl = x;
+          while (xl >= 0 && !visited[y * w + xl] && match(idx(xl, y))) xl--;
+          xl++;
+          // walk right
+          let xr = x;
+          while (xr < w && !visited[y * w + xr] && match(idx(xr, y))) xr++;
+          xr--;
+          for (let cx = xl; cx <= xr; cx++) {
+            const ci = idx(cx, y);
+            data[ci] = fr; data[ci + 1] = fg; data[ci + 2] = fb; data[ci + 3] = fa;
+            visited[y * w + cx] = 1;
+            if (y > 0) {
+              const ai = idx(cx, y - 1);
+              if (!visited[(y - 1) * w + cx] && match(ai)) stack.push(cx, y - 1);
+            }
+            if (y < h - 1) {
+              const bi = idx(cx, y + 1);
+              if (!visited[(y + 1) * w + cx] && match(bi)) stack.push(cx, y + 1);
+            }
+          }
+        }
+        ctx.putImageData(img, 0, 0);
+      }
     } else if (o.type === "rect" || o.type === "circle" || o.type === "line" || o.type === "arrow") {
       ctx.strokeStyle = o.color;
       ctx.lineWidth = o.size;
