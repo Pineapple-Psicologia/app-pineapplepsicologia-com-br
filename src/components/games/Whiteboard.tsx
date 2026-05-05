@@ -315,7 +315,7 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
         }
         // local brush preview
         const lc = localCursor.current;
-        const isBrushTool = tool === "pen" || tool === "marker" || tool === "brush" || tool === "eraser";
+        const isBrushTool = tool === "pen" || tool === "marker" || tool === "brush" || tool === "neon" || tool === "rainbow" || tool === "spray" || tool === "eraser";
         if (lc && lc.inside && isBrushTool) {
           const x = lc.x * o.width, y = lc.y * o.height;
           const dpr = window.devicePixelRatio || 1;
