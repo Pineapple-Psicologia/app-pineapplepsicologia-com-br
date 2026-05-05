@@ -408,6 +408,9 @@ export default function DetetiveTabuleiro({ room }: Props) {
           <div className="text-xs mt-2 text-amber-900/80">
             +{state.points} pontos · {state.earnedBadges.length} medalhas · Nível {level}
           </div>
+          <Button size="sm" onClick={() => setShowCelebration(true)} className="mt-3 bg-amber-700 hover:bg-amber-800 text-white font-bold">
+            🎉 Ver cerimônia de medalhas
+          </Button>
         </div>
       ) : (
         <div className="rounded-2xl p-3 bg-white border-4 border-amber-700/60 flex items-center gap-3 shadow-md">
