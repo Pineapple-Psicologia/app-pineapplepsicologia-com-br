@@ -76,21 +76,89 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
     if (o.type === "path") {
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
+      const baseW =
+        o.tool === "marker" ? o.size * 2.5 :
+        o.tool === "brush" ? o.size * 1.6 :
+        o.tool === "neon" ? o.size * 1.2 :
+        o.tool === "spray" ? o.size * 0.6 :
+        o.size;
+      const pts = o.points;
+
+      if (o.tool === "spray") {
+        // spray: scatter dots around each point
+        ctx.fillStyle = o.color;
+        ctx.globalAlpha = 0.55;
+        const radius = o.size * 2.2;
+        for (const p of pts) {
+          const px = p.x * w, py = p.y * h;
+          const dots = Math.max(6, Math.round(o.size * 1.2));
+          for (let i = 0; i < dots; i++) {
+            const a = Math.random() * Math.PI * 2;
+            const r = Math.random() * radius;
+            ctx.beginPath();
+            ctx.arc(px + Math.cos(a) * r, py + Math.sin(a) * r, 1.1, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+        ctx.restore();
+        return;
+      }
+
       ctx.strokeStyle = o.color;
-      const baseW = o.tool === "marker" ? o.size * 2.5 : o.tool === "brush" ? o.size * 1.6 : o.size;
       if (o.tool === "marker") ctx.globalAlpha = 0.35;
       if (o.tool === "brush") {
         ctx.shadowColor = o.color;
         ctx.shadowBlur = o.size * 0.8;
       }
-      const pts = o.points;
+      if (o.tool === "neon") {
+        ctx.shadowColor = o.color;
+        ctx.shadowBlur = o.size * 2.4;
+      }
+
+      const drawSmoothPath = (strokeColor?: string) => {
+        if (strokeColor) ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = baseW;
+        ctx.beginPath();
+        ctx.moveTo(pts[0].x * w, pts[0].y * h);
+        for (let i = 1; i < pts.length - 1; i++) {
+          const cx = (pts[i].x * w + pts[i + 1].x * w) / 2;
+          const cy = (pts[i].y * h + pts[i + 1].y * h) / 2;
+          ctx.quadraticCurveTo(pts[i].x * w, pts[i].y * h, cx, cy);
+        }
+        const last = pts[pts.length - 1];
+        ctx.lineTo(last.x * w, last.y * h);
+        ctx.stroke();
+      };
+
       if (pts.length < 2) {
         ctx.beginPath();
         ctx.arc(pts[0].x * w, pts[0].y * h, baseW / 2, 0, Math.PI * 2);
         ctx.fillStyle = o.color;
         ctx.fill();
+      } else if (o.tool === "rainbow") {
+        // segment-by-segment hue cycling
+        ctx.lineWidth = baseW;
+        for (let i = 1; i < pts.length; i++) {
+          const a = pts[i - 1], b = pts[i];
+          const hue = ((i / pts.length) * 360 + (o.points.length * 7)) % 360;
+          ctx.strokeStyle = `hsl(${hue}, 90%, 55%)`;
+          ctx.beginPath();
+          ctx.moveTo(a.x * w, a.y * h);
+          const next = pts[i + 1] ?? b;
+          const cx = (b.x * w + next.x * w) / 2;
+          const cy = (b.y * h + next.y * h) / 2;
+          ctx.quadraticCurveTo(b.x * w, b.y * h, cx, cy);
+          ctx.stroke();
+        }
+      } else if (o.tool === "neon") {
+        // double-pass: glow then bright white core
+        drawSmoothPath();
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 0.95;
+        drawSmoothPath("#ffffff");
+        ctx.lineWidth = Math.max(1, baseW * 0.4);
+        drawSmoothPath("#ffffff");
       } else if (o.tool === "brush" && pts.some((p) => p.w !== undefined)) {
-        // variable-width brush: draw segment-by-segment with smoothed widths
         for (let i = 1; i < pts.length; i++) {
           const a = pts[i - 1], b = pts[i];
           const wa = (a.w ?? 1) * baseW;
@@ -105,19 +173,11 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
           ctx.stroke();
         }
       } else {
-        // smoothed quadratic curve through midpoints
-        ctx.lineWidth = baseW;
-        ctx.beginPath();
-        ctx.moveTo(pts[0].x * w, pts[0].y * h);
-        for (let i = 1; i < pts.length - 1; i++) {
-          const cx = (pts[i].x * w + pts[i + 1].x * w) / 2;
-          const cy = (pts[i].y * h + pts[i + 1].y * h) / 2;
-          ctx.quadraticCurveTo(pts[i].x * w, pts[i].y * h, cx, cy);
-        }
-        const last = pts[pts.length - 1];
-        ctx.lineTo(last.x * w, last.y * h);
-        ctx.stroke();
+        drawSmoothPath();
       }
+    } else if (o.type === "fill") {
+      ctx.fillStyle = o.color;
+      ctx.fillRect(0, 0, w, h);
     } else if (o.type === "rect" || o.type === "circle" || o.type === "line" || o.type === "arrow") {
       ctx.strokeStyle = o.color;
       ctx.lineWidth = o.size;
