@@ -3,9 +3,10 @@ import { Button } from "@/components/ui/button";
 import {
   Eraser, Trash2, Pencil, Undo2, Download, Brush, Highlighter,
   Square, Circle as CircleIcon, Minus, ArrowRight, Type, Smile,
-  LayoutGrid,
+  LayoutGrid, Sparkles,
 } from "lucide-react";
 import type { useRoom, RoomMessage } from "@/lib/useRoom";
+import { TEMPLATES, buildTemplate, type TemplateId } from "@/lib/whiteboardTemplates";
 
 type Tool = "pen" | "marker" | "brush" | "rect" | "circle" | "line" | "arrow" | "text" | "sticker" | "eraser";
 
