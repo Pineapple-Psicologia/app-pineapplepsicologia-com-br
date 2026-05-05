@@ -244,26 +244,69 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
         }
         // local brush preview
         const lc = localCursor.current;
-        if (lc && lc.inside && (tool === "pen" || tool === "marker" || tool === "brush" || tool === "eraser")) {
+        const isBrushTool = tool === "pen" || tool === "marker" || tool === "brush" || tool === "eraser";
+        if (lc && lc.inside && isBrushTool) {
           const x = lc.x * o.width, y = lc.y * o.height;
           const dpr = window.devicePixelRatio || 1;
           const baseW = tool === "marker" ? size * 2.5 : tool === "brush" ? size * 1.6 : size;
           const r = (tool === "eraser" ? 14 : baseW / 2) * dpr;
-          ctx.beginPath();
-          ctx.arc(x, y, r, 0, Math.PI * 2);
-          if (tool === "eraser") {
-            ctx.strokeStyle = "rgba(230, 57, 70, 0.9)";
-            ctx.lineWidth = 2 * dpr;
-            ctx.setLineDash([4 * dpr, 4 * dpr]);
+
+          // "Lazy brush" leash: while drawing with stabilizer on, show the line
+          // between the actual cursor and the smoothed pen tip — child sees the
+          // brush following firmly behind their hand.
+          const sm = smoothedRef.current;
+          if (drawingRef.current && stabilize && sm && tool !== "eraser") {
+            const sx = sm.x * o.width, sy = sm.y * o.height;
+            ctx.strokeStyle = "rgba(0,0,0,0.25)";
+            ctx.lineWidth = 1 * dpr;
+            ctx.setLineDash([3 * dpr, 3 * dpr]);
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(sx, sy);
             ctx.stroke();
             ctx.setLineDash([]);
-          } else {
-            ctx.fillStyle = color + (tool === "marker" ? "59" : "33");
+            // small dot at the smoothed tip
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(sx, sy, Math.max(2 * dpr, r * 0.2), 0, Math.PI * 2);
             ctx.fill();
+          }
+
+          if (tool === "eraser") {
+            // white halo + red dashed ring
+            ctx.strokeStyle = "rgba(255,255,255,0.95)";
+            ctx.lineWidth = 4 * dpr;
+            ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke();
+            ctx.strokeStyle = "rgba(230, 57, 70, 0.95)";
+            ctx.lineWidth = 2 * dpr;
+            ctx.setLineDash([4 * dpr, 4 * dpr]);
+            ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke();
+            ctx.setLineDash([]);
+          } else {
+            // soft fill
+            ctx.fillStyle = color + (tool === "marker" ? "40" : "26");
+            ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+            // white halo so it stays visible on any color
+            ctx.strokeStyle = "rgba(255,255,255,0.9)";
+            ctx.lineWidth = 3 * dpr;
+            ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke();
+            // colored ring on top
             ctx.strokeStyle = color;
             ctx.lineWidth = 1.5 * dpr;
-            ctx.stroke();
+            ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke();
           }
+
+          // precision crosshair at exact pointer position
+          ctx.strokeStyle = "rgba(0,0,0,0.85)";
+          ctx.lineWidth = 1 * dpr;
+          const cross = 4 * dpr;
+          ctx.beginPath();
+          ctx.moveTo(x - cross, y); ctx.lineTo(x + cross, y);
+          ctx.moveTo(x, y - cross); ctx.lineTo(x, y + cross);
+          ctx.stroke();
+          // tiny white center dot
+          ctx.fillStyle = "rgba(255,255,255,0.95)";
+          ctx.beginPath(); ctx.arc(x, y, 1.2 * dpr, 0, Math.PI * 2); ctx.fill();
         }
       }
       raf = requestAnimationFrame(loop);
