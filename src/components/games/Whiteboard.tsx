@@ -486,6 +486,8 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
         return;
       }
       setTextInput({ x: p.x, y: p.y, value: "" });
+      // Focus the textarea on the next tick so the gesture-driven keyboard opens on touch.
+      setTimeout(() => textareaRef.current?.focus(), 0);
       return;
     }
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
