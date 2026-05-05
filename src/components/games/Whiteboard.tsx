@@ -57,7 +57,7 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
   const [showTemplates, setShowTemplates] = useState(false);
   const [stabilize, setStabilize] = useState(true);
   const [shapeAssist, setShapeAssist] = useState(true);
-  const [textInput, setTextInput] = useState<{ x: number; y: number; value: string } | null>(null);
+  const [textInput, setTextInput] = useState<{ x: number; y: number; value: string; id?: string; color?: string; size?: number } | null>(null);
 
   const objectsRef = useRef<Obj[]>([]);
   const draftRef = useRef<Obj | null>(null);
