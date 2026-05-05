@@ -70,6 +70,7 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
   const smoothedRef = useRef<{ x: number; y: number } | null>(null);
   const eraseModeRef = useRef(false);
   const textDragRef = useRef<{ id: string; offsetX: number; offsetY: number; moved: boolean; startX: number; startY: number } | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // ---------- drawing ----------
   const drawObj = useCallback((ctx: CanvasRenderingContext2D, w: number, h: number, o: Obj) => {
