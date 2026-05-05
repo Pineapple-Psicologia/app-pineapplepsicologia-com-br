@@ -615,25 +615,53 @@ function LocationContent({
   onComplete,
   onClose,
   isPsi,
+  onAskHelp,
+  hintsUsed,
+  diceRolling,
 }: {
   locId: LocationId;
   state: State;
-  update: (p: Partial<State>) => void;
+  update: (p: Partial<State> | ((prev: State) => Partial<State>)) => void;
   onComplete: () => void;
   onClose: () => void;
   isPsi: boolean;
+  onAskHelp: () => void;
+  hintsUsed: number;
+  diceRolling: boolean;
 }) {
   const loc = LOCATIONS.find((l) => l.id === locId)!;
+  const projectedPoints = Math.max(
+    Math.ceil(loc.points * HINT_MIN_RATIO),
+    loc.points - hintsUsed * HINT_PENALTY
+  );
   const Header = (
     <div className="p-4 border-b bg-gradient-to-r from-amber-100 to-amber-50 dark:from-stone-800 dark:to-stone-900 rounded-t-2xl">
       <div className="flex items-start justify-between gap-2">
-        <div>
+        <div className="flex-1">
           <div className="text-3xl">{loc.emoji}</div>
           <h3 className="text-xl font-bold">{loc.name}</h3>
-          <p className="text-xs text-muted-foreground">{loc.hint} · vale {loc.points} pts</p>
+          <p className="text-xs text-muted-foreground">
+            {loc.hint} · vale <b>{projectedPoints}</b> pts
+            {hintsUsed > 0 && <span className="text-orange-700"> (–{loc.points - projectedPoints} por {hintsUsed} ajuda{hintsUsed > 1 ? "s" : ""})</span>}
+          </p>
         </div>
         <button onClick={onClose} className="text-2xl text-muted-foreground hover:text-foreground">✕</button>
       </div>
+      {isPsi && (
+        <div className="mt-3 flex items-center gap-2 flex-wrap">
+          <Button
+            size="sm"
+            onClick={onAskHelp}
+            disabled={diceRolling}
+            className="bg-violet-600 hover:bg-violet-700 text-white font-bold"
+          >
+            <Dices className="w-4 h-4 mr-1" /> Pedir ajuda (rolar dado)
+          </Button>
+          <span className="text-[11px] text-muted-foreground">
+            Pedir ajuda é ótimo — mostra interesse. Cada ajuda reduz {HINT_PENALTY} pts (mín. {Math.ceil(loc.points * HINT_MIN_RATIO)} garantidos).
+          </span>
+        </div>
+      )}
     </div>
   );
 
