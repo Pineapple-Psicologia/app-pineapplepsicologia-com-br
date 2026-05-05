@@ -557,8 +557,17 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
           onPointerMove={onMove}
           onPointerUp={onUp}
           onPointerCancel={onUp}
+          onPointerEnter={onEnter}
+          onPointerLeave={onLeave}
+          onContextMenu={(e) => e.preventDefault()}
           className="absolute inset-0 w-full h-full touch-none"
-          style={{ cursor: tool === "eraser" ? "cell" : tool === "sticker" ? "copy" : "crosshair" }}
+          style={{
+            cursor:
+              tool === "sticker" ? "copy"
+              : tool === "text" ? "text"
+              : (tool === "pen" || tool === "marker" || tool === "brush" || tool === "eraser") ? "none"
+              : "crosshair"
+          }}
         />
         <canvas ref={overlayRef} className="absolute inset-0 w-full h-full pointer-events-none" />
         {textInput && (
