@@ -246,11 +246,12 @@ export default function DetetiveTabuleiro({ room }: Props) {
   const [showCelebration, setShowCelebration] = useState(false);
   const celebratedRef = useRef(false);
 
-  // Determine if this user is the game master (psi)
-  // We infer role from URL search params since useRoom doesn't expose it directly here.
-  const isPsi = useMemo(() => {
-    if (typeof window === "undefined") return false;
-    return new URLSearchParams(window.location.search).get("role") === "psi";
+  // Determine if this user is the game master (psi). We start as `false` so
+  // the SSR markup matches the initial client render, then upgrade after
+  // mount based on the URL — avoids React hydration mismatch.
+  const [isPsi, setIsPsi] = useState(false);
+  useEffect(() => {
+    setIsPsi(new URLSearchParams(window.location.search).get("role") === "psi");
   }, []);
 
   useEffect(() => {
