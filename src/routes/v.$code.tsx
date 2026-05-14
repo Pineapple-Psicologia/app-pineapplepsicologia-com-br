@@ -228,7 +228,7 @@ function Tile({
   stream: MediaStream | null;
   label: string;
   muted: boolean;
-  videoRef?: React.RefObject<HTMLVideoElement>;
+  videoRef?: React.RefObject<HTMLVideoElement | null>;
   mirror?: boolean;
   placeholder?: string;
 }) {
