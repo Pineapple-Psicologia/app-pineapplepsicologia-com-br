@@ -81,7 +81,7 @@ function SalaPage() {
         ) : game === "detetive-tabuleiro" ? (
           <DetetiveTabuleiro room={room} />
         ) : (
-          <Whiteboard room={room} />
+          <Whiteboard room={room} role={role} />
         )}
       </main>
     </div>
