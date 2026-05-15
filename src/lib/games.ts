@@ -72,6 +72,16 @@ export const GAMES: GameMeta[] = [
     available: true,
   },
   {
+    id: "triangulo",
+    title: "Triângulo Cognitivo",
+    emoji: "🔺",
+    description:
+      "Psicoeducação sobre pensamento, emoção e comportamento: visualizar o triângulo, classificar cartas e preencher uma situação real.",
+    ageRange: "9–17 anos",
+    approach: "TCC · psicoeducação",
+    available: true,
+  },
+  {
     id: "balanca" as GameId,
     title: "Balança da Evidência",
     emoji: "⚖️",
