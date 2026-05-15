@@ -52,6 +52,16 @@ export const GAMES: GameMeta[] = [
     available: true,
   },
   {
+    id: "detetive-aventura",
+    title: "Detetive: Aventura Investigativa",
+    emoji: "🔦",
+    description:
+      "Modo point & click: entre em cada cena (crime, interrogatório, laboratório, arquivo, veredito), clique em pistas e resolva o caso junto. Visual cartoon ou noir.",
+    ageRange: "9–17 anos",
+    approach: "TCC imersiva",
+    available: true,
+  },
+  {
     id: "mapa" as GameId,
     title: "Mapa Corporal",
     emoji: "🧍",
