@@ -1,4 +1,4 @@
-export type GameId = "whiteboard" | "termometro" | "detetive" | "detetive-tabuleiro" | "detetive-aventura";
+export type GameId = "whiteboard" | "termometro" | "detetive" | "detetive-tabuleiro" | "detetive-aventura" | "mapa-corporal";
 
 export type GameMeta = {
   id: GameId;
@@ -62,14 +62,14 @@ export const GAMES: GameMeta[] = [
     available: true,
   },
   {
-    id: "mapa" as GameId,
+    id: "mapa-corporal",
     title: "Mapa Corporal",
     emoji: "🧍",
     description:
-      "Silhueta onde o paciente pinta onde sente cada emoção no corpo.",
+      "Silhueta interativa onde o paciente pinta onde sente cada emoção no corpo. Ótimo pra abrir e fechar sessão.",
     ageRange: "7–12 anos",
     approach: "Consciência corporal",
-    available: false,
+    available: true,
   },
   {
     id: "balanca" as GameId,
