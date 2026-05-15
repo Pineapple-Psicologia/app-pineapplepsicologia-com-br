@@ -256,7 +256,7 @@ export default function MapaCorporal({ room }: Props) {
                       }}
                       data-zone={z.id}
                     >
-                      <title>{z.label}{item ? ` — ${item.label}` : ""}</title>
+                      <title>{`${z.label}${item ? ` — ${item.label}` : ""}`}</title>
                     </ellipse>
                     {filled && item && (
                       <text
