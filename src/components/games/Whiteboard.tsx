@@ -4,6 +4,7 @@ import {
   Eraser, Trash2, Pencil, Undo2, Download, Brush, Highlighter,
   Square, Circle as CircleIcon, Minus, ArrowRight, Type, Smile,
   LayoutGrid, Sparkles, Wand2, Waves, Zap, Rainbow, SprayCan, PaintBucket, Plus, Move,
+  Lock, Unlock,
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { useRoom, RoomMessage } from "@/lib/useRoom";
@@ -43,7 +44,7 @@ type BgId = typeof BACKGROUNDS[number]["id"];
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 
-export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> }) {
+export default function Whiteboard({ room, role = "paciente" }: { room: ReturnType<typeof useRoom>; role?: "psi" | "paciente" }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const overlayRef = useRef<HTMLCanvasElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -57,6 +58,9 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
   const [showTemplates, setShowTemplates] = useState(false);
   const [stabilize, setStabilize] = useState(true);
   const [shapeAssist, setShapeAssist] = useState(true);
+  const [locked, setLocked] = useState(false);
+  const isPsi = role === "psi";
+  const canDraw = isPsi || !locked;
   const [textInput, setTextInput] = useState<{ x: number; y: number; value: string; id?: string; color?: string; size?: number } | null>(null);
 
   const objectsRef = useRef<Obj[]>([]);
@@ -327,11 +331,12 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
     room.send("wb:request", {});
     return room.on((m: RoomMessage) => {
       if (m.type === "wb:request") {
-        room.send("wb:snapshot", { objects: objectsRef.current, bg });
+        room.send("wb:snapshot", { objects: objectsRef.current, bg, locked });
       } else if (m.type === "wb:snapshot") {
         if (Array.isArray(m.payload?.objects)) {
           objectsRef.current = m.payload.objects;
           if (m.payload.bg) setBg(m.payload.bg);
+          if (typeof m.payload.locked === "boolean" && !isPsi) setLocked(m.payload.locked);
           redraw();
         }
       } else if (m.type === "wb:add") {
@@ -349,11 +354,14 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
         redraw();
       } else if (m.type === "wb:bg") {
         setBg(m.payload);
+      } else if (m.type === "wb:lock") {
+        // Only the patient honors the lock; the psicóloga is the source of truth.
+        if (!isPsi) setLocked(Boolean(m.payload));
       } else if (m.type === "wb:cursor") {
         peerCursor.current = { ...m.payload, t: Date.now() };
       }
     });
-  }, [room, redraw, bg]);
+  }, [room, redraw, bg, locked, isPsi]);
 
   // overlay render loop (peer cursor + local brush preview)
   useEffect(() => {
@@ -464,6 +472,7 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
 
   const onDown = (e: React.PointerEvent) => {
     if (textInput) return;
+    if (!canDraw) return;
     const p = pos(e);
 
     // right-click = eraser shortcut
@@ -524,6 +533,7 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
   };
 
   const onMove = (e: React.PointerEvent) => {
+    if (!canDraw) return;
     const p = pos(e);
     const now = Date.now();
     // local cursor preview (immediate)
@@ -829,6 +839,22 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
           <Button size="sm" variant="outline" onClick={undo}><Undo2 className="w-4 h-4 mr-1" />Desfazer</Button>
           <Button size="sm" variant="outline" onClick={download}><Download className="w-4 h-4 mr-1" />Salvar</Button>
           <Button size="sm" variant="outline" onClick={clearAll}><Trash2 className="w-4 h-4 mr-1" />Limpar</Button>
+          {isPsi && (
+            <Button
+              size="sm"
+              variant={locked ? "default" : "outline"}
+              className={locked ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
+              onClick={() => {
+                const next = !locked;
+                setLocked(next);
+                room.send("wb:lock", next);
+              }}
+              title={locked ? "Liberar desenho do paciente" : "Bloquear desenho do paciente"}
+            >
+              {locked ? <Lock className="w-4 h-4 mr-1" /> : <Unlock className="w-4 h-4 mr-1" />}
+              {locked ? "Bloqueado" : "Bloquear"}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -864,6 +890,15 @@ export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> 
 
       {/* Canvas */}
       <div ref={wrapperRef} className="relative flex-1 rounded-2xl border-2 border-border bg-white overflow-hidden shadow-inner">
+        {locked && (
+          <div className={`absolute top-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold shadow-lg ${isPsi ? "bg-destructive/90 text-destructive-foreground" : "bg-destructive text-destructive-foreground"}`}>
+            <Lock className="w-3.5 h-3.5" />
+            {isPsi ? "Paciente bloqueado" : "Aguarde a psicóloga liberar"}
+          </div>
+        )}
+        {locked && !isPsi && (
+          <div className="absolute inset-0 z-20 bg-white/30 backdrop-blur-[1px] cursor-not-allowed" />
+        )}
         <canvas
           ref={canvasRef}
           onPointerDown={onDown}
