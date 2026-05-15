@@ -331,11 +331,12 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
     room.send("wb:request", {});
     return room.on((m: RoomMessage) => {
       if (m.type === "wb:request") {
-        room.send("wb:snapshot", { objects: objectsRef.current, bg });
+        room.send("wb:snapshot", { objects: objectsRef.current, bg, locked });
       } else if (m.type === "wb:snapshot") {
         if (Array.isArray(m.payload?.objects)) {
           objectsRef.current = m.payload.objects;
           if (m.payload.bg) setBg(m.payload.bg);
+          if (typeof m.payload.locked === "boolean" && !isPsi) setLocked(m.payload.locked);
           redraw();
         }
       } else if (m.type === "wb:add") {
@@ -353,11 +354,14 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
         redraw();
       } else if (m.type === "wb:bg") {
         setBg(m.payload);
+      } else if (m.type === "wb:lock") {
+        // Only the patient honors the lock; the psicóloga is the source of truth.
+        if (!isPsi) setLocked(Boolean(m.payload));
       } else if (m.type === "wb:cursor") {
         peerCursor.current = { ...m.payload, t: Date.now() };
       }
     });
-  }, [room, redraw, bg]);
+  }, [room, redraw, bg, locked, isPsi]);
 
   // overlay render loop (peer cursor + local brush preview)
   useEffect(() => {
