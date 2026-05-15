@@ -58,6 +58,9 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
   const [showTemplates, setShowTemplates] = useState(false);
   const [stabilize, setStabilize] = useState(true);
   const [shapeAssist, setShapeAssist] = useState(true);
+  const [locked, setLocked] = useState(false);
+  const isPsi = role === "psi";
+  const canDraw = isPsi || !locked;
   const [textInput, setTextInput] = useState<{ x: number; y: number; value: string; id?: string; color?: string; size?: number } | null>(null);
 
   const objectsRef = useRef<Obj[]>([]);
