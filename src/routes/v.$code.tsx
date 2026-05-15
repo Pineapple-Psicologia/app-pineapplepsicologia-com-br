@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useVideoRoom } from "@/lib/useVideoRoom";
+import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft,
   Check,
@@ -36,12 +37,37 @@ function VideoRoute() {
   return <CallView code={code} role={role} />;
 }
 
+const REACTIONS = ["❤️", "👏", "😂", "🎉", "👍", "🤩", "🌟", "🔥"] as const;
+type FloatingEmoji = {
+  id: string;
+  emoji: string;
+  side: "local" | "remote";
+  drift: number;
+};
+
+const AVATAR_PALETTE = [
+  { from: "#FFD27A", to: "#DF9628", emoji: "🦊" },
+  { from: "#A8E6CF", to: "#3DB78F", emoji: "🐢" },
+  { from: "#FFB7C5", to: "#E94EAB", emoji: "🐰" },
+  { from: "#B5C7FF", to: "#6573E0", emoji: "🦉" },
+  { from: "#F4B860", to: "#C97B3F", emoji: "🦁" },
+  { from: "#C5E1A5", to: "#7CB342", emoji: "🐸" },
+];
+
+function pickAvatar(seed: string) {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+  return AVATAR_PALETTE[hash % AVATAR_PALETTE.length];
+}
+
 function CallView({ code, role }: { code: string; role: "psi" | "paciente" }) {
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [audioOn, setAudioOn] = useState(true);
   const [videoOn, setVideoOn] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [remoteVideoOn, setRemoteVideoOn] = useState(true);
+  const [floats, setFloats] = useState<FloatingEmoji[]>([]);
 
   const localRef = useRef<HTMLVideoElement>(null);
 
@@ -78,8 +104,6 @@ function CallView({ code, role }: { code: string; role: "psi" | "paciente" }) {
     stream.getVideoTracks().forEach((t) => (t.enabled = videoOn));
   }, [videoOn, stream]);
 
-  // Map our two roles onto the existing signaling hook.
-  // The "cam" side initiates offers to the "psi" side; both publish+subscribe.
   const { remoteStreams, members, connected } = useVideoRoom({
     code,
     kind: role === "psi" ? "psi" : "cam",
@@ -91,6 +115,63 @@ function CallView({ code, role }: { code: string; role: "psi" | "paciente" }) {
   const otherKind = role === "psi" ? "cam" : "psi";
   const otherPresent = members.some((m) => m.kind === otherKind);
   const remote = Object.values(remoteStreams)[0]?.stream ?? null;
+
+  // Side channel for reactions + camera-state
+  const fxChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  useEffect(() => {
+    if (!stream) return;
+    const ch = supabase.channel(`v:${code}:fx`, {
+      config: { broadcast: { self: false } },
+    });
+    ch.on("broadcast", { event: "reaction" }, ({ payload }) => {
+      pushFloat({
+        emoji: String(payload.emoji ?? "❤️"),
+        side: "remote",
+      });
+    });
+    ch.on("broadcast", { event: "cam" }, ({ payload }) => {
+      setRemoteVideoOn(Boolean(payload.on));
+    });
+    ch.subscribe((status) => {
+      if (status === "SUBSCRIBED") {
+        ch.send({ type: "broadcast", event: "cam", payload: { on: videoOn } });
+      }
+    });
+    fxChannelRef.current = ch;
+    return () => {
+      ch.unsubscribe();
+      supabase.removeChannel(ch);
+      fxChannelRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [code, stream]);
+
+  // Broadcast camera state changes
+  useEffect(() => {
+    fxChannelRef.current?.send({
+      type: "broadcast",
+      event: "cam",
+      payload: { on: videoOn },
+    });
+  }, [videoOn]);
+
+  const pushFloat = useCallback((p: { emoji: string; side: "local" | "remote" }) => {
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const drift = Math.round((Math.random() - 0.5) * 80);
+    setFloats((f) => [...f, { id, emoji: p.emoji, side: p.side, drift }]);
+    setTimeout(() => {
+      setFloats((f) => f.filter((x) => x.id !== id));
+    }, 2400);
+  }, []);
+
+  const sendReaction = (emoji: string) => {
+    pushFloat({ emoji, side: "local" });
+    fxChannelRef.current?.send({
+      type: "broadcast",
+      event: "reaction",
+      payload: { emoji },
+    });
+  };
 
   const inviteUrl =
     typeof window !== "undefined"
@@ -109,6 +190,9 @@ function CallView({ code, role }: { code: string; role: "psi" | "paciente" }) {
     setStream(null);
     window.location.href = "/";
   };
+
+  const localAvatar = useMemo(() => pickAvatar(role + ":me:" + code), [role, code]);
+  const remoteAvatar = useMemo(() => pickAvatar(otherKind + ":remote:" + code), [otherKind, code]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -171,11 +255,14 @@ function CallView({ code, role }: { code: string; role: "psi" | "paciente" }) {
                 stream={remote}
                 label={role === "psi" ? "Paciente" : "Psicóloga"}
                 muted={false}
+                videoOff={!remoteVideoOn}
+                avatar={remoteAvatar}
                 placeholder={
                   otherPresent
                     ? "Conectando vídeo…"
                     : `Aguardando ${role === "psi" ? "paciente" : "psi"} entrar`
                 }
+                floats={floats.filter((f) => f.side === "remote")}
               />
               <Tile
                 stream={stream}
@@ -183,10 +270,27 @@ function CallView({ code, role }: { code: string; role: "psi" | "paciente" }) {
                 muted
                 videoRef={localRef}
                 mirror
+                videoOff={!videoOn}
+                avatar={localAvatar}
+                floats={floats.filter((f) => f.side === "local")}
               />
             </div>
 
-            <div className="flex gap-2 justify-center pt-2">
+            {/* Quick reactions */}
+            <div className="flex gap-1.5 justify-center flex-wrap pt-1">
+              {REACTIONS.map((e) => (
+                <button
+                  key={e}
+                  onClick={() => sendReaction(e)}
+                  className="text-2xl w-11 h-11 rounded-full bg-card border hover:bg-accent hover:scale-110 transition-transform active:scale-95"
+                  aria-label={`Enviar ${e}`}
+                >
+                  {e}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex gap-2 justify-center pt-1">
               <Button
                 variant={audioOn ? "secondary" : "destructive"}
                 size="sm"
@@ -224,6 +328,9 @@ function Tile({
   videoRef,
   mirror,
   placeholder,
+  videoOff,
+  avatar,
+  floats,
 }: {
   stream: MediaStream | null;
   label: string;
@@ -231,6 +338,9 @@ function Tile({
   videoRef?: React.RefObject<HTMLVideoElement | null>;
   mirror?: boolean;
   placeholder?: string;
+  videoOff?: boolean;
+  avatar?: { from: string; to: string; emoji: string };
+  floats?: FloatingEmoji[];
 }) {
   const internalRef = useRef<HTMLVideoElement>(null);
   const ref = videoRef ?? internalRef;
@@ -238,12 +348,15 @@ function Tile({
     if (!videoRef && internalRef.current && stream) internalRef.current.srcObject = stream;
   }, [stream, videoRef]);
 
+  const showAvatar = stream && videoOff && avatar;
+
   return (
     <div className="relative bg-black rounded-xl overflow-hidden border min-h-[240px]">
-      <div className="absolute top-2 left-2 z-10 px-2 py-1 rounded-md bg-black/60 text-white text-xs font-semibold">
+      <div className="absolute top-2 left-2 z-20 px-2 py-1 rounded-md bg-black/60 text-white text-xs font-semibold">
         {label}
       </div>
-      {stream ? (
+
+      {stream && !videoOff ? (
         <video
           ref={ref}
           autoPlay
@@ -251,11 +364,49 @@ function Tile({
           muted={muted}
           className={`w-full h-full object-cover bg-black ${mirror ? "scale-x-[-1]" : ""}`}
         />
+      ) : showAvatar ? (
+        <div
+          className="w-full h-full grid place-items-center relative overflow-hidden"
+          style={{
+            background: `radial-gradient(circle at 30% 30%, ${avatar!.from}, ${avatar!.to})`,
+          }}
+        >
+          {/* playful bubbles */}
+          <div className="absolute inset-0 opacity-40 pointer-events-none">
+            <div className="absolute -top-6 -left-6 w-32 h-32 rounded-full bg-white/30 blur-2xl" />
+            <div className="absolute bottom-4 right-6 w-24 h-24 rounded-full bg-white/20 blur-xl" />
+            <div className="absolute top-1/2 left-1/3 w-16 h-16 rounded-full bg-white/15 blur-lg" />
+          </div>
+          <div className="relative flex flex-col items-center gap-2">
+            <div
+              className="text-7xl drop-shadow-lg select-none animate-avatar-bob"
+              aria-hidden
+            >
+              {avatar!.emoji}
+            </div>
+            <div className="px-3 py-1 rounded-full bg-black/30 text-white/90 text-xs font-semibold">
+              Câmera desligada
+            </div>
+          </div>
+        </div>
       ) : (
         <div className="w-full h-full grid place-items-center text-white/60 text-sm p-4 text-center">
           {placeholder ?? "Aguardando…"}
         </div>
       )}
+
+      {/* floating reaction emojis */}
+      <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
+        {floats?.map((f) => (
+          <span
+            key={f.id}
+            className="absolute left-1/2 bottom-6 text-5xl animate-float-up select-none"
+            style={{ ["--drift" as any]: `${f.drift}px` }}
+          >
+            {f.emoji}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
