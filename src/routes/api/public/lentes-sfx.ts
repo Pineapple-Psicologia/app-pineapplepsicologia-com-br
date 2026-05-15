@@ -47,7 +47,7 @@ async function generate(lens: LensId): Promise<ArrayBuffer> {
   return buf;
 }
 
-export const Route = createFileRoute("/api/lentes-sfx")({
+export const Route = createFileRoute("/api/public/lentes-sfx")({
   server: {
     handlers: {
       GET: async ({ request }) => {
@@ -66,7 +66,9 @@ export const Route = createFileRoute("/api/lentes-sfx")({
             },
           });
         } catch (e) {
-          return new Response((e as Error).message, { status: 500 });
+          const msg = (e as Error).message;
+          console.error("[lentes-sfx] error:", msg);
+          return new Response(msg, { status: 500 });
         }
       },
     },

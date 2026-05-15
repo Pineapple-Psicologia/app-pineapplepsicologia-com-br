@@ -202,7 +202,7 @@ export default function EntreLentes({ room }: Props) {
       try {
         let url = blobCache.current.get(lensId);
         if (!url) {
-          const res = await fetch(`/api/lentes-sfx?lens=${lensId}`);
+          const res = await fetch(`/api/public/lentes-sfx?lens=${lensId}`);
           if (!res.ok) return;
           const blob = await res.blob();
           url = URL.createObjectURL(blob);
