@@ -472,6 +472,7 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
 
   const onDown = (e: React.PointerEvent) => {
     if (textInput) return;
+    if (!canDraw) return;
     const p = pos(e);
 
     // right-click = eraser shortcut
