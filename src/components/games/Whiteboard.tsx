@@ -839,6 +839,22 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
           <Button size="sm" variant="outline" onClick={undo}><Undo2 className="w-4 h-4 mr-1" />Desfazer</Button>
           <Button size="sm" variant="outline" onClick={download}><Download className="w-4 h-4 mr-1" />Salvar</Button>
           <Button size="sm" variant="outline" onClick={clearAll}><Trash2 className="w-4 h-4 mr-1" />Limpar</Button>
+          {isPsi && (
+            <Button
+              size="sm"
+              variant={locked ? "default" : "outline"}
+              className={locked ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
+              onClick={() => {
+                const next = !locked;
+                setLocked(next);
+                room.send("wb:lock", next);
+              }}
+              title={locked ? "Liberar desenho do paciente" : "Bloquear desenho do paciente"}
+            >
+              {locked ? <Lock className="w-4 h-4 mr-1" /> : <Unlock className="w-4 h-4 mr-1" />}
+              {locked ? "Bloqueado" : "Bloquear"}
+            </Button>
+          )}
         </div>
       </div>
 
