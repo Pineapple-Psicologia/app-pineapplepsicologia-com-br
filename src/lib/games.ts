@@ -1,4 +1,4 @@
-export type GameId = "whiteboard" | "termometro" | "detetive" | "detetive-tabuleiro";
+export type GameId = "whiteboard" | "termometro" | "detetive" | "detetive-tabuleiro" | "detetive-aventura";
 
 export type GameMeta = {
   id: GameId;
@@ -49,6 +49,16 @@ export const GAMES: GameMeta[] = [
       "Versão tabuleiro do Detetive: percorra cena do crime, sala de interrogatório, mesa de cartas, evidências e arquivo. Mais lúdico e imersivo.",
     ageRange: "9–15 anos",
     approach: "TCC + jogo de tabuleiro",
+    available: true,
+  },
+  {
+    id: "detetive-aventura",
+    title: "Detetive: Aventura Investigativa",
+    emoji: "🔦",
+    description:
+      "Modo point & click: entre em cada cena (crime, interrogatório, laboratório, arquivo, veredito), clique em pistas e resolva o caso junto. Visual cartoon ou noir.",
+    ageRange: "9–17 anos",
+    approach: "TCC imersiva",
     available: true,
   },
   {
