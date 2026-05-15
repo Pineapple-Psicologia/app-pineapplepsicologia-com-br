@@ -77,8 +77,8 @@ type NpcView = {
 const NPCS: Record<NpcId, { name: string; x: number; y: number; color: string; view: NpcView }> = {
   ana: {
     name: "Ana",
-    x: 22,
-    y: 58,
+    x: 33,
+    y: 60,
     color: "#c98a5b",
     view: {
       expression: "😂",
@@ -93,8 +93,8 @@ const NPCS: Record<NpcId, { name: string; x: number; y: number; color: string; v
   },
   bruno: {
     name: "Bruno",
-    x: 45,
-    y: 52,
+    x: 43,
+    y: 53,
     color: "#5b8ac9",
     view: {
       expression: "😄",
@@ -109,8 +109,8 @@ const NPCS: Record<NpcId, { name: string; x: number; y: number; color: string; v
   },
   clara: {
     name: "Clara",
-    x: 68,
-    y: 62,
+    x: 53,
+    y: 55,
     color: "#9b6bb5",
     view: {
       expression: "🙂",
@@ -125,8 +125,8 @@ const NPCS: Record<NpcId, { name: string; x: number; y: number; color: string; v
   },
   diego: {
     name: "Diego",
-    x: 82,
-    y: 48,
+    x: 78,
+    y: 58,
     color: "#4a8a6b",
     view: {
       expression: "😐",
@@ -140,6 +140,13 @@ const NPCS: Record<NpcId, { name: string; x: number; y: number; color: string; v
     },
   },
 };
+
+const CLUE_POSITIONS = {
+  celular: { x: 32, y: 78 },
+  caderno: { x: 80, y: 82 },
+  porta: { x: 6, y: 50 },
+  relogio: { x: 57, y: 18 },
+} as const;
 
 // ---------- Pistas investigáveis: cada uma revela contexto e adiciona "clareza". ----------
 type Clue = {
