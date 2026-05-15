@@ -372,26 +372,42 @@ export default function EntreLentes({ room }: Props) {
           );
         })}
 
-        {/* NPC thoughts overlay */}
-        {(Object.keys(NPCS) as NpcId[]).map((id) => {
-          const npc = NPCS[id];
-          const text = state.revealedClues.length >= 2 && state.lens !== "vergonha" && state.lens !== "catastrofe"
-            ? npc.view.truth
-            : npc.view.thoughtPerLens[state.lens];
-          return (
-            <div
-              key={id}
-              className="absolute -translate-x-1/2 -translate-y-full max-w-[180px]"
-              style={{ left: `${npc.x}%`, top: `${npc.y - 8}%` }}
-            >
-              <div className="rounded-2xl bg-white/95 border border-[#4a5a2a]/25 px-3 py-1.5 text-[11px] leading-snug shadow-md">
-                <div className="font-bold text-[#4a5a2a]">{npc.name}</div>
-                <div className="text-stone-700">{text}</div>
+        {/* NPC thoughts overlay — staggered to avoid overlap */}
+        {(() => {
+          // per-NPC bubble placement: vertical lift + horizontal shift so balões não se sobrepõem
+          const layout: Record<NpcId, { dx: number; dy: number; align: "center" | "left" | "right" }> = {
+            ana:   { dx: -8,  dy: -2,  align: "right"  }, // empurra à esquerda
+            bruno: { dx: 0,   dy: -22, align: "center" }, // sobe acima
+            clara: { dx: 8,   dy: -2,  align: "left"   }, // empurra à direita
+            diego: { dx: 0,   dy: -2,  align: "center" },
+          };
+          return (Object.keys(NPCS) as NpcId[]).map((id) => {
+            const npc = NPCS[id];
+            const cfg = layout[id];
+            const text = state.revealedClues.length >= 2 && state.lens !== "vergonha" && state.lens !== "catastrofe"
+              ? npc.view.truth
+              : npc.view.thoughtPerLens[state.lens];
+            const translateX = cfg.align === "center" ? "-50%" : cfg.align === "left" ? "0%" : "-100%";
+            const tailPos = cfg.align === "center" ? "mx-auto" : cfg.align === "left" ? "ml-3" : "mr-3 ml-auto";
+            return (
+              <div
+                key={id}
+                className="absolute w-[140px]"
+                style={{
+                  left: `calc(${npc.x}% + ${cfg.dx}px)`,
+                  top: `${npc.y - 10}%`,
+                  transform: `translate(${translateX}, calc(-100% + ${cfg.dy}px))`,
+                }}
+              >
+                <div className="rounded-2xl bg-white/95 border border-[#4a5a2a]/25 px-2.5 py-1.5 text-[10.5px] leading-tight shadow-md">
+                  <div className="font-bold text-[#4a5a2a] text-[11px]">{npc.name}</div>
+                  <div className="text-stone-700">{text}</div>
+                </div>
+                <div className={`w-2 h-2 bg-white/95 rotate-45 -mt-1 border-r border-b border-[#4a5a2a]/25 ${tailPos}`} />
               </div>
-              <div className="w-2 h-2 bg-white/95 rotate-45 mx-auto -mt-1 border-r border-b border-[#4a5a2a]/25" />
-            </div>
-          );
-        })}
+            );
+          });
+        })()}
 
         {/* Internal protagonist thought */}
         <div className="absolute left-1/2 bottom-4 -translate-x-1/2 max-w-[80%] text-center">
