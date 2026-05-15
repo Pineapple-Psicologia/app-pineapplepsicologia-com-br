@@ -1,4 +1,4 @@
-export type GameId = "whiteboard" | "termometro" | "detetive" | "detetive-tabuleiro" | "detetive-aventura" | "mapa-corporal" | "triangulo";
+export type GameId = "whiteboard" | "termometro" | "detetive" | "detetive-tabuleiro" | "detetive-aventura" | "mapa-corporal" | "triangulo" | "entre-lentes";
 
 export type GameMeta = {
   id: GameId;
@@ -79,6 +79,16 @@ export const GAMES: GameMeta[] = [
       "Psicoeducação sobre situação, pensamento, emoção e comportamento: um ciclo que se retroalimenta, com cartas para classificar e prática real.",
     ageRange: "9–17 anos",
     approach: "TCC · psicoeducação",
+    available: true,
+  },
+  {
+    id: "entre-lentes",
+    title: "Entre Lentes",
+    emoji: "🔭",
+    description:
+      "Jogo narrativo: a mesma cena escolar muda conforme a lente cognitiva equipada (vergonha, catástrofe, curiosa). Investigue pistas pra ganhar clareza.",
+    ageRange: "9–16 anos",
+    approach: "TCC · flexibilidade cognitiva",
     available: true,
   },
   {
