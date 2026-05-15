@@ -44,7 +44,7 @@ type BgId = typeof BACKGROUNDS[number]["id"];
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 
-export default function Whiteboard({ room }: { room: ReturnType<typeof useRoom> }) {
+export default function Whiteboard({ room, role = "paciente" }: { room: ReturnType<typeof useRoom>; role?: "psi" | "paciente" }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const overlayRef = useRef<HTMLCanvasElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
