@@ -47,7 +47,7 @@ async function generate(lens: LensId): Promise<ArrayBuffer> {
   return buf;
 }
 
-export const Route = createFileRoute("/api/lentes-sfx")({
+export const Route = createFileRoute("/api/public/lentes-sfx")({
   server: {
     handlers: {
       GET: async ({ request }) => {
