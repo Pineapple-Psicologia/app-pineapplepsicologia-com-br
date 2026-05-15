@@ -1,0 +1,74 @@
+import { createFileRoute } from "@tanstack/react-router";
+
+type LensId = "neutra" | "vergonha" | "catastrofe" | "curiosa";
+
+const PROMPTS: Record<LensId, string> = {
+  neutra:
+    "Calm classroom ambient: distant murmurs of children, pencils on paper, soft pages turning, gentle chair creaks, peaceful natural room tone, no music",
+  vergonha:
+    "Anxious internal point-of-view: muffled distant voices through ringing ears, slow thumping heartbeat, soft tinnitus high tone, claustrophobic muted classroom, no music",
+  catastrofe:
+    "Tense cinematic underscore: deep rumbling drone, distant low thunder, dissonant sustained strings, dread building, no melody, no voices",
+  curiosa:
+    "Light cozy classroom ambient: clear children softly chatting and giggling about a phone video, warm soft tone, curious gentle mood, no music",
+};
+
+const DURATION_SECONDS = 14;
+
+const cache = new Map<LensId, ArrayBuffer>();
+
+async function generate(lens: LensId): Promise<ArrayBuffer> {
+  const cached = cache.get(lens);
+  if (cached) return cached;
+
+  const apiKey = process.env.ELEVENLABS_API_KEY;
+  if (!apiKey) throw new Error("ELEVENLABS_API_KEY not configured");
+
+  const res = await fetch("https://api.elevenlabs.io/v1/sound-generation", {
+    method: "POST",
+    headers: {
+      "xi-api-key": apiKey,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      text: PROMPTS[lens],
+      duration_seconds: DURATION_SECONDS,
+      prompt_influence: 0.6,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`ElevenLabs SFX failed [${res.status}]: ${err}`);
+  }
+
+  const buf = await res.arrayBuffer();
+  cache.set(lens, buf);
+  return buf;
+}
+
+export const Route = createFileRoute("/api/lentes-sfx")({
+  server: {
+    handlers: {
+      GET: async ({ request }) => {
+        const url = new URL(request.url);
+        const lens = url.searchParams.get("lens") as LensId | null;
+        if (!lens || !(lens in PROMPTS)) {
+          return new Response("Invalid lens", { status: 400 });
+        }
+        try {
+          const audio = await generate(lens);
+          return new Response(audio, {
+            status: 200,
+            headers: {
+              "Content-Type": "audio/mpeg",
+              "Cache-Control": "public, max-age=86400, immutable",
+            },
+          });
+        } catch (e) {
+          return new Response((e as Error).message, { status: 500 });
+        }
+      },
+    },
+  },
+});

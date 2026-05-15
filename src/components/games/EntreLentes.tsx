@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
-import { Eye, RotateCcw, Search, Sparkles, Volume2 } from "lucide-react";
+import { Eye, RotateCcw, Search, Sparkles, Volume2, VolumeX } from "lucide-react";
+import salaImg from "@/assets/lentes-sala.jpg";
 
 type Props = { room: ReturnType<typeof useRoom> };
 
@@ -76,8 +77,8 @@ type NpcView = {
 const NPCS: Record<NpcId, { name: string; x: number; y: number; color: string; view: NpcView }> = {
   ana: {
     name: "Ana",
-    x: 22,
-    y: 58,
+    x: 33,
+    y: 60,
     color: "#c98a5b",
     view: {
       expression: "😂",
@@ -92,8 +93,8 @@ const NPCS: Record<NpcId, { name: string; x: number; y: number; color: string; v
   },
   bruno: {
     name: "Bruno",
-    x: 45,
-    y: 52,
+    x: 43,
+    y: 53,
     color: "#5b8ac9",
     view: {
       expression: "😄",
@@ -108,8 +109,8 @@ const NPCS: Record<NpcId, { name: string; x: number; y: number; color: string; v
   },
   clara: {
     name: "Clara",
-    x: 68,
-    y: 62,
+    x: 53,
+    y: 55,
     color: "#9b6bb5",
     view: {
       expression: "🙂",
@@ -124,8 +125,8 @@ const NPCS: Record<NpcId, { name: string; x: number; y: number; color: string; v
   },
   diego: {
     name: "Diego",
-    x: 82,
-    y: 48,
+    x: 78,
+    y: 58,
     color: "#4a8a6b",
     view: {
       expression: "😐",
@@ -140,6 +141,13 @@ const NPCS: Record<NpcId, { name: string; x: number; y: number; color: string; v
   },
 };
 
+const CLUE_POSITIONS = {
+  celular: { x: 32, y: 78 },
+  caderno: { x: 80, y: 82 },
+  porta: { x: 6, y: 50 },
+  relogio: { x: 57, y: 18 },
+} as const;
+
 // ---------- Pistas investigáveis: cada uma revela contexto e adiciona "clareza". ----------
 type Clue = {
   id: string;
@@ -150,10 +158,10 @@ type Clue = {
 };
 
 const CLUES: Clue[] = [
-  { id: "celular", label: "Celular da Ana", x: 25, y: 65, reveals: "É um vídeo de gato caindo da estante. Ana mostrou pro Bruno antes de você entrar." },
-  { id: "caderno", label: "Caderno aberto da Clara", x: 70, y: 70, reveals: "‘Matéria de ontem — copiar antes da prof chegar’. Ela está atrasada com a matéria, não com você." },
-  { id: "porta", label: "Barulho da porta", x: 8, y: 35, reveals: "A porta range alto. Quase todo mundo olha quando alguém entra — é reflexo, não julgamento." },
-  { id: "relogio", label: "Relógio da sala", x: 55, y: 18, reveals: "Faltam 2 minutos pra aula. A turma está dispersa, cada um no seu canto." },
+  { id: "celular", label: "Celular da Ana", x: CLUE_POSITIONS.celular.x, y: CLUE_POSITIONS.celular.y, reveals: "É um vídeo de gato caindo da estante. Ana mostrou pro Bruno antes de você entrar." },
+  { id: "caderno", label: "Caderno da Clara", x: CLUE_POSITIONS.caderno.x, y: CLUE_POSITIONS.caderno.y, reveals: "‘Matéria de ontem — copiar antes da prof chegar’. Ela está atrasada com a matéria, não com você." },
+  { id: "porta", label: "Barulho da porta", x: CLUE_POSITIONS.porta.x, y: CLUE_POSITIONS.porta.y, reveals: "A porta range alto. Quase todo mundo olha quando alguém entra — é reflexo, não julgamento." },
+  { id: "relogio", label: "Relógio da sala", x: CLUE_POSITIONS.relogio.x, y: CLUE_POSITIONS.relogio.y, reveals: "Faltam 2 minutos pra aula. A turma está dispersa, cada um no seu canto." },
 ];
 
 // ---------- Estado sincronizado ----------
@@ -175,12 +183,75 @@ const initialState: State = {
 
 export default function EntreLentes({ room }: Props) {
   const [state, setState] = useState<State>(initialState);
+  const [muted, setMuted] = useState(false);
+  const [audioReady, setAudioReady] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const blobCache = useRef<Map<LensId, string>>(new Map());
 
   useEffect(() => {
     return room.on((m) => {
       if (m.type === "lentes:state") setState(m.payload);
     });
   }, [room]);
+
+  // Load + play SFX whenever the lens changes
+  useEffect(() => {
+    let cancelled = false;
+    const lensId = state.lens;
+    (async () => {
+      try {
+        let url = blobCache.current.get(lensId);
+        if (!url) {
+          const res = await fetch(`/api/lentes-sfx?lens=${lensId}`);
+          if (!res.ok) return;
+          const blob = await res.blob();
+          url = URL.createObjectURL(blob);
+          blobCache.current.set(lensId, url);
+        }
+        if (cancelled) return;
+        if (!audioRef.current) {
+          audioRef.current = new Audio();
+          audioRef.current.loop = true;
+          audioRef.current.volume = 0.55;
+        }
+        const a = audioRef.current;
+        if (a.src !== url) {
+          a.src = url;
+        }
+        a.muted = muted;
+        try {
+          await a.play();
+          setAudioReady(true);
+        } catch {
+          // Browser blocked autoplay — wait for user gesture
+          setAudioReady(false);
+        }
+      } catch {
+        /* silent */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [state.lens, muted]);
+
+  useEffect(() => {
+    return () => {
+      audioRef.current?.pause();
+      blobCache.current.forEach((u) => URL.revokeObjectURL(u));
+      blobCache.current.clear();
+    };
+  }, []);
+
+  const tryStartAudio = async () => {
+    if (!audioRef.current) return;
+    try {
+      await audioRef.current.play();
+      setAudioReady(true);
+    } catch {
+      /* still blocked */
+    }
+  };
 
   const update = (patch: Partial<State> | ((s: State) => State)) => {
     setState((prev) => {
@@ -267,9 +338,11 @@ export default function EntreLentes({ room }: Props) {
       {/* ---------------- SCENE ---------------- */}
       <div className="relative rounded-2xl overflow-hidden border-4 border-[#4a5a2a]/30 shadow-[0_20px_50px_-15px_rgba(40,50,20,0.45)] bg-[#e9ead4]">
         <div className="absolute inset-0 transition-[filter] duration-700" style={sceneStyle}>
-          <ClassroomSvg
-            lens={state.lens}
-            revealedClues={state.revealedClues}
+          <img
+            src={salaImg}
+            alt="Sala de aula em estilo Pixar com colegas rindo, escrevendo e olhando para a porta"
+            className="w-full h-full object-cover select-none pointer-events-none"
+            draggable={false}
           />
         </div>
 
@@ -327,10 +400,18 @@ export default function EntreLentes({ room }: Props) {
           </div>
         </div>
 
-        {/* Audio cue chip */}
-        <div className="absolute top-3 right-3 flex items-center gap-2 rounded-full bg-black/55 text-white text-[11px] px-3 py-1.5 backdrop-blur">
-          <Volume2 className="w-3.5 h-3.5" /> {lens.audio}
-        </div>
+        {/* Audio controls */}
+        <button
+          onClick={() => {
+            if (!audioReady) tryStartAudio();
+            else setMuted((m) => !m);
+          }}
+          className="absolute top-3 right-3 flex items-center gap-2 rounded-full bg-black/60 hover:bg-black/75 text-white text-[11px] px-3 py-1.5 backdrop-blur transition"
+          title={!audioReady ? "Ativar som" : muted ? "Som mudo" : "Som ligado"}
+        >
+          {muted || !audioReady ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+          {!audioReady ? "Ativar som" : muted ? "Mudo" : "Som ao vivo"}
+        </button>
 
         {/* Lens chip */}
         <div className="absolute top-3 left-3 flex items-center gap-2 rounded-full px-3 py-1.5 text-white text-xs font-bold backdrop-blur"
@@ -442,119 +523,4 @@ function protagonistThought(lens: LensId, intensity: number, clarity: number): s
   if (intensity >= 3) return "Amanhã a escola toda vai saber. Acabou.";
   if (intensity === 2) return "Isso vai virar uma fofoca enorme.";
   return "E se isso ficar pra sempre?";
-}
-
-// ---------------- Classroom illustration (pure SVG, olive palette) ----------------
-function ClassroomSvg({ lens, revealedClues }: { lens: LensId; revealedClues: string[] }) {
-  const npcExpression = (id: NpcId): string => {
-    const base = NPCS[id].view.expression;
-    if (lens === "vergonha") return id === "diego" ? "👀" : id === "clara" ? "🙄" : "😆";
-    if (lens === "catastrofe") return id === "diego" ? "😠" : "😈";
-    if (lens === "curiosa") return base;
-    return base;
-  };
-
-  return (
-    <svg viewBox="0 0 800 500" className="w-full h-full" preserveAspectRatio="xMidYMid slice">
-      {/* Floor */}
-      <defs>
-        <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#e9ead4" />
-          <stop offset="100%" stopColor="#cdd0a3" />
-        </linearGradient>
-        <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#a89b6c" />
-          <stop offset="100%" stopColor="#7a6f48" />
-        </linearGradient>
-        <linearGradient id="board" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#3a4a25" />
-          <stop offset="100%" stopColor="#2a3a18" />
-        </linearGradient>
-      </defs>
-
-      <rect x="0" y="0" width="800" height="320" fill="url(#wall)" />
-      <rect x="0" y="320" width="800" height="180" fill="url(#floor)" />
-
-      {/* Window */}
-      <g>
-        <rect x="540" y="60" width="180" height="120" fill="#cfe6e8" stroke="#4a5a2a" strokeWidth="4" />
-        <line x1="630" y1="60" x2="630" y2="180" stroke="#4a5a2a" strokeWidth="3" />
-        <line x1="540" y1="120" x2="720" y2="120" stroke="#4a5a2a" strokeWidth="3" />
-        <circle cx="700" cy="85" r="14" fill="#f4d27a" opacity="0.9" />
-      </g>
-
-      {/* Blackboard */}
-      <g>
-        <rect x="180" y="50" width="300" height="130" rx="6" fill="url(#board)" stroke="#1f2a10" strokeWidth="4" />
-        <text x="200" y="100" fill="#d8e3b4" fontFamily="ui-sans-serif" fontSize="18" fontWeight="700">
-          Aula 12 — Frações
-        </text>
-        <text x="200" y="135" fill="#d8e3b4" fontFamily="ui-sans-serif" fontSize="14">
-          Hoje: somar denominadores diferentes
-        </text>
-      </g>
-
-      {/* Wall clock */}
-      <g>
-        <circle cx="440" cy="90" r="22" fill="#fafaef" stroke="#4a5a2a" strokeWidth="3" />
-        <line x1="440" y1="90" x2="440" y2="74" stroke="#4a5a2a" strokeWidth="2.5" />
-        <line x1="440" y1="90" x2="452" y2="92" stroke="#4a5a2a" strokeWidth="2" />
-      </g>
-
-      {/* Door (left) */}
-      <g>
-        <rect x="40" y="140" width="80" height="180" rx="4" fill="#7a6f48" stroke="#4a3f20" strokeWidth="4" />
-        <circle cx="105" cy="235" r="4" fill="#3a3018" />
-        {/* Protagonist silhouette in the doorway */}
-        <g transform="translate(80,250)">
-          <circle cx="0" cy="-30" r="16" fill="#f1c79b" stroke="#4a3a20" strokeWidth="2" />
-          <path d="M-14,-44 q14,-12 28,0 q-2,-8 -14,-10 q-12,2 -14,10z" fill="#3a2a18" />
-          <rect x="-16" y="-15" width="32" height="40" rx="6" fill="#7a8a3a" stroke="#4a5a2a" strokeWidth="2" />
-          <rect x="-18" y="20" width="36" height="20" rx="4" fill="#3a3a2a" />
-          <text x="0" y="-58" textAnchor="middle" fontSize="16">😶</text>
-        </g>
-      </g>
-
-      {/* Desks + NPCs */}
-      {(Object.keys(NPCS) as NpcId[]).map((id) => {
-        const n = NPCS[id];
-        const cx = (n.x / 100) * 800;
-        const cy = (n.y / 100) * 500;
-        return (
-          <g key={id} transform={`translate(${cx},${cy})`}>
-            {/* desk */}
-            <rect x="-44" y="20" width="88" height="40" rx="4" fill="#a89b6c" stroke="#5a4f2a" strokeWidth="2" />
-            <rect x="-44" y="55" width="88" height="6" fill="#5a4f2a" />
-            {/* body */}
-            <rect x="-22" y="-8" width="44" height="36" rx="6" fill={n.color} stroke="#2a2a1a" strokeWidth="2" />
-            {/* head */}
-            <circle cx="0" cy="-26" r="18" fill="#f1c79b" stroke="#2a2a1a" strokeWidth="2" />
-            {/* hair */}
-            <path d="M-16,-38 q16,-14 32,0 q-2,-10 -16,-12 q-14,2 -16,12z" fill="#3a2a18" />
-            {/* face emoji */}
-            <text x="0" y="-22" textAnchor="middle" fontSize="22">{npcExpression(id)}</text>
-            {/* name tag */}
-            <text x="0" y="78" textAnchor="middle" fontSize="11" fontWeight="700" fill="#2a2a1a">{n.name}</text>
-          </g>
-        );
-      })}
-
-      {/* Little props that respond to clues */}
-      {revealedClues.includes("celular") && (
-        <g transform="translate(176,304)">
-          <rect x="0" y="0" width="22" height="34" rx="4" fill="#1f2a10" />
-          <rect x="2" y="2" width="18" height="26" fill="#b9c66a" />
-          <text x="11" y="22" textAnchor="middle" fontSize="12">🐱</text>
-        </g>
-      )}
-      {revealedClues.includes("caderno") && (
-        <g transform="translate(528,316)">
-          <rect x="0" y="0" width="44" height="30" fill="#fafaef" stroke="#4a5a2a" strokeWidth="2" />
-          <line x1="4" y1="10" x2="40" y2="10" stroke="#9aa063" />
-          <line x1="4" y1="18" x2="40" y2="18" stroke="#9aa063" />
-          <line x1="4" y1="26" x2="40" y2="26" stroke="#9aa063" />
-        </g>
-      )}
-    </svg>
-  );
 }
