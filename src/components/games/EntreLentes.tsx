@@ -400,10 +400,18 @@ export default function EntreLentes({ room }: Props) {
           </div>
         </div>
 
-        {/* Audio cue chip */}
-        <div className="absolute top-3 right-3 flex items-center gap-2 rounded-full bg-black/55 text-white text-[11px] px-3 py-1.5 backdrop-blur">
-          <Volume2 className="w-3.5 h-3.5" /> {lens.audio}
-        </div>
+        {/* Audio controls */}
+        <button
+          onClick={() => {
+            if (!audioReady) tryStartAudio();
+            else setMuted((m) => !m);
+          }}
+          className="absolute top-3 right-3 flex items-center gap-2 rounded-full bg-black/60 hover:bg-black/75 text-white text-[11px] px-3 py-1.5 backdrop-blur transition"
+          title={!audioReady ? "Ativar som" : muted ? "Som mudo" : "Som ligado"}
+        >
+          {muted || !audioReady ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+          {!audioReady ? "Ativar som" : muted ? "Mudo" : "Som ao vivo"}
+        </button>
 
         {/* Lens chip */}
         <div className="absolute top-3 left-3 flex items-center gap-2 rounded-full px-3 py-1.5 text-white text-xs font-bold backdrop-blur"
