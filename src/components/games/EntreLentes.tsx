@@ -338,9 +338,11 @@ export default function EntreLentes({ room }: Props) {
       {/* ---------------- SCENE ---------------- */}
       <div className="relative rounded-2xl overflow-hidden border-4 border-[#4a5a2a]/30 shadow-[0_20px_50px_-15px_rgba(40,50,20,0.45)] bg-[#e9ead4]">
         <div className="absolute inset-0 transition-[filter] duration-700" style={sceneStyle}>
-          <ClassroomSvg
-            lens={state.lens}
-            revealedClues={state.revealedClues}
+          <img
+            src={salaImg}
+            alt="Sala de aula em estilo Pixar com colegas rindo, escrevendo e olhando para a porta"
+            className="w-full h-full object-cover select-none pointer-events-none"
+            draggable={false}
           />
         </div>
 
