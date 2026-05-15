@@ -158,10 +158,10 @@ type Clue = {
 };
 
 const CLUES: Clue[] = [
-  { id: "celular", label: "Celular da Ana", x: 25, y: 65, reveals: "É um vídeo de gato caindo da estante. Ana mostrou pro Bruno antes de você entrar." },
-  { id: "caderno", label: "Caderno aberto da Clara", x: 70, y: 70, reveals: "‘Matéria de ontem — copiar antes da prof chegar’. Ela está atrasada com a matéria, não com você." },
-  { id: "porta", label: "Barulho da porta", x: 8, y: 35, reveals: "A porta range alto. Quase todo mundo olha quando alguém entra — é reflexo, não julgamento." },
-  { id: "relogio", label: "Relógio da sala", x: 55, y: 18, reveals: "Faltam 2 minutos pra aula. A turma está dispersa, cada um no seu canto." },
+  { id: "celular", label: "Celular da Ana", x: CLUE_POSITIONS.celular.x, y: CLUE_POSITIONS.celular.y, reveals: "É um vídeo de gato caindo da estante. Ana mostrou pro Bruno antes de você entrar." },
+  { id: "caderno", label: "Caderno da Clara", x: CLUE_POSITIONS.caderno.x, y: CLUE_POSITIONS.caderno.y, reveals: "‘Matéria de ontem — copiar antes da prof chegar’. Ela está atrasada com a matéria, não com você." },
+  { id: "porta", label: "Barulho da porta", x: CLUE_POSITIONS.porta.x, y: CLUE_POSITIONS.porta.y, reveals: "A porta range alto. Quase todo mundo olha quando alguém entra — é reflexo, não julgamento." },
+  { id: "relogio", label: "Relógio da sala", x: CLUE_POSITIONS.relogio.x, y: CLUE_POSITIONS.relogio.y, reveals: "Faltam 2 minutos pra aula. A turma está dispersa, cada um no seu canto." },
 ];
 
 // ---------- Estado sincronizado ----------
