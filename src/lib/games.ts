@@ -1,4 +1,4 @@
-export type GameId = "whiteboard" | "termometro" | "detetive" | "detetive-tabuleiro" | "detetive-aventura" | "mapa-corporal";
+export type GameId = "whiteboard" | "termometro" | "detetive" | "detetive-tabuleiro" | "detetive-aventura" | "mapa-corporal" | "triangulo";
 
 export type GameMeta = {
   id: GameId;
@@ -69,6 +69,16 @@ export const GAMES: GameMeta[] = [
       "Silhueta interativa onde o paciente pinta onde sente cada emoção no corpo. Ótimo pra abrir e fechar sessão.",
     ageRange: "7–12 anos",
     approach: "Consciência corporal",
+    available: true,
+  },
+  {
+    id: "triangulo",
+    title: "Triângulo Cognitivo",
+    emoji: "🔺",
+    description:
+      "Psicoeducação sobre pensamento, emoção e comportamento: visualizar o triângulo, classificar cartas e preencher uma situação real.",
+    ageRange: "9–17 anos",
+    approach: "TCC · psicoeducação",
     available: true,
   },
   {
