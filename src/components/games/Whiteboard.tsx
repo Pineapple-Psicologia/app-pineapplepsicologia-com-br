@@ -533,6 +533,7 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
   };
 
   const onMove = (e: React.PointerEvent) => {
+    if (!canDraw) return;
     const p = pos(e);
     const now = Date.now();
     // local cursor preview (immediate)
