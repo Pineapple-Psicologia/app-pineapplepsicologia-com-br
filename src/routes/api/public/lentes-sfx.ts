@@ -66,7 +66,9 @@ export const Route = createFileRoute("/api/public/lentes-sfx")({
             },
           });
         } catch (e) {
-          return new Response((e as Error).message, { status: 500 });
+          const msg = (e as Error).message;
+          console.error("[lentes-sfx] error:", msg);
+          return new Response(msg, { status: 500 });
         }
       },
     },
