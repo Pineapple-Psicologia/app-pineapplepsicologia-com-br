@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
-import { Eye, RotateCcw, Search, Sparkles, Volume2 } from "lucide-react";
+import { Eye, RotateCcw, Search, Sparkles, Volume2, VolumeX } from "lucide-react";
+import salaImg from "@/assets/lentes-sala.jpg";
 
 type Props = { room: ReturnType<typeof useRoom> };
 

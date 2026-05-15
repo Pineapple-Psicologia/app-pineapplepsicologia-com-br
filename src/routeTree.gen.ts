@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as VCodeRouteImport } from './routes/v.$code'
 import { Route as SalaCodeRouteImport } from './routes/sala.$code'
+import { Route as ApiLentesSfxRouteImport } from './routes/api/lentes-sfx'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,33 +29,42 @@ const SalaCodeRoute = SalaCodeRouteImport.update({
   path: '/sala/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiLentesSfxRoute = ApiLentesSfxRouteImport.update({
+  id: '/api/lentes-sfx',
+  path: '/api/lentes-sfx',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/lentes-sfx': typeof ApiLentesSfxRoute
   '/sala/$code': typeof SalaCodeRoute
   '/v/$code': typeof VCodeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/lentes-sfx': typeof ApiLentesSfxRoute
   '/sala/$code': typeof SalaCodeRoute
   '/v/$code': typeof VCodeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/lentes-sfx': typeof ApiLentesSfxRoute
   '/sala/$code': typeof SalaCodeRoute
   '/v/$code': typeof VCodeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/sala/$code' | '/v/$code'
+  fullPaths: '/' | '/api/lentes-sfx' | '/sala/$code' | '/v/$code'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/sala/$code' | '/v/$code'
-  id: '__root__' | '/' | '/sala/$code' | '/v/$code'
+  to: '/' | '/api/lentes-sfx' | '/sala/$code' | '/v/$code'
+  id: '__root__' | '/' | '/api/lentes-sfx' | '/sala/$code' | '/v/$code'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiLentesSfxRoute: typeof ApiLentesSfxRoute
   SalaCodeRoute: typeof SalaCodeRoute
   VCodeRoute: typeof VCodeRoute
 }
@@ -82,14 +92,31 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SalaCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/lentes-sfx': {
+      id: '/api/lentes-sfx'
+      path: '/api/lentes-sfx'
+      fullPath: '/api/lentes-sfx'
+      preLoaderRoute: typeof ApiLentesSfxRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiLentesSfxRoute: ApiLentesSfxRoute,
   SalaCodeRoute: SalaCodeRoute,
   VCodeRoute: VCodeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
