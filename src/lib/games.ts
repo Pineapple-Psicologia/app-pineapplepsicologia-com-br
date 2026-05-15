@@ -73,10 +73,10 @@ export const GAMES: GameMeta[] = [
   },
   {
     id: "triangulo",
-    title: "Triângulo Cognitivo",
-    emoji: "🔺",
+    title: "Ciclo Cognitivo",
+    emoji: "🔄",
     description:
-      "Psicoeducação sobre pensamento, emoção e comportamento: visualizar o triângulo, classificar cartas e preencher uma situação real.",
+      "Psicoeducação sobre situação, pensamento, emoção e comportamento: um ciclo que se retroalimenta, com cartas para classificar e prática real.",
     ageRange: "9–17 anos",
     approach: "TCC · psicoeducação",
     available: true,
