@@ -183,12 +183,75 @@ const initialState: State = {
 
 export default function EntreLentes({ room }: Props) {
   const [state, setState] = useState<State>(initialState);
+  const [muted, setMuted] = useState(false);
+  const [audioReady, setAudioReady] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const blobCache = useRef<Map<LensId, string>>(new Map());
 
   useEffect(() => {
     return room.on((m) => {
       if (m.type === "lentes:state") setState(m.payload);
     });
   }, [room]);
+
+  // Load + play SFX whenever the lens changes
+  useEffect(() => {
+    let cancelled = false;
+    const lensId = state.lens;
+    (async () => {
+      try {
+        let url = blobCache.current.get(lensId);
+        if (!url) {
+          const res = await fetch(`/api/lentes-sfx?lens=${lensId}`);
+          if (!res.ok) return;
+          const blob = await res.blob();
+          url = URL.createObjectURL(blob);
+          blobCache.current.set(lensId, url);
+        }
+        if (cancelled) return;
+        if (!audioRef.current) {
+          audioRef.current = new Audio();
+          audioRef.current.loop = true;
+          audioRef.current.volume = 0.55;
+        }
+        const a = audioRef.current;
+        if (a.src !== url) {
+          a.src = url;
+        }
+        a.muted = muted;
+        try {
+          await a.play();
+          setAudioReady(true);
+        } catch {
+          // Browser blocked autoplay — wait for user gesture
+          setAudioReady(false);
+        }
+      } catch {
+        /* silent */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [state.lens, muted]);
+
+  useEffect(() => {
+    return () => {
+      audioRef.current?.pause();
+      blobCache.current.forEach((u) => URL.revokeObjectURL(u));
+      blobCache.current.clear();
+    };
+  }, []);
+
+  const tryStartAudio = async () => {
+    if (!audioRef.current) return;
+    try {
+      await audioRef.current.play();
+      setAudioReady(true);
+    } catch {
+      /* still blocked */
+    }
+  };
 
   const update = (patch: Partial<State> | ((s: State) => State)) => {
     setState((prev) => {
