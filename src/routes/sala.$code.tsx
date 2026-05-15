@@ -87,6 +87,8 @@ function SalaPage() {
           <DetetiveAventura room={room} />
         ) : game === "mapa-corporal" ? (
           <MapaCorporal room={room} />
+        ) : game === "triangulo" ? (
+          <TrianguloCognitivo room={room} />
         ) : (
           <Whiteboard room={room} role={role} />
         )}
