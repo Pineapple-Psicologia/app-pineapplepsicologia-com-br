@@ -114,7 +114,7 @@ function AuthPage() {
           </TabsContent>
 
           <TabsContent value="signup">
-            <form onSubmit={onSignUp} className="space-y-4 mt-4">
+            <form onSubmit={onSignUp} method="post" className="space-y-4 mt-4">
               <div>
                 <Label htmlFor="su-name">Nome completo</Label>
                 <Input id="su-name" name="fullName" type="text" autoComplete="name" required />
