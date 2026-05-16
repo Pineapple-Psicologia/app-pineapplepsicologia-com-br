@@ -100,7 +100,7 @@ function AuthPage() {
           </TabsList>
 
           <TabsContent value="signin">
-            <form onSubmit={onSignIn} className="space-y-4 mt-4">
+            <form onSubmit={onSignIn} method="post" className="space-y-4 mt-4">
               <div>
                 <Label htmlFor="si-email">Email</Label>
                 <Input id="si-email" name="email" type="email" autoComplete="email" required />
