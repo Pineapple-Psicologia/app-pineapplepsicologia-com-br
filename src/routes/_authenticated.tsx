@@ -1,14 +1,15 @@
-import { createFileRoute, Outlet, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { Button } from "@/components/ui/button";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthenticatedLayout,
 });
 
 function AuthenticatedLayout() {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -24,17 +25,18 @@ function AuthenticatedLayout() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="border-b">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to="/" className="font-semibold">Lúdico Clínico</Link>
-          <nav className="flex items-center gap-2">
-            <Link to="/pacientes" className="text-sm hover:underline">Pacientes</Link>
-            <Button variant="ghost" size="sm" onClick={() => signOut()}>Sair</Button>
-          </nav>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full">
+        <AppSidebar />
+        <div className="flex-1 flex flex-col">
+          <header className="h-12 flex items-center border-b px-2">
+            <SidebarTrigger />
+          </header>
+          <main className="flex-1">
+            <Outlet />
+          </main>
         </div>
-      </header>
-      <Outlet />
-    </div>
+      </div>
+    </SidebarProvider>
   );
 }
