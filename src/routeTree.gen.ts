@@ -9,11 +9,23 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as VCodeRouteImport } from './routes/v.$code'
 import { Route as SalaCodeRouteImport } from './routes/sala.$code'
+import { Route as AuthenticatedPacientesRouteImport } from './routes/_authenticated/pacientes'
 import { Route as ApiPublicLentesSfxRouteImport } from './routes/api/public/lentes-sfx'
 
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -29,6 +41,11 @@ const SalaCodeRoute = SalaCodeRouteImport.update({
   path: '/sala/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedPacientesRoute = AuthenticatedPacientesRouteImport.update({
+  id: '/pacientes',
+  path: '/pacientes',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const ApiPublicLentesSfxRoute = ApiPublicLentesSfxRouteImport.update({
   id: '/api/public/lentes-sfx',
   path: '/api/public/lentes-sfx',
@@ -37,12 +54,16 @@ const ApiPublicLentesSfxRoute = ApiPublicLentesSfxRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/pacientes': typeof AuthenticatedPacientesRoute
   '/sala/$code': typeof SalaCodeRoute
   '/v/$code': typeof VCodeRoute
   '/api/public/lentes-sfx': typeof ApiPublicLentesSfxRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/pacientes': typeof AuthenticatedPacientesRoute
   '/sala/$code': typeof SalaCodeRoute
   '/v/$code': typeof VCodeRoute
   '/api/public/lentes-sfx': typeof ApiPublicLentesSfxRoute
@@ -50,20 +71,45 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_authenticated/pacientes': typeof AuthenticatedPacientesRoute
   '/sala/$code': typeof SalaCodeRoute
   '/v/$code': typeof VCodeRoute
   '/api/public/lentes-sfx': typeof ApiPublicLentesSfxRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/sala/$code' | '/v/$code' | '/api/public/lentes-sfx'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/pacientes'
+    | '/sala/$code'
+    | '/v/$code'
+    | '/api/public/lentes-sfx'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/sala/$code' | '/v/$code' | '/api/public/lentes-sfx'
-  id: '__root__' | '/' | '/sala/$code' | '/v/$code' | '/api/public/lentes-sfx'
+  to:
+    | '/'
+    | '/auth'
+    | '/pacientes'
+    | '/sala/$code'
+    | '/v/$code'
+    | '/api/public/lentes-sfx'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/pacientes'
+    | '/sala/$code'
+    | '/v/$code'
+    | '/api/public/lentes-sfx'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  AuthRoute: typeof AuthRoute
   SalaCodeRoute: typeof SalaCodeRoute
   VCodeRoute: typeof VCodeRoute
   ApiPublicLentesSfxRoute: typeof ApiPublicLentesSfxRoute
@@ -71,6 +117,20 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -92,6 +152,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SalaCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/pacientes': {
+      id: '/_authenticated/pacientes'
+      path: '/pacientes'
+      fullPath: '/pacientes'
+      preLoaderRoute: typeof AuthenticatedPacientesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/api/public/lentes-sfx': {
       id: '/api/public/lentes-sfx'
       path: '/api/public/lentes-sfx'
@@ -102,8 +169,22 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedRouteChildren {
+  AuthenticatedPacientesRoute: typeof AuthenticatedPacientesRoute
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedPacientesRoute: AuthenticatedPacientesRoute,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  AuthRoute: AuthRoute,
   SalaCodeRoute: SalaCodeRoute,
   VCodeRoute: VCodeRoute,
   ApiPublicLentesSfxRoute: ApiPublicLentesSfxRoute,
