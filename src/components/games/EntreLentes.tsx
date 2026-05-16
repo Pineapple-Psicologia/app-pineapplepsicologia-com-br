@@ -124,7 +124,7 @@ const NPCS: Record<NpcId, { name: string; x: number; y: number; color: string; v
     },
   },
   diego: {
-    name: "Diego",
+    name: "Lucas",
     x: 82,
     y: 62,
     color: "#4a8a6b",
