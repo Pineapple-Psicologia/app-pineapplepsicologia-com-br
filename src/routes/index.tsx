@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,6 +49,11 @@ function Home() {
   return (
     <main className="min-h-screen px-4 py-10 md:py-14">
       <div className="max-w-6xl mx-auto">
+        <div className="flex justify-end mb-6">
+          <Button asChild variant="outline" size="sm">
+            <Link to="/auth">Área da psicóloga</Link>
+          </Button>
+        </div>
         <header className="mb-10 text-center md:text-left">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/15 text-accent-foreground text-xs font-semibold mb-4">
             <Sparkles className="w-3.5 h-3.5" /> Estante de jogos terapêuticos
