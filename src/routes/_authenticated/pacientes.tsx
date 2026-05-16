@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -144,13 +144,17 @@ function PatientsPage() {
       ) : (
         <div className="grid gap-3">
           {patients.map((p) => (
-            <Card key={p.id} className="p-4 flex items-center justify-between">
-              <div>
+            <Card key={p.id} className="p-4 flex items-center justify-between hover:bg-accent/50 transition-colors">
+              <Link
+                to="/pacientes/$patientId"
+                params={{ patientId: p.id }}
+                className="flex-1"
+              >
                 <p className="font-medium">{p.name}</p>
                 <p className="text-sm text-muted-foreground">
                   {p.age != null ? `${p.age} anos` : "Idade não informada"}
                 </p>
-              </div>
+              </Link>
               <Button variant="ghost" size="icon" onClick={() => onDelete(p.id)} aria-label="Excluir">
                 <Trash2 className="h-4 w-4" />
               </Button>
