@@ -58,6 +58,13 @@ function PatientDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patientId]);
 
+  useEffect(() => {
+    const hash = typeof window !== "undefined" ? window.location.hash.slice(1) : "";
+    if (hash && sessions.some((s) => s.id === hash)) {
+      setOpenSessionId(hash);
+    }
+  }, [sessions]);
+
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
