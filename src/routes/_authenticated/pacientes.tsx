@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,6 +42,7 @@ const patientSchema = z.object({
 
 function PatientsPage() {
   const { user } = useAuth();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -101,67 +102,85 @@ function PatientsPage() {
   };
 
   return (
-    <main className="max-w-5xl mx-auto px-4 py-8 w-full">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-semibold">Pacientes</h1>
-          <p className="text-sm text-muted-foreground">Gerencie seus pacientes em atendimento.</p>
-        </div>
+    <main className="max-w-6xl mx-auto px-4 py-8 w-full">
+      <div className="grid gap-6 lg:grid-cols-[340px_minmax(0,1fr)] items-start">
+        <section>
+          <div className="flex items-center justify-between mb-6 gap-3">
+            <div>
+              <h1 className="text-2xl font-semibold">Pacientes</h1>
+              <p className="text-sm text-muted-foreground">Gerencie seus pacientes em atendimento.</p>
+            </div>
 
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button><Plus className="h-4 w-4 mr-2" />Novo paciente</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Novo paciente</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={onCreate} className="space-y-4">
-              <div>
-                <Label htmlFor="name">Nome</Label>
-                <Input id="name" name="name" required maxLength={120} />
-              </div>
-              <div>
-                <Label htmlFor="age">Idade</Label>
-                <Input id="age" name="age" type="number" min={0} max={120} />
-              </div>
-              <DialogFooter>
-                <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
-                <Button type="submit" disabled={busy}>Salvar</Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button><Plus className="h-4 w-4 mr-2" />Novo paciente</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Novo paciente</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={onCreate} className="space-y-4">
+                  <div>
+                    <Label htmlFor="name">Nome</Label>
+                    <Input id="name" name="name" required maxLength={120} />
+                  </div>
+                  <div>
+                    <Label htmlFor="age">Idade</Label>
+                    <Input id="age" name="age" type="number" min={0} max={120} />
+                  </div>
+                  <DialogFooter>
+                    <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
+                    <Button type="submit" disabled={busy}>Salvar</Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
 
-      {loading ? (
-        <p className="text-sm text-muted-foreground">Carregando...</p>
-      ) : patients.length === 0 ? (
-        <Card className="p-10 text-center">
-          <p className="text-muted-foreground mb-4">Nenhum paciente cadastrado ainda.</p>
-          <Button onClick={() => setOpen(true)}><Plus className="h-4 w-4 mr-2" />Cadastrar primeiro paciente</Button>
-        </Card>
-      ) : (
-        <div className="grid gap-3">
-          {patients.map((p) => (
-            <Card key={p.id} className="p-4 flex items-center justify-between hover:bg-accent/50 transition-colors">
-              <Link
-                to="/pacientes/$patientId"
-                params={{ patientId: p.id }}
-                className="flex-1"
-              >
-                <p className="font-medium">{p.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {p.age != null ? `${p.age} anos` : "Idade não informada"}
-                </p>
-              </Link>
-              <Button variant="ghost" size="icon" onClick={() => onDelete(p.id)} aria-label="Excluir">
-                <Trash2 className="h-4 w-4" />
-              </Button>
+          {loading ? (
+            <p className="text-sm text-muted-foreground">Carregando...</p>
+          ) : patients.length === 0 ? (
+            <Card className="p-10 text-center">
+              <p className="text-muted-foreground mb-4">Nenhum paciente cadastrado ainda.</p>
+              <Button onClick={() => setOpen(true)}><Plus className="h-4 w-4 mr-2" />Cadastrar primeiro paciente</Button>
             </Card>
-          ))}
-        </div>
-      )}
+          ) : (
+            <div className="grid gap-3">
+              {patients.map((p) => {
+                const isActive = pathname === `/pacientes/${p.id}`;
+
+                return (
+                  <Card key={p.id} className="p-4 flex items-center justify-between hover:bg-accent/50 transition-colors">
+                    <Link
+                      to="/pacientes/$patientId"
+                      params={{ patientId: p.id }}
+                      className={`flex-1 ${isActive ? "text-foreground" : ""}`}
+                    >
+                      <p className="font-medium">{p.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {p.age != null ? `${p.age} anos` : "Idade não informada"}
+                      </p>
+                    </Link>
+                    <Button variant="ghost" size="icon" onClick={() => onDelete(p.id)} aria-label="Excluir">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        <section className="min-w-0">
+          {pathname === "/pacientes" ? (
+            <Card className="p-8 text-center text-sm text-muted-foreground">
+              Selecione um paciente para abrir o prontuário e as sessões.
+            </Card>
+          ) : (
+            <Outlet />
+          )}
+        </section>
+      </div>
     </main>
   );
 }
