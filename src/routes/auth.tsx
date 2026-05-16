@@ -106,7 +106,12 @@ function AuthPage() {
                 <Input id="si-email" name="email" type="email" autoComplete="email" required />
               </div>
               <div>
-                <Label htmlFor="si-password">Senha</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="si-password">Senha</Label>
+                  <Link to="/forgot-password" className="text-xs text-muted-foreground hover:text-foreground underline">
+                    Esqueci minha senha
+                  </Link>
+                </div>
                 <Input id="si-password" name="password" type="password" autoComplete="current-password" required />
               </div>
               <Button type="submit" className="w-full" disabled={busy}>Entrar</Button>

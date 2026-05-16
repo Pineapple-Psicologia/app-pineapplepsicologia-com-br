@@ -9,6 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
@@ -18,6 +20,16 @@ import { Route as AuthenticatedPacientesRouteImport } from './routes/_authentica
 import { Route as ApiPublicLentesSfxRouteImport } from './routes/api/public/lentes-sfx'
 import { Route as AuthenticatedPacientesPatientIdRouteImport } from './routes/_authenticated/pacientes.$patientId'
 
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -62,6 +74,8 @@ const AuthenticatedPacientesPatientIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/pacientes': typeof AuthenticatedPacientesRouteWithChildren
   '/sala/$code': typeof SalaCodeRoute
   '/v/$code': typeof VCodeRoute
@@ -71,6 +85,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/pacientes': typeof AuthenticatedPacientesRouteWithChildren
   '/sala/$code': typeof SalaCodeRoute
   '/v/$code': typeof VCodeRoute
@@ -82,6 +98,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/auth': typeof AuthRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/pacientes': typeof AuthenticatedPacientesRouteWithChildren
   '/sala/$code': typeof SalaCodeRoute
   '/v/$code': typeof VCodeRoute
@@ -93,6 +111,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/forgot-password'
+    | '/reset-password'
     | '/pacientes'
     | '/sala/$code'
     | '/v/$code'
@@ -102,6 +122,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/forgot-password'
+    | '/reset-password'
     | '/pacientes'
     | '/sala/$code'
     | '/v/$code'
@@ -112,6 +134,8 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/forgot-password'
+    | '/reset-password'
     | '/_authenticated/pacientes'
     | '/sala/$code'
     | '/v/$code'
@@ -123,6 +147,8 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SalaCodeRoute: typeof SalaCodeRoute
   VCodeRoute: typeof VCodeRoute
   ApiPublicLentesSfxRoute: typeof ApiPublicLentesSfxRoute
@@ -130,6 +156,20 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -219,6 +259,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AuthRoute: AuthRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SalaCodeRoute: SalaCodeRoute,
   VCodeRoute: VCodeRoute,
   ApiPublicLentesSfxRoute: ApiPublicLentesSfxRoute,
