@@ -376,10 +376,10 @@ export default function EntreLentes({ room }: Props) {
         {(() => {
           // per-NPC bubble placement: vertical lift + horizontal shift so balões não se sobrepõem
           const layout: Record<NpcId, { dx: number; dy: number; align: "center" | "left" | "right" }> = {
-            ana:   { dx: 0, dy: 0,    align: "center" },
-            bruno: { dx: 0, dy: -70,  align: "center" }, // bem acima da cabeça
-            clara: { dx: 0, dy: -70,  align: "center" },
-            diego: { dx: 0, dy: 0,    align: "center" },
+            ana:   { dx: 10, dy: 0,    align: "left"   }, // balão à direita da Ana (longe da porta)
+            bruno: { dx: 0,  dy: -70,  align: "center" }, // bem acima da cabeça
+            clara: { dx: 0,  dy: -70,  align: "center" },
+            diego: { dx: 0,  dy: 0,    align: "center" },
           };
           return (Object.keys(NPCS) as NpcId[]).map((id) => {
             const npc = NPCS[id];
