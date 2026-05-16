@@ -77,8 +77,8 @@ type NpcView = {
 const NPCS: Record<NpcId, { name: string; x: number; y: number; color: string; view: NpcView }> = {
   ana: {
     name: "Ana",
-    x: 33,
-    y: 60,
+    x: 20,
+    y: 62,
     color: "#c98a5b",
     view: {
       expression: "😂",
@@ -93,8 +93,8 @@ const NPCS: Record<NpcId, { name: string; x: number; y: number; color: string; v
   },
   bruno: {
     name: "Bruno",
-    x: 43,
-    y: 53,
+    x: 40,
+    y: 55,
     color: "#5b8ac9",
     view: {
       expression: "😄",
@@ -109,7 +109,7 @@ const NPCS: Record<NpcId, { name: string; x: number; y: number; color: string; v
   },
   clara: {
     name: "Clara",
-    x: 53,
+    x: 60,
     y: 55,
     color: "#9b6bb5",
     view: {
@@ -125,8 +125,8 @@ const NPCS: Record<NpcId, { name: string; x: number; y: number; color: string; v
   },
   diego: {
     name: "Diego",
-    x: 78,
-    y: 58,
+    x: 82,
+    y: 62,
     color: "#4a8a6b",
     view: {
       expression: "😐",
@@ -376,10 +376,10 @@ export default function EntreLentes({ room }: Props) {
         {(() => {
           // per-NPC bubble placement: vertical lift + horizontal shift so balões não se sobrepõem
           const layout: Record<NpcId, { dx: number; dy: number; align: "center" | "left" | "right" }> = {
-            ana:   { dx: -8,  dy: -2,  align: "right"  }, // empurra à esquerda
-            bruno: { dx: 0,   dy: -22, align: "center" }, // sobe acima
-            clara: { dx: 8,   dy: -2,  align: "left"   }, // empurra à direita
-            diego: { dx: 0,   dy: -2,  align: "center" },
+            ana:   { dx: 0, dy: 0,    align: "center" },
+            bruno: { dx: 0, dy: -70,  align: "center" }, // bem acima da cabeça
+            clara: { dx: 0, dy: -70,  align: "center" },
+            diego: { dx: 0, dy: 0,    align: "center" },
           };
           return (Object.keys(NPCS) as NpcId[]).map((id) => {
             const npc = NPCS[id];
