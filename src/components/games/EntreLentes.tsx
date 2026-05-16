@@ -124,17 +124,17 @@ const NPCS: Record<NpcId, { name: string; x: number; y: number; color: string; v
     },
   },
   diego: {
-    name: "Diego",
+    name: "Lucas",
     x: 82,
     y: 62,
     color: "#4a8a6b",
     view: {
       expression: "😐",
       thoughtPerLens: {
-        neutra: "Diego olhou pra porta quando você entrou.",
-        vergonha: "Diego encarou você. Reparou em tudo.",
+        neutra: "Lucas olhou pra porta quando você entrou.",
+        vergonha: "Lucas encarou você. Reparou em tudo.",
         catastrofe: "Aquele olhar foi de quem viu alguma coisa muito errada em você.",
-        curiosa: "Diego olhou pra porta como qualquer pessoa olha quando ouve barulho.",
+        curiosa: "Lucas olhou pra porta como qualquer pessoa olha quando ouve barulho.",
       },
       truth: "Estava esperando a professora, achou que você fosse ela.",
     },
