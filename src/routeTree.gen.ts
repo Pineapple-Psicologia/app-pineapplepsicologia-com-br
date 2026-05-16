@@ -16,6 +16,7 @@ import { Route as VCodeRouteImport } from './routes/v.$code'
 import { Route as SalaCodeRouteImport } from './routes/sala.$code'
 import { Route as AuthenticatedPacientesRouteImport } from './routes/_authenticated/pacientes'
 import { Route as ApiPublicLentesSfxRouteImport } from './routes/api/public/lentes-sfx'
+import { Route as AuthenticatedPacientesPatientIdRouteImport } from './routes/_authenticated/pacientes.$patientId'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -51,21 +52,29 @@ const ApiPublicLentesSfxRoute = ApiPublicLentesSfxRouteImport.update({
   path: '/api/public/lentes-sfx',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedPacientesPatientIdRoute =
+  AuthenticatedPacientesPatientIdRouteImport.update({
+    id: '/$patientId',
+    path: '/$patientId',
+    getParentRoute: () => AuthenticatedPacientesRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/pacientes': typeof AuthenticatedPacientesRoute
+  '/pacientes': typeof AuthenticatedPacientesRouteWithChildren
   '/sala/$code': typeof SalaCodeRoute
   '/v/$code': typeof VCodeRoute
+  '/pacientes/$patientId': typeof AuthenticatedPacientesPatientIdRoute
   '/api/public/lentes-sfx': typeof ApiPublicLentesSfxRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/pacientes': typeof AuthenticatedPacientesRoute
+  '/pacientes': typeof AuthenticatedPacientesRouteWithChildren
   '/sala/$code': typeof SalaCodeRoute
   '/v/$code': typeof VCodeRoute
+  '/pacientes/$patientId': typeof AuthenticatedPacientesPatientIdRoute
   '/api/public/lentes-sfx': typeof ApiPublicLentesSfxRoute
 }
 export interface FileRoutesById {
@@ -73,9 +82,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/auth': typeof AuthRoute
-  '/_authenticated/pacientes': typeof AuthenticatedPacientesRoute
+  '/_authenticated/pacientes': typeof AuthenticatedPacientesRouteWithChildren
   '/sala/$code': typeof SalaCodeRoute
   '/v/$code': typeof VCodeRoute
+  '/_authenticated/pacientes/$patientId': typeof AuthenticatedPacientesPatientIdRoute
   '/api/public/lentes-sfx': typeof ApiPublicLentesSfxRoute
 }
 export interface FileRouteTypes {
@@ -86,6 +96,7 @@ export interface FileRouteTypes {
     | '/pacientes'
     | '/sala/$code'
     | '/v/$code'
+    | '/pacientes/$patientId'
     | '/api/public/lentes-sfx'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -94,6 +105,7 @@ export interface FileRouteTypes {
     | '/pacientes'
     | '/sala/$code'
     | '/v/$code'
+    | '/pacientes/$patientId'
     | '/api/public/lentes-sfx'
   id:
     | '__root__'
@@ -103,6 +115,7 @@ export interface FileRouteTypes {
     | '/_authenticated/pacientes'
     | '/sala/$code'
     | '/v/$code'
+    | '/_authenticated/pacientes/$patientId'
     | '/api/public/lentes-sfx'
   fileRoutesById: FileRoutesById
 }
@@ -166,15 +179,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicLentesSfxRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/pacientes/$patientId': {
+      id: '/_authenticated/pacientes/$patientId'
+      path: '/$patientId'
+      fullPath: '/pacientes/$patientId'
+      preLoaderRoute: typeof AuthenticatedPacientesPatientIdRouteImport
+      parentRoute: typeof AuthenticatedPacientesRoute
+    }
   }
 }
 
+interface AuthenticatedPacientesRouteChildren {
+  AuthenticatedPacientesPatientIdRoute: typeof AuthenticatedPacientesPatientIdRoute
+}
+
+const AuthenticatedPacientesRouteChildren: AuthenticatedPacientesRouteChildren =
+  {
+    AuthenticatedPacientesPatientIdRoute: AuthenticatedPacientesPatientIdRoute,
+  }
+
+const AuthenticatedPacientesRouteWithChildren =
+  AuthenticatedPacientesRoute._addFileChildren(
+    AuthenticatedPacientesRouteChildren,
+  )
+
 interface AuthenticatedRouteChildren {
-  AuthenticatedPacientesRoute: typeof AuthenticatedPacientesRoute
+  AuthenticatedPacientesRoute: typeof AuthenticatedPacientesRouteWithChildren
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedPacientesRoute: AuthenticatedPacientesRoute,
+  AuthenticatedPacientesRoute: AuthenticatedPacientesRouteWithChildren,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -192,3 +226,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
