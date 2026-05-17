@@ -344,6 +344,11 @@ function River({
         @keyframes rio-shimmer { from { background-position: 0 0; } to { background-position: 80px 0; } }
         @keyframes rio-sparkle { 0%,100% { opacity: 0; transform: scale(0.6);} 50% { opacity: 0.9; transform: scale(1);} }
         @keyframes rio-wobble { 0%,100% { transform: translateX(-6px); } 50% { transform: translateX(6px); } }
+        @keyframes rio-streak {
+          0%   { opacity: 0; transform: translate(0,0) scaleX(0.4); }
+          25%  { opacity: 0.75; }
+          100% { opacity: 0; transform: translate(var(--sx), var(--sy)) scaleX(1); }
+        }
       `}</style>
 
       {/* sparkles */}
@@ -456,6 +461,9 @@ function LeafSprite({
   const rotation = tangentDeg + Math.sin(elapsed * 0.8 + leaf.spin) * 12;
   const fading = rawProgress > 0.94;
 
+  // show current streaks while flowing (not stuck, not entering/exiting)
+  const showStreaks = !isStuck && running && rawProgress > 0.02 && rawProgress < 0.95;
+
   return (
     <div
       className="absolute -translate-x-1/2 -translate-y-1/2 select-none"
@@ -468,6 +476,39 @@ function LeafSprite({
         zIndex: isStuck ? 5 : 2,
       }}
     >
+      {/* current streaks — small dashes trailing behind the leaf, flowing downstream */}
+      {showStreaks && (
+        <div
+          className="absolute left-1/2 top-1/2 pointer-events-none"
+          style={{ transform: `translate(-50%,-50%) rotate(${tangentDeg}deg)` }}
+          aria-hidden
+        >
+          {[
+            { i: 0, dx: -34, dy: -10, len: 18, delay: 0,   dur: 1.4 },
+            { i: 1, dx: -42, dy:   6, len: 22, delay: 0.35, dur: 1.6 },
+            { i: 2, dx: -28, dy:  12, len: 14, delay: 0.7,  dur: 1.3 },
+            { i: 3, dx: -50, dy:  -2, len: 26, delay: 1.0,  dur: 1.8 },
+          ].map((s) => (
+            <span
+              key={s.i}
+              className="absolute block rounded-full bg-white/70"
+              style={{
+                left: `${s.dx}px`,
+                top: `${s.dy}px`,
+                width: `${s.len}px`,
+                height: "1.5px",
+                filter: "blur(0.3px)",
+                // travel further downstream as it fades
+                ["--sx" as any]: `${s.len * 1.4}px`,
+                ["--sy" as any]: `0px`,
+                animation: `rio-streak ${s.dur}s ease-out ${s.delay}s infinite`,
+                transformOrigin: "left center",
+              }}
+            />
+          ))}
+        </div>
+      )}
+
       <div
         style={{
           transform: `rotate(${rotation}deg)`,
