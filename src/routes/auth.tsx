@@ -143,6 +143,38 @@ function AuthPage() {
                   </button>
                 </div>
               </div>
+              <div className="flex items-center gap-3 pt-1">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="remember"
+                    checked={remember}
+                    onCheckedChange={(v) => setRemember(v === true)}
+                  />
+                  <Label htmlFor="remember" className="text-sm cursor-pointer">
+                    Lembrar de mim
+                  </Label>
+                </div>
+                <Select
+                  value={remember ? duration : "session"}
+                  onValueChange={(v) => {
+                    if (v === "session") setRemember(false);
+                    else {
+                      setRemember(true);
+                      setDuration(v as SessionDuration);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="h-8 text-xs w-auto ml-auto">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="session">Apenas esta sessão</SelectItem>
+                    <SelectItem value="1d">1 dia</SelectItem>
+                    <SelectItem value="7d">7 dias</SelectItem>
+                    <SelectItem value="30d">30 dias</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <Button type="submit" className="w-full" disabled={busy}>Entrar</Button>
             </form>
           </TabsContent>
