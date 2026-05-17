@@ -44,7 +44,7 @@ function AuthPage() {
   const [duration, setDuration] = useState<SessionDuration>("7d");
 
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/pacientes" });
+    if (!loading && user) navigate({ to: "/" });
   }, [loading, user, navigate]);
 
   const onSignIn = async (e: React.FormEvent<HTMLFormElement>) => {

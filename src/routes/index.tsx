@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Sparkles, Heart, Users, Lock, Video } from "lucide-react";
+import { Sparkles, Heart, Users, Lock } from "lucide-react";
 import { GAMES, type GameId } from "@/lib/games";
 
 export const Route = createFileRoute("/")({

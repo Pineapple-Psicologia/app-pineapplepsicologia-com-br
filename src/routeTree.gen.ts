@@ -12,13 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as VCodeRouteImport } from './routes/v.$code'
 import { Route as SalaCodeRouteImport } from './routes/sala.$code'
-import { Route as AuthenticatedPacientesRouteImport } from './routes/_authenticated/pacientes'
 import { Route as ApiPublicLentesSfxRouteImport } from './routes/api/public/lentes-sfx'
-import { Route as AuthenticatedPacientesPatientIdRouteImport } from './routes/_authenticated/pacientes.$patientId'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -35,18 +31,9 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedRoute = AuthenticatedRouteImport.update({
-  id: '/_authenticated',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const VCodeRoute = VCodeRouteImport.update({
-  id: '/v/$code',
-  path: '/v/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SalaCodeRoute = SalaCodeRouteImport.update({
@@ -54,32 +41,18 @@ const SalaCodeRoute = SalaCodeRouteImport.update({
   path: '/sala/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedPacientesRoute = AuthenticatedPacientesRouteImport.update({
-  id: '/pacientes',
-  path: '/pacientes',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const ApiPublicLentesSfxRoute = ApiPublicLentesSfxRouteImport.update({
   id: '/api/public/lentes-sfx',
   path: '/api/public/lentes-sfx',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedPacientesPatientIdRoute =
-  AuthenticatedPacientesPatientIdRouteImport.update({
-    id: '/$patientId',
-    path: '/$patientId',
-    getParentRoute: () => AuthenticatedPacientesRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/pacientes': typeof AuthenticatedPacientesRouteWithChildren
   '/sala/$code': typeof SalaCodeRoute
-  '/v/$code': typeof VCodeRoute
-  '/pacientes/$patientId': typeof AuthenticatedPacientesPatientIdRoute
   '/api/public/lentes-sfx': typeof ApiPublicLentesSfxRoute
 }
 export interface FileRoutesByTo {
@@ -87,23 +60,16 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/pacientes': typeof AuthenticatedPacientesRouteWithChildren
   '/sala/$code': typeof SalaCodeRoute
-  '/v/$code': typeof VCodeRoute
-  '/pacientes/$patientId': typeof AuthenticatedPacientesPatientIdRoute
   '/api/public/lentes-sfx': typeof ApiPublicLentesSfxRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/_authenticated/pacientes': typeof AuthenticatedPacientesRouteWithChildren
   '/sala/$code': typeof SalaCodeRoute
-  '/v/$code': typeof VCodeRoute
-  '/_authenticated/pacientes/$patientId': typeof AuthenticatedPacientesPatientIdRoute
   '/api/public/lentes-sfx': typeof ApiPublicLentesSfxRoute
 }
 export interface FileRouteTypes {
@@ -113,10 +79,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/forgot-password'
     | '/reset-password'
-    | '/pacientes'
     | '/sala/$code'
-    | '/v/$code'
-    | '/pacientes/$patientId'
     | '/api/public/lentes-sfx'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -124,33 +87,24 @@ export interface FileRouteTypes {
     | '/auth'
     | '/forgot-password'
     | '/reset-password'
-    | '/pacientes'
     | '/sala/$code'
-    | '/v/$code'
-    | '/pacientes/$patientId'
     | '/api/public/lentes-sfx'
   id:
     | '__root__'
     | '/'
-    | '/_authenticated'
     | '/auth'
     | '/forgot-password'
     | '/reset-password'
-    | '/_authenticated/pacientes'
     | '/sala/$code'
-    | '/v/$code'
-    | '/_authenticated/pacientes/$patientId'
     | '/api/public/lentes-sfx'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AuthRoute: typeof AuthRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SalaCodeRoute: typeof SalaCodeRoute
-  VCodeRoute: typeof VCodeRoute
   ApiPublicLentesSfxRoute: typeof ApiPublicLentesSfxRoute
 }
 
@@ -177,25 +131,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated': {
-      id: '/_authenticated'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/v/$code': {
-      id: '/v/$code'
-      path: '/v/$code'
-      fullPath: '/v/$code'
-      preLoaderRoute: typeof VCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sala/$code': {
@@ -205,13 +145,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SalaCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/pacientes': {
-      id: '/_authenticated/pacientes'
-      path: '/pacientes'
-      fullPath: '/pacientes'
-      preLoaderRoute: typeof AuthenticatedPacientesRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/api/public/lentes-sfx': {
       id: '/api/public/lentes-sfx'
       path: '/api/public/lentes-sfx'
@@ -219,52 +152,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicLentesSfxRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/pacientes/$patientId': {
-      id: '/_authenticated/pacientes/$patientId'
-      path: '/$patientId'
-      fullPath: '/pacientes/$patientId'
-      preLoaderRoute: typeof AuthenticatedPacientesPatientIdRouteImport
-      parentRoute: typeof AuthenticatedPacientesRoute
-    }
   }
 }
-
-interface AuthenticatedPacientesRouteChildren {
-  AuthenticatedPacientesPatientIdRoute: typeof AuthenticatedPacientesPatientIdRoute
-}
-
-const AuthenticatedPacientesRouteChildren: AuthenticatedPacientesRouteChildren =
-  {
-    AuthenticatedPacientesPatientIdRoute: AuthenticatedPacientesPatientIdRoute,
-  }
-
-const AuthenticatedPacientesRouteWithChildren =
-  AuthenticatedPacientesRoute._addFileChildren(
-    AuthenticatedPacientesRouteChildren,
-  )
-
-interface AuthenticatedRouteChildren {
-  AuthenticatedPacientesRoute: typeof AuthenticatedPacientesRouteWithChildren
-}
-
-const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedPacientesRoute: AuthenticatedPacientesRouteWithChildren,
-}
-
-const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
-  AuthenticatedRouteChildren,
-)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AuthRoute: AuthRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SalaCodeRoute: SalaCodeRoute,
-  VCodeRoute: VCodeRoute,
   ApiPublicLentesSfxRoute: ApiPublicLentesSfxRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
