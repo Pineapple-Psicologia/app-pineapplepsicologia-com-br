@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
 import { Play, Pause, RotateCcw, Wind, Minus, Plus } from "lucide-react";
+import sceneBg from "@/assets/scene-respiracao.jpg";
 
 type Props = { room: ReturnType<typeof useRoom> };
 
@@ -175,10 +176,11 @@ export default function RespiracaoQuadrada({ room }: Props) {
 
   return (
     <div
-      className="h-full w-full p-4 md:p-6 flex flex-col gap-4 rounded-2xl"
+      className="h-full w-full p-4 md:p-6 flex flex-col gap-4 rounded-2xl border-4 border-amber-900/25 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.35)] relative overflow-hidden"
       style={{
-        background:
-          "radial-gradient(circle at 50% 30%, #e0f2fe 0%, #c7d2fe 60%, #a5b4fc 100%)",
+        backgroundImage: `linear-gradient(rgba(254,243,199,0.35), rgba(186,230,253,0.45)), url(${sceneBg})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
       }}
     >
       <header className="flex items-center justify-between flex-wrap gap-3 bg-white/85 backdrop-blur rounded-2xl border-2 border-white shadow-lg px-4 py-2">

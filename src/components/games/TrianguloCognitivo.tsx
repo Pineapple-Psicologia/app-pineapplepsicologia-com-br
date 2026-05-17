@@ -6,6 +6,7 @@ import imgSituacao from "@/assets/ciclo-situacao.png";
 import imgPensamento from "@/assets/ciclo-pensamento.png";
 import imgEmocao from "@/assets/ciclo-emocao.png";
 import imgComportamento from "@/assets/ciclo-comportamento.png";
+import trianguloBg from "@/assets/scene-triangulo.jpg";
 
 type Props = { room: ReturnType<typeof useRoom> };
 
@@ -236,7 +237,14 @@ export default function TrianguloCognitivo({ room }: Props) {
   }, [state.step, state.playing, state.tab]);
 
   return (
-    <div className="h-full w-full flex flex-col gap-3">
+    <div
+      className="h-full w-full flex flex-col gap-3 p-3 md:p-4 rounded-2xl border-4 border-amber-900/25 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.35)] relative overflow-hidden"
+      style={{
+        backgroundImage: `linear-gradient(rgba(255,247,237,0.55), rgba(254,215,170,0.35)), url(${trianguloBg})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
       <header className="flex items-center justify-between flex-wrap gap-3 bg-card border-2 rounded-2xl px-4 py-2 shadow-sm">
         <div className="flex items-center gap-2 min-w-0">
           <Sparkles className="w-5 h-5 text-primary shrink-0" />

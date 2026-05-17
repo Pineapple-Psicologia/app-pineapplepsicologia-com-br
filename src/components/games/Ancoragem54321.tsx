@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
 import { Anchor, RotateCcw, ArrowLeft, ArrowRight, Check } from "lucide-react";
+import ancoragemBg from "@/assets/scene-ancoragem.jpg";
 
 type Props = { room: ReturnType<typeof useRoom> };
 
@@ -131,10 +132,11 @@ export default function Ancoragem54321({ room }: Props) {
 
   return (
     <div
-      className="h-full w-full p-4 md:p-6 flex flex-col gap-4 rounded-2xl"
+      className="h-full w-full p-4 md:p-6 flex flex-col gap-4 rounded-2xl border-4 border-amber-900/25 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.35)] relative overflow-hidden"
       style={{
-        background:
-          "radial-gradient(circle at 30% 20%, #fce7f3 0%, #e9d5ff 50%, #c7d2fe 100%)",
+        backgroundImage: `linear-gradient(rgba(255,247,237,0.55), rgba(253,230,138,0.35)), url(${ancoragemBg})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
       }}
     >
       <header className="flex items-center justify-between flex-wrap gap-3 bg-white/90 backdrop-blur rounded-2xl border-2 border-white shadow-lg px-4 py-2">
