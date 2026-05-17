@@ -349,7 +349,15 @@ function River({
           25%  { opacity: 0.75; }
           100% { opacity: 0; transform: translate(var(--sx), var(--sy)) scaleX(1); }
         }
+        @keyframes rio-flow-fast { to { stroke-dashoffset: -120; } }
+        @keyframes rio-flow-med  { to { stroke-dashoffset: -80;  } }
+        @keyframes rio-flow-slow { to { stroke-dashoffset: -40;  } }
+        @keyframes rio-breathe   { 0%,100% { opacity: 0.35; } 50% { opacity: 0.6; } }
       `}</style>
+
+      {/* flowing-water SVG over the river bed */}
+      <FlowingRiver />
+
 
       {/* sparkles */}
       {sparkles.map((s, i) => (
