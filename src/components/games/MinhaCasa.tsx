@@ -389,7 +389,36 @@ export default function MinhaCasa({ room }: Props) {
           <h2 className="font-display text-xl font-bold">Minha Casa</h2>
           <span className="text-xs text-muted-foreground hidden md:inline">Quem mora aqui? Onde cada um fica?</span>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap relative">
+          <div className="relative">
+            <Button size="sm" variant="outline" onClick={() => setEmojiOpen((v) => !v)} title="Adicionar emoji">
+              <Smile className="w-4 h-4" /> <span className="hidden sm:inline">Emojis</span>
+            </Button>
+            {emojiOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setEmojiOpen(false)} />
+                <div className="absolute right-0 top-full mt-2 z-50 w-[320px] max-h-[360px] overflow-auto bg-white border rounded-xl shadow-xl p-3">
+                  {EMOJI_GROUPS.map((grp) => (
+                    <div key={grp.label} className="mb-2 last:mb-0">
+                      <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground px-1 mb-1">{grp.label}</div>
+                      <div className="grid grid-cols-8 gap-1">
+                        {grp.items.map((it) => (
+                          <button
+                            key={it.emoji}
+                            onClick={() => { addSticker(it.emoji); setEmojiOpen(false); }}
+                            title={it.name}
+                            className="aspect-square flex items-center justify-center text-2xl rounded-md hover:bg-amber-50 transition"
+                          >
+                            {it.emoji}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
           <Button size="sm" variant="outline" onClick={addNote} title="Adicionar uma nota / caixa de texto">
             <StickyNote className="w-4 h-4" /> <span className="hidden sm:inline">Adicionar nota</span>
           </Button>
