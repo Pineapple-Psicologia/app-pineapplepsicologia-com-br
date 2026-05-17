@@ -311,6 +311,16 @@ export default function MinhaCasa({ room }: Props) {
     dragRef.current = { id: box.id, kind, mode, offX, offY };
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
+  const onPointerDownSticker = (e: React.PointerEvent, st: Sticker) => {
+    e.stopPropagation();
+    setSelectedId(st.id);
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const cx = (e.clientX - rect.left) / rect.width;
+    const cy = (e.clientY - rect.top) / rect.height;
+    dragRef.current = { id: st.id, kind: "sticker", mode: "move", offX: cx - st.x, offY: cy - st.y };
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
   const onPointerMove = useCallback((e: React.PointerEvent) => {
     const d = dragRef.current;
     if (!d) return;
@@ -324,6 +334,14 @@ export default function MinhaCasa({ room }: Props) {
           ...s,
           items: s.items.map((i) =>
             i.id !== d.id ? i : { ...i, x: Math.max(0.02, Math.min(0.98, cx - d.offX)), y: Math.max(0.05, Math.min(0.98, cy - d.offY)) },
+          ),
+        };
+      }
+      if (d.kind === "sticker") {
+        return {
+          ...s,
+          stickers: s.stickers.map((st) =>
+            st.id !== d.id ? st : { ...st, x: Math.max(0.02, Math.min(0.98, cx - d.offX)), y: Math.max(0.02, Math.min(0.98, cy - d.offY)) },
           ),
         };
       }
