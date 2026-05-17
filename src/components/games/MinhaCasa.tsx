@@ -340,8 +340,8 @@ export default function MinhaCasa({ room }: Props) {
         <div className="flex-1 min-w-0 flex flex-col gap-2">
           <div className="relative flex-1 rounded-2xl border-4 border-amber-900/20 overflow-hidden shadow-[0_25px_60px_-20px_rgba(0,0,0,0.4)]">
             <img
-              src={casaBg}
-              alt="Casa"
+              src={currentHouse.img}
+              alt={currentHouse.label}
               className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
               draggable={false}
             />
