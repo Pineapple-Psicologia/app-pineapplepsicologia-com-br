@@ -459,6 +459,54 @@ export default function MinhaCasa({ room }: Props) {
                   </div>
                 );
               })}
+
+              {/* Notas / caixas de texto */}
+              {state.notes.map((n) => {
+                const isSel = n.id === selectedId;
+                const col = NOTE_COLORS[n.color];
+                return (
+                  <div
+                    key={n.id}
+                    onPointerDown={(e) => onPointerDownBox(e, n, "note", "move")}
+                    className={`absolute cursor-move select-none rounded-md flex flex-col transition ${isSel ? "ring-2 ring-amber-500" : ""}`}
+                    style={{
+                      left: `${n.x * 100}%`,
+                      top: `${n.y * 100}%`,
+                      width: `${n.w * 100}%`,
+                      height: `${n.h * 100}%`,
+                      background: col.bg,
+                      border: `1.5px solid ${col.border}`,
+                      boxShadow: "0 8px 18px -8px rgba(0,0,0,0.4), 2px 2px 0 rgba(0,0,0,0.04)",
+                      transform: "rotate(-1deg)",
+                    }}
+                  >
+                    <textarea
+                      value={n.text}
+                      maxLength={500}
+                      onChange={(e) => updateNote(n.id, { text: e.target.value })}
+                      onPointerDown={(e) => { e.stopPropagation(); setSelectedId(n.id); }}
+                      onClick={(e) => e.stopPropagation()}
+                      placeholder="o que acontece aqui? o que falam?"
+                      className="flex-1 w-full bg-transparent resize-none outline-none text-[12px] leading-tight font-medium text-amber-950/90 placeholder:text-amber-900/40 p-2"
+                      style={{ fontFamily: "'Caveat', 'Comic Sans MS', cursive" }}
+                    />
+                    <button
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onClick={(e) => { e.stopPropagation(); removeNote(n.id); }}
+                      className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-white border shadow flex items-center justify-center hover:bg-red-50 hover:border-red-300"
+                      title="Remover nota"
+                    >
+                      <X className="w-3.5 h-3.5 text-red-600" />
+                    </button>
+                    <div
+                      onPointerDown={(e) => onPointerDownBox(e, n, "note", "resize")}
+                      className="absolute bottom-0 right-0 w-3.5 h-3.5 cursor-se-resize"
+                      style={{ background: col.border, borderTopLeftRadius: 4 }}
+                      title="Redimensionar"
+                    />
+                  </div>
+                );
+              })}
             </div>
           </div>
 
