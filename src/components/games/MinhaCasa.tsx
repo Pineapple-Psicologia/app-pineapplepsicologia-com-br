@@ -5,9 +5,6 @@ import { Home, RotateCcw, Download, Trash2, Sun, Moon, Sparkles, Cloud, EyeOff, 
 import jsPDF from "jspdf";
 
 import casaBg from "@/assets/casa-pixar.jpg";
-import casaPequena from "@/assets/casa/casa-pequena.jpg";
-import casaApto from "@/assets/casa/casa-apartamento.jpg";
-import casaGrande from "@/assets/casa/casa-grande.jpg";
 import imgCrianca from "@/assets/casa/char-crianca.png";
 import imgAdolescente from "@/assets/casa/char-adolescente.png";
 import imgMae from "@/assets/casa/char-mae.png";
