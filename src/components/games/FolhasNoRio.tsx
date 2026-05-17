@@ -461,6 +461,12 @@ function LeafSprite({
   const rotation = tangentDeg + Math.sin(elapsed * 0.8 + leaf.spin) * 12;
   const fading = rawProgress > 0.94;
 
+  // streak vectors (downstream along tangent)
+  const tanRad = (tangentDeg * Math.PI) / 180;
+  const flowX = Math.cos(tanRad);
+  const flowY = Math.sin(tanRad);
+  const showStreaks = !isStuck && running && rawProgress > 0.02 && rawProgress < 0.95;
+
   return (
     <div
       className="absolute -translate-x-1/2 -translate-y-1/2 select-none"
@@ -473,6 +479,39 @@ function LeafSprite({
         zIndex: isStuck ? 5 : 2,
       }}
     >
+      {/* current streaks — small dashes trailing behind the leaf, flowing downstream */}
+      {showStreaks && (
+        <div
+          className="absolute left-1/2 top-1/2 pointer-events-none"
+          style={{ transform: `translate(-50%,-50%) rotate(${tangentDeg}deg)` }}
+          aria-hidden
+        >
+          {[
+            { i: 0, dx: -34, dy: -10, len: 18, delay: 0,   dur: 1.4 },
+            { i: 1, dx: -42, dy:   6, len: 22, delay: 0.35, dur: 1.6 },
+            { i: 2, dx: -28, dy:  12, len: 14, delay: 0.7,  dur: 1.3 },
+            { i: 3, dx: -50, dy:  -2, len: 26, delay: 1.0,  dur: 1.8 },
+          ].map((s) => (
+            <span
+              key={s.i}
+              className="absolute block rounded-full bg-white/70"
+              style={{
+                left: `${s.dx}px`,
+                top: `${s.dy}px`,
+                width: `${s.len}px`,
+                height: "1.5px",
+                filter: "blur(0.3px)",
+                // travel further downstream as it fades
+                ["--sx" as any]: `${s.len * 1.4}px`,
+                ["--sy" as any]: `0px`,
+                animation: `rio-streak ${s.dur}s ease-out ${s.delay}s infinite`,
+                transformOrigin: "left center",
+              }}
+            />
+          ))}
+        </div>
+      )}
+
       <div
         style={{
           transform: `rotate(${rotation}deg)`,
