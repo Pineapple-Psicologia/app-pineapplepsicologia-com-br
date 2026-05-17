@@ -108,8 +108,23 @@ type Cover = {
   label: string;
 };
 
-type State = { items: Placed[]; mood: Mood; covers: Cover[] };
-const DEFAULT_STATE: State = { items: [], mood: "dia", covers: [] };
+type Note = {
+  id: string;
+  x: number; y: number;   // top-left 0..1
+  w: number; h: number;   // 0..1
+  text: string;
+  color: "amarelo" | "rosa" | "azul" | "verde";
+};
+
+const NOTE_COLORS: Record<Note["color"], { bg: string; border: string }> = {
+  amarelo: { bg: "#fff7c2", border: "#f5d76e" },
+  rosa:    { bg: "#ffd6e0", border: "#f48fb1" },
+  azul:    { bg: "#cfe7ff", border: "#7fb8e8" },
+  verde:   { bg: "#d6f5d6", border: "#7fc77f" },
+};
+
+type State = { items: Placed[]; mood: Mood; covers: Cover[]; notes: Note[] };
+const DEFAULT_STATE: State = { items: [], mood: "dia", covers: [], notes: [] };
 const uid = () => Math.random().toString(36).slice(2, 9);
 
 export default function MinhaCasa({ room }: Props) {
@@ -122,7 +137,7 @@ export default function MinhaCasa({ room }: Props) {
     return room.on?.((m) => {
       if (m.type === "casa:state") {
         const p = m.payload as Partial<State>;
-        setState({ ...DEFAULT_STATE, ...p, covers: p.covers ?? [] });
+        setState({ ...DEFAULT_STATE, ...p, covers: p.covers ?? [], notes: p.notes ?? [] });
       }
     });
   }, [room]);
