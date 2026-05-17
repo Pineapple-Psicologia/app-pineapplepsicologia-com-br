@@ -61,8 +61,12 @@ function AuthPage() {
     setBusy(true);
     const { error } = await signIn(parsed.data.email, parsed.data.password);
     setBusy(false);
-    if (error) toast.error(error);
-    else navigate({ to: "/pacientes" });
+    if (error) {
+      toast.error(error);
+    } else {
+      setSessionPolicy(remember ? duration : "session");
+      navigate({ to: "/pacientes" });
+    }
   };
 
   const onSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
