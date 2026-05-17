@@ -632,6 +632,42 @@ export default function MinhaCasa({ room }: Props) {
                   </div>
                 );
               })}
+
+              {/* Stickers / Emojis */}
+              {state.stickers.map((st) => {
+                const isSel = st.id === selectedId;
+                const size = 56 * st.scale;
+                return (
+                  <div
+                    key={st.id}
+                    onPointerDown={(e) => onPointerDownSticker(e, st)}
+                    onClick={(e) => e.stopPropagation()}
+                    className="absolute -translate-x-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing select-none flex items-center justify-center"
+                    style={{
+                      left: `${st.x * 100}%`,
+                      top: `${st.y * 100}%`,
+                      fontSize: `${size}px`,
+                      lineHeight: 1,
+                      filter: isSel
+                        ? "drop-shadow(0 0 10px rgba(251,191,36,0.9)) drop-shadow(0 4px 6px rgba(0,0,0,0.3))"
+                        : "drop-shadow(0 3px 5px rgba(0,0,0,0.35))",
+                      transition: "filter 0.2s",
+                    }}
+                  >
+                    <span className="pointer-events-none">{st.emoji}</span>
+                    {isSel && (
+                      <button
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onClick={(e) => { e.stopPropagation(); removeSticker(st.id); }}
+                        className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-white border shadow flex items-center justify-center hover:bg-red-50 hover:border-red-300"
+                        title="Remover emoji"
+                      >
+                        <X className="w-3.5 h-3.5 text-red-600" />
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
 
