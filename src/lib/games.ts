@@ -1,4 +1,4 @@
-export type GameId = "whiteboard" | "termometro" | "detetive" | "detetive-tabuleiro" | "detetive-aventura" | "mapa-corporal" | "triangulo" | "entre-lentes" | "respiracao" | "ancoragem" | "folhas-no-rio" | "bussola";
+export type GameId = "whiteboard" | "termometro" | "detetive" | "detetive-tabuleiro" | "detetive-aventura" | "mapa-corporal" | "triangulo" | "entre-lentes" | "respiracao" | "ancoragem" | "folhas-no-rio" | "bussola" | "minha-casa";
 
 export type GameMeta = {
   id: GameId;
@@ -129,6 +129,16 @@ export const GAMES: GameMeta[] = [
       "ACT · clarificação de valores. Triagem de 24 valores, ranking, bússola de 8 domínios e micro-compromissos para a semana.",
     ageRange: "11–17 anos",
     approach: "ACT · valores",
+    available: true,
+  },
+  {
+    id: "minha-casa",
+    title: "Minha Casa",
+    emoji: "🏠",
+    description:
+      "Construa simbolicamente sua casa: cômodos, móveis, família e pets. Iluminação, expressões e proximidades revelam vínculos e emoções.",
+    ageRange: "7–17 anos",
+    approach: "Lúdico simbólico · família",
     available: true,
   },
   {
