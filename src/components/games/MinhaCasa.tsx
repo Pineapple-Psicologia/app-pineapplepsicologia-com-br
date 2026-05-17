@@ -868,6 +868,17 @@ function exportCasaPdf(state: State, proximity: { a: Placed; b: Placed; dist: nu
     y += 8;
   }
 
+  if (state.stickers.length > 0) {
+    const counts = new Map<string, number>();
+    state.stickers.forEach((s) => counts.set(s.emoji, (counts.get(s.emoji) ?? 0) + 1));
+    section(`Emojis colocados (${state.stickers.length})`);
+    Array.from(counts.entries()).forEach(([emo, n]) => {
+      const meta = EMOJI_GROUPS.flatMap((g) => g.items).find((i) => i.emoji === emo);
+      line(`• ${emo} ${meta?.name ?? ""} ×${n}`);
+    });
+    y += 8;
+  }
+
   if (proximity.length > 0) {
     section("Proximidades simbólicas");
     proximity.slice(0, 10).forEach((p) => {
