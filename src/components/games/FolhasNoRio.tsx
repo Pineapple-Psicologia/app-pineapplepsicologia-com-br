@@ -188,12 +188,7 @@ export default function FolhasNoRio({ room }: Props) {
 
   return (
     <div
-      className="h-full w-full p-3 md:p-5 flex flex-col gap-3 rounded-2xl border-4 border-amber-900/30 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.45)] relative overflow-hidden"
-      style={{
-        backgroundImage: `linear-gradient(rgba(254,243,199,0.18), rgba(0,0,0,0.18)), url(${rioBg})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
+      className="h-full w-full p-3 md:p-5 flex flex-col gap-3 rounded-2xl border-4 border-amber-900/30 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.45)] relative overflow-hidden bg-gradient-to-b from-amber-900/40 via-emerald-950/30 to-amber-950/40"
     >
       {/* header */}
       <header className="flex items-center justify-between flex-wrap gap-3 bg-white/90 backdrop-blur rounded-2xl border-2 border-white shadow-lg px-4 py-2">
