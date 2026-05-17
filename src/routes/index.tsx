@@ -116,7 +116,7 @@ function Home() {
                       openGame(g.id);
                     }}
                   >
-                    Abrir sala
+                    Abrir jogo
                   </Button>
                 )}
               </Card>

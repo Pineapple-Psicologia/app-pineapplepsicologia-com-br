@@ -65,7 +65,7 @@ function AuthPage() {
       toast.error(error);
     } else {
       setSessionPolicy(remember ? duration : "session");
-      navigate({ to: "/pacientes" });
+      navigate({ to: "/" });
     }
   };
 
