@@ -123,8 +123,68 @@ const NOTE_COLORS: Record<Note["color"], { bg: string; border: string }> = {
   verde:   { bg: "#d6f5d6", border: "#7fc77f" },
 };
 
-type State = { items: Placed[]; mood: Mood; covers: Cover[]; notes: Note[] };
-const DEFAULT_STATE: State = { items: [], mood: "dia", covers: [], notes: [] };
+type Sticker = {
+  id: string;
+  x: number; y: number;   // 0..1 (centro)
+  scale: number;          // 0.6..2.2
+  emoji: string;
+};
+
+const EMOJI_GROUPS: { label: string; items: { emoji: string; name: string }[] }[] = [
+  {
+    label: "Sentimentos",
+    items: [
+      { emoji: "😀", name: "feliz" },
+      { emoji: "😊", name: "contente" },
+      { emoji: "🥰", name: "amoroso" },
+      { emoji: "😍", name: "apaixonado" },
+      { emoji: "🤗", name: "abraço" },
+      { emoji: "😌", name: "calmo" },
+      { emoji: "😴", name: "sono" },
+      { emoji: "😢", name: "triste" },
+      { emoji: "😭", name: "chorando" },
+      { emoji: "😞", name: "desanimado" },
+      { emoji: "😟", name: "preocupado" },
+      { emoji: "😨", name: "com medo" },
+      { emoji: "😰", name: "ansioso" },
+      { emoji: "😡", name: "bravo" },
+      { emoji: "🤬", name: "muito bravo" },
+      { emoji: "😤", name: "irritado" },
+      { emoji: "😳", name: "envergonhado" },
+      { emoji: "😬", name: "tenso" },
+      { emoji: "🤒", name: "doente" },
+      { emoji: "🤕", name: "machucado" },
+      { emoji: "🥱", name: "entediado" },
+      { emoji: "😶", name: "calado" },
+      { emoji: "🤔", name: "pensativo" },
+      { emoji: "😎", name: "confiante" },
+    ],
+  },
+  {
+    label: "Símbolos",
+    items: [
+      { emoji: "❤️", name: "amor" },
+      { emoji: "💔", name: "coração partido" },
+      { emoji: "✨", name: "brilho" },
+      { emoji: "⭐", name: "estrela" },
+      { emoji: "🌈", name: "arco-íris" },
+      { emoji: "☀️", name: "sol" },
+      { emoji: "☁️", name: "nuvem" },
+      { emoji: "⛈️", name: "tempestade" },
+      { emoji: "🔥", name: "fogo" },
+      { emoji: "💤", name: "dormir" },
+      { emoji: "💭", name: "pensamento" },
+      { emoji: "💬", name: "fala" },
+      { emoji: "❓", name: "dúvida" },
+      { emoji: "❗", name: "atenção" },
+      { emoji: "🚫", name: "não" },
+      { emoji: "🎉", name: "festa" },
+    ],
+  },
+];
+
+type State = { items: Placed[]; mood: Mood; covers: Cover[]; notes: Note[]; stickers: Sticker[] };
+const DEFAULT_STATE: State = { items: [], mood: "dia", covers: [], notes: [], stickers: [] };
 const uid = () => Math.random().toString(36).slice(2, 9);
 
 export default function MinhaCasa({ room }: Props) {
