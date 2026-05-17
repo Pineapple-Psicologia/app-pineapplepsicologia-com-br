@@ -674,6 +674,28 @@ export default function MinhaCasa({ room }: Props) {
           {/* painel inferior */}
           <div className="rounded-xl bg-white/85 border p-3 min-h-[96px]">
             {(() => {
+              const selectedSticker = state.stickers.find((s) => s.id === selectedId);
+              if (selectedSticker) {
+                return (
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <span className="text-2xl leading-none">{selectedSticker.emoji}</span>
+                    <div className="font-semibold">Emoji</div>
+                    <div className="flex items-center gap-1.5 text-[11px]">
+                      <span className="text-muted-foreground">tamanho</span>
+                      <input
+                        type="range" min={0.6} max={2.2} step={0.05}
+                        value={selectedSticker.scale}
+                        onChange={(e) => updateSticker(selectedSticker.id, { scale: parseFloat(e.target.value) })}
+                        className="w-32"
+                      />
+                    </div>
+                    <div className="text-[11px] text-muted-foreground">arraste para mover</div>
+                    <Button size="sm" variant="outline" onClick={() => removeSticker(selectedSticker.id)} className="ml-auto">
+                      <Trash2 className="w-3.5 h-3.5" /> remover
+                    </Button>
+                  </div>
+                );
+              }
               const selectedNote = state.notes.find((n) => n.id === selectedId);
               if (selectedNote) {
                 return (
