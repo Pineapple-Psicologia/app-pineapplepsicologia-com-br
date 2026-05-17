@@ -527,7 +527,8 @@ function StepChip({ id, cur, label }: { id: Step; cur: Step; label: string }) {
 
 /* ============================ PDF EXPORT ============================ */
 
-function exportBussolaPdf(state: State, sortedMuito: string[]) {
+function exportBussolaPdf(state: State, _sortedMuito: ValueCard[]) {
+  void _sortedMuito;
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
