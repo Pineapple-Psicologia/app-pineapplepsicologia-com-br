@@ -132,6 +132,16 @@ export const GAMES: GameMeta[] = [
     available: true,
   },
   {
+    id: "minha-casa",
+    title: "Minha Casa",
+    emoji: "🏠",
+    description:
+      "Construa simbolicamente sua casa: cômodos, móveis, família e pets. Iluminação, expressões e proximidades revelam vínculos e emoções.",
+    ageRange: "7–17 anos",
+    approach: "Lúdico simbólico · família",
+    available: true,
+  },
+  {
     id: "balanca" as GameId,
     title: "Balança da Evidência",
     emoji: "⚖️",
