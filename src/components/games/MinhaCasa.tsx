@@ -190,6 +190,7 @@ const uid = () => Math.random().toString(36).slice(2, 9);
 export default function MinhaCasa({ room }: Props) {
   const [state, setState] = useState<State>(DEFAULT_STATE);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [emojiOpen, setEmojiOpen] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
 
   // sync realtime (mescla defaults para compat com payloads antigos)
