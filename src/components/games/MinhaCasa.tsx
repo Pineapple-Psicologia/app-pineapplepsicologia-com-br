@@ -16,24 +16,62 @@ import imgIrma from "@/assets/casa/char-irma.png";
 import imgCuidador from "@/assets/casa/char-cuidador.png";
 import imgCao from "@/assets/casa/char-cao.png";
 import imgGato from "@/assets/casa/char-gato.png";
+// família negra
+import imgMaeNegra from "@/assets/casa/char-mae-negra.png";
+import imgPaiNegro from "@/assets/casa/char-pai-negro.png";
+import imgCriancaNegra from "@/assets/casa/char-crianca-negra.png";
+import imgAdolescenteNegro from "@/assets/casa/char-adolescente-negro.png";
+import imgAvoNegra from "@/assets/casa/char-avo-negra.png";
+import imgAvo2Negro from "@/assets/casa/char-avo2-negro.png";
+import imgIrmaoNegro from "@/assets/casa/char-irmao-negro.png";
+import imgIrmaNegra from "@/assets/casa/char-irma-negra.png";
+// extras (mais irmãos / bebês)
+import imgBebe from "@/assets/casa/char-bebe.png";
+import imgBebeNegro from "@/assets/casa/char-bebe-negro.png";
+import imgIrmaoCacula from "@/assets/casa/char-irmao-caculado.png";
+import imgIrmaMaisVelha from "@/assets/casa/char-irma-mais-velha.png";
 
 type Props = { room: ReturnType<typeof useRoom> };
 
-type CharDef = { id: string; label: string; img: string; isPet?: boolean };
+type CharGroup = "familia" | "familia-negra" | "extras" | "pets";
+type CharDef = { id: string; label: string; img: string; group: CharGroup; isPet?: boolean };
 
 const CHARACTERS: CharDef[] = [
-  { id: "crianca",     label: "Criança",     img: imgCrianca },
-  { id: "adolescente", label: "Adolescente", img: imgAdolescente },
-  { id: "mae",         label: "Mãe",         img: imgMae },
-  { id: "pai",         label: "Pai",         img: imgPai },
-  { id: "avo",         label: "Avó",         img: imgAvo },
-  { id: "avo2",        label: "Avô",         img: imgAvo2 },
-  { id: "irmao",       label: "Irmão",       img: imgIrmao },
-  { id: "irma",        label: "Irmã",        img: imgIrma },
-  { id: "cuidador",    label: "Cuidador(a)", img: imgCuidador },
-  { id: "cao",         label: "Cachorro",    img: imgCao,  isPet: true },
-  { id: "gato",        label: "Gato",        img: imgGato, isPet: true },
+  // Família
+  { id: "crianca",     label: "Criança",     img: imgCrianca,     group: "familia" },
+  { id: "adolescente", label: "Adolescente", img: imgAdolescente, group: "familia" },
+  { id: "mae",         label: "Mãe",         img: imgMae,         group: "familia" },
+  { id: "pai",         label: "Pai",         img: imgPai,         group: "familia" },
+  { id: "avo",         label: "Avó",         img: imgAvo,         group: "familia" },
+  { id: "avo2",        label: "Avô",         img: imgAvo2,        group: "familia" },
+  { id: "irmao",       label: "Irmão",       img: imgIrmao,       group: "familia" },
+  { id: "irma",        label: "Irmã",        img: imgIrma,        group: "familia" },
+  { id: "cuidador",    label: "Cuidador(a)", img: imgCuidador,    group: "familia" },
+  // Família negra
+  { id: "mae-n",         label: "Mãe",         img: imgMaeNegra,         group: "familia-negra" },
+  { id: "pai-n",         label: "Pai",         img: imgPaiNegro,         group: "familia-negra" },
+  { id: "crianca-n",     label: "Criança",     img: imgCriancaNegra,     group: "familia-negra" },
+  { id: "adolescente-n", label: "Adolescente", img: imgAdolescenteNegro, group: "familia-negra" },
+  { id: "avo-n",         label: "Avó",         img: imgAvoNegra,         group: "familia-negra" },
+  { id: "avo2-n",        label: "Avô",         img: imgAvo2Negro,        group: "familia-negra" },
+  { id: "irmao-n",       label: "Irmão",       img: imgIrmaoNegro,       group: "familia-negra" },
+  { id: "irma-n",        label: "Irmã",        img: imgIrmaNegra,        group: "familia-negra" },
+  // Mais irmãos / bebês
+  { id: "bebe",          label: "Bebê",            img: imgBebe,           group: "extras" },
+  { id: "bebe-n",        label: "Bebê",            img: imgBebeNegro,      group: "extras" },
+  { id: "irmao-cacula",  label: "Irmão caçula",    img: imgIrmaoCacula,    group: "extras" },
+  { id: "irma-mais-velha", label: "Irmã mais velha", img: imgIrmaMaisVelha, group: "extras" },
+  // Pets
+  { id: "cao",         label: "Cachorro",    img: imgCao,  group: "pets", isPet: true },
+  { id: "gato",        label: "Gato",        img: imgGato, group: "pets", isPet: true },
 ];
+
+const GROUP_LABELS: Record<CharGroup, string> = {
+  "familia": "Família",
+  "familia-negra": "Família",
+  "extras": "Mais integrantes",
+  "pets": "Pets",
+};
 
 type Emotion = "feliz" | "calmo" | "amoroso" | "triste" | "bravo" | "ansioso" | "neutro";
 const EMOTIONS: { id: Emotion; label: string; color: string }[] = [
