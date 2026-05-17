@@ -349,7 +349,15 @@ function River({
           25%  { opacity: 0.75; }
           100% { opacity: 0; transform: translate(var(--sx), var(--sy)) scaleX(1); }
         }
+        @keyframes rio-flow-fast { to { stroke-dashoffset: -120; } }
+        @keyframes rio-flow-med  { to { stroke-dashoffset: -80;  } }
+        @keyframes rio-flow-slow { to { stroke-dashoffset: -40;  } }
+        @keyframes rio-breathe   { 0%,100% { opacity: 0.35; } 50% { opacity: 0.6; } }
       `}</style>
+
+      {/* flowing-water SVG over the river bed */}
+      <FlowingRiver />
+
 
       {/* sparkles */}
       {sparkles.map((s, i) => (
@@ -394,6 +402,95 @@ const RIVER = {
   p2: { x: 38, y: 62 },
   p3: { x: 34, y: 104 },
 };
+
+// SVG d-string of the river bed bezier
+const RIVER_D = `M ${50} ${14} C ${60} ${38}, ${38} ${62}, ${34} ${104}`;
+
+/* ============================ FLOWING WATER ============================ */
+function FlowingRiver() {
+  return (
+    <svg
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      viewBox="0 0 100 100"
+      preserveAspectRatio="none"
+      aria-hidden
+    >
+      <defs>
+        {/* organic ripple distortion */}
+        <filter id="rio-ripple" x="-10%" y="-10%" width="120%" height="120%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.022 0.05" numOctaves="2" seed="3" result="noise">
+            <animate attributeName="baseFrequency" dur="9s" values="0.022 0.05;0.03 0.07;0.022 0.05" repeatCount="indefinite" />
+          </feTurbulence>
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.6" />
+        </filter>
+        <linearGradient id="rio-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"  stopColor="#bde7ff" stopOpacity="0.55" />
+          <stop offset="60%" stopColor="#7fc6ee" stopOpacity="0.40" />
+          <stop offset="100%" stopColor="#3a8cb8" stopOpacity="0.55" />
+        </linearGradient>
+      </defs>
+
+      <g filter="url(#rio-ripple)">
+        {/* soft glowing river body */}
+        <path
+          d={RIVER_D}
+          stroke="url(#rio-grad)"
+          strokeWidth="12"
+          strokeLinecap="round"
+          fill="none"
+          vectorEffect="non-scaling-stroke"
+          style={{ animation: "rio-breathe 4s ease-in-out infinite" }}
+        />
+        {/* slow under-current */}
+        <path
+          d={RIVER_D}
+          stroke="rgba(255,255,255,0.35)"
+          strokeWidth="7"
+          strokeLinecap="round"
+          fill="none"
+          vectorEffect="non-scaling-stroke"
+          strokeDasharray="3 14"
+          style={{ animation: "rio-flow-slow 4.5s linear infinite" }}
+        />
+        {/* mid-flow ripples */}
+        <path
+          d={RIVER_D}
+          stroke="rgba(255,255,255,0.55)"
+          strokeWidth="3.5"
+          strokeLinecap="round"
+          fill="none"
+          vectorEffect="non-scaling-stroke"
+          strokeDasharray="2 10"
+          style={{ animation: "rio-flow-med 2.8s linear infinite" }}
+        />
+        {/* fast foam streaks */}
+        <path
+          d={RIVER_D}
+          stroke="rgba(255,255,255,0.85)"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          fill="none"
+          vectorEffect="non-scaling-stroke"
+          strokeDasharray="1.2 7"
+          style={{ animation: "rio-flow-fast 1.6s linear infinite" }}
+        />
+        {/* offset secondary highlight for parallax */}
+        <path
+          d={RIVER_D}
+          stroke="rgba(255,255,255,0.45)"
+          strokeWidth="1"
+          strokeLinecap="round"
+          fill="none"
+          vectorEffect="non-scaling-stroke"
+          strokeDasharray="0.8 11"
+          strokeDashoffset="5"
+          style={{ animation: "rio-flow-fast 2.1s linear infinite" }}
+        />
+      </g>
+    </svg>
+  );
+}
+
 
 function bezier(t: number) {
   const { p0, p1, p2, p3 } = RIVER;
