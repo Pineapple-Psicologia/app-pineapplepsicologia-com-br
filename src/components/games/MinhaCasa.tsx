@@ -531,8 +531,7 @@ function exportCasaPdf(state: State, proximity: { a: Placed; b: Placed; dist: nu
   doc.setFontSize(10);
   doc.setTextColor(120);
   const moodLabel = MOODS.find(m => m.id === state.mood)?.label;
-  const houseLabel = HOUSES.find(h => h.id === state.house)?.label;
-  doc.text(`Sessão · ${new Date().toLocaleDateString("pt-BR")} · Casa: ${houseLabel} · Atmosfera: ${moodLabel}`, 40, y);
+  doc.text(`Sessão · ${new Date().toLocaleDateString("pt-BR")} · Atmosfera: ${moodLabel}`, 40, y);
   y += 24;
   doc.setTextColor(20);
 
