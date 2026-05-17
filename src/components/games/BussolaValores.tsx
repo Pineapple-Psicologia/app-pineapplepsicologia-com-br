@@ -59,7 +59,7 @@ const DOMAINS: { id: DomainId; label: string; emoji: string; angle: number; icon
   { id: "espiritualidade", label: "Espiritualidade", emoji: "✨",         angle: 315, icon: Mountain },     // NW
 ];
 
-type Step = "sort" | "rank" | "place" | "commit" | "summary";
+type Step = "sort" | "rank" | "place";
 
 type Commitment = { domain: DomainId; valueId: string; action: string };
 
