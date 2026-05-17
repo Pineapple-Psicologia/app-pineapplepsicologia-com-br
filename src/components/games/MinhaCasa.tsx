@@ -513,6 +513,33 @@ export default function MinhaCasa({ room }: Props) {
           {/* painel inferior */}
           <div className="rounded-xl bg-white/85 border p-3 min-h-[96px]">
             {(() => {
+              const selectedNote = state.notes.find((n) => n.id === selectedId);
+              if (selectedNote) {
+                return (
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <StickyNote className="w-5 h-5 text-amber-700 shrink-0" />
+                    <div className="font-semibold">Nota</div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] text-muted-foreground">cor</span>
+                      {(Object.keys(NOTE_COLORS) as Note["color"][]).map((col) => (
+                        <button
+                          key={col}
+                          onClick={() => updateNote(selectedNote.id, { color: col })}
+                          className={`w-6 h-6 rounded-full border-2 transition ${selectedNote.color === col ? "ring-2 ring-amber-500 scale-110" : "border-white"}`}
+                          style={{ background: NOTE_COLORS[col].bg, borderColor: NOTE_COLORS[col].border }}
+                          title={col}
+                        />
+                      ))}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground">
+                      digite direto na nota · arraste o cantinho colorido para redimensionar
+                    </div>
+                    <Button size="sm" variant="outline" onClick={() => removeNote(selectedNote.id)} className="ml-auto">
+                      <Trash2 className="w-3.5 h-3.5" /> remover
+                    </Button>
+                  </div>
+                );
+              }
               const selectedCover = state.covers.find((c) => c.id === selectedId);
               if (selectedCover) {
                 return (
