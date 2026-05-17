@@ -2,6 +2,11 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import {
+  clearSessionPolicy,
+  installSessionOnlyGuard,
+  isPolicyExpired,
+} from "@/lib/session-policy";
 
 type AuthContextValue = {
   user: User | null;
