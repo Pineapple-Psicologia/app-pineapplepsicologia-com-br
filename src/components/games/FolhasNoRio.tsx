@@ -380,6 +380,48 @@ function River({
   );
 }
 
+/* ============================ RIVER PATH ============================ */
+// Cubic bezier in % coordinates matching the painted river bed:
+// starts near the waterfall (top-center) and curves down toward the foreground.
+const RIVER = {
+  p0: { x: 50, y: 14 },
+  p1: { x: 60, y: 38 },
+  p2: { x: 38, y: 62 },
+  p3: { x: 34, y: 104 },
+};
+
+function bezier(t: number) {
+  const { p0, p1, p2, p3 } = RIVER;
+  const u = 1 - t;
+  const x =
+    u * u * u * p0.x +
+    3 * u * u * t * p1.x +
+    3 * u * t * t * p2.x +
+    t * t * t * p3.x;
+  const y =
+    u * u * u * p0.y +
+    3 * u * u * t * p1.y +
+    3 * u * t * t * p2.y +
+    t * t * t * p3.y;
+  return { x, y };
+}
+
+function bezierTangent(t: number) {
+  const { p0, p1, p2, p3 } = RIVER;
+  const u = 1 - t;
+  const x =
+    3 * u * u * (p1.x - p0.x) +
+    6 * u * t * (p2.x - p1.x) +
+    3 * t * t * (p3.x - p2.x);
+  const y =
+    3 * u * u * (p1.y - p0.y) +
+    6 * u * t * (p2.y - p1.y) +
+    3 * t * t * (p3.y - p2.y);
+  // tangent angle in degrees, where 0deg = pointing down the river
+  const angle = (Math.atan2(y, x) * 180) / Math.PI;
+  return angle;
+}
+
 /* ============================ LEAF ============================ */
 
 function LeafSprite({
@@ -394,16 +436,25 @@ function LeafSprite({
   const elapsed = (now - leaf.bornAt) / 1000;
   let rawProgress = Math.min(1.05, elapsed / leaf.duration);
 
-  // stuck: pause at 55% until freed
+  // stuck on a rock at ~55% until freed
   const isStuck = leaf.stuck && !leaf.freed && rawProgress >= 0.55;
   if (isStuck) rawProgress = 0.55;
-  if (!running) rawProgress = Math.min(rawProgress, rawProgress); // freeze handled by stopping bornAt? simple: leaves keep flowing visually
 
-  const y = 5 + rawProgress * 95; // top%
-  const wobble = Math.sin((elapsed + leaf.spin) * 1.4) * 4;
-  const x = leaf.lane * 100 + wobble;
-  const rotation = leaf.spin + rawProgress * 360;
-  const fading = rawProgress > 0.92;
+  // position along the river bed
+  const t = Math.max(0, Math.min(1, rawProgress));
+  const center = bezier(t);
+  const tangentDeg = bezierTangent(t);
+  // perpendicular offset (lane: 0..1 maps to -1..+1 across river width)
+  const perpRad = ((tangentDeg + 90) * Math.PI) / 180;
+  const laneOffset = (leaf.lane - 0.5) * 14; // ±7% of width
+  const drift = Math.sin((elapsed + leaf.spin * 0.01) * 1.2) * 1.6; // gentle current sway
+  const offsetTotal = laneOffset + drift;
+  const x = center.x + Math.cos(perpRad) * offsetTotal;
+  const y = center.y + Math.sin(perpRad) * offsetTotal;
+
+  // gentle spin overlaid on river direction
+  const rotation = tangentDeg + Math.sin(elapsed * 0.8 + leaf.spin) * 12;
+  const fading = rawProgress > 0.94;
 
   return (
     <div
@@ -411,7 +462,7 @@ function LeafSprite({
       style={{
         left: `${x}%`,
         top: `${y}%`,
-        transition: "opacity 600ms ease",
+        transition: "opacity 700ms ease",
         opacity: fading ? 0 : 1,
         pointerEvents: isStuck ? "auto" : "none",
         zIndex: isStuck ? 5 : 2,
@@ -421,12 +472,13 @@ function LeafSprite({
         style={{
           transform: `rotate(${rotation}deg)`,
           animation: isStuck ? "rio-wobble 0.9s ease-in-out infinite" : undefined,
+          transition: "transform 120ms linear",
         }}
       >
         <LeafSvg color={cat.color} stuck={isStuck} />
       </div>
       <div
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[11px] font-bold text-stone-900 max-w-[140px] text-center leading-tight px-1.5 py-0.5 rounded bg-white/70 backdrop-blur-sm shadow-sm pointer-events-none"
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[11px] font-bold text-stone-900 max-w-[140px] text-center leading-tight px-1.5 py-0.5 rounded bg-white/75 backdrop-blur-sm shadow-sm pointer-events-none"
         style={{ whiteSpace: "normal" }}
       >
         {leaf.text}
