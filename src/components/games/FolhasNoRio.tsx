@@ -461,10 +461,7 @@ function LeafSprite({
   const rotation = tangentDeg + Math.sin(elapsed * 0.8 + leaf.spin) * 12;
   const fading = rawProgress > 0.94;
 
-  // streak vectors (downstream along tangent)
-  const tanRad = (tangentDeg * Math.PI) / 180;
-  const flowX = Math.cos(tanRad);
-  const flowY = Math.sin(tanRad);
+  // show current streaks while flowing (not stuck, not entering/exiting)
   const showStreaks = !isStuck && running && rawProgress > 0.02 && rawProgress < 0.95;
 
   return (
