@@ -1,0 +1,466 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { useRoom } from "@/lib/useRoom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Play, Pause, RotateCcw, Leaf, Hand, Sparkles, Volume2, VolumeX,
+} from "lucide-react";
+import rioBg from "@/assets/scene-folhas-rio.jpg";
+
+type Props = { room: ReturnType<typeof useRoom> };
+
+type LeafCategory = "medo" | "raiva" | "tristeza" | "autocritica" | "preocupacao" | "outro";
+
+const CATEGORIES: { id: LeafCategory; label: string; color: string; tip: string }[] = [
+  { id: "medo",         label: "Medo",          color: "#a78bfa", tip: "Aquilo que me assusta" },
+  { id: "raiva",        label: "Raiva",         color: "#ef4444", tip: "Aquilo que me incomoda" },
+  { id: "tristeza",     label: "Tristeza",      color: "#60a5fa", tip: "Aquilo que pesa" },
+  { id: "autocritica",  label: "Autocrítica",   color: "#f59e0b", tip: "A voz que me julga" },
+  { id: "preocupacao",  label: "Preocupação",   color: "#10b981", tip: "O 'e se' que volta" },
+  { id: "outro",        label: "Outro",         color: "#fbbf24", tip: "Qualquer pensamento" },
+];
+
+type LeafItem = {
+  id: string;
+  text: string;
+  category: LeafCategory;
+  /** birth epoch ms */
+  bornAt: number;
+  /** seconds to traverse the river */
+  duration: number;
+  /** horizontal lane 0..1 */
+  lane: number;
+  /** rotation seed */
+  spin: number;
+  /** stuck = will pause at ~55% until nudged */
+  stuck: boolean;
+  freed: boolean;
+};
+
+type Pace = "lento" | "normal" | "rapido";
+const PACE_SECONDS: Record<Pace, number> = { lento: 28, normal: 18, rapido: 11 };
+
+type State = {
+  running: boolean;
+  pace: Pace;
+  released: number;
+  leaves: LeafItem[];
+  ambientMode: boolean;
+  // serial counter for unique ids across both clients
+  serial: number;
+};
+
+const DEFAULT_STATE: State = {
+  running: true,
+  pace: "normal",
+  released: 0,
+  leaves: [],
+  ambientMode: false,
+  serial: 0,
+};
+
+const MAX_LEAVES = 14;
+
+export default function FolhasNoRio({ room }: Props) {
+  const [state, setState] = useState<State>(DEFAULT_STATE);
+  const [text, setText] = useState("");
+  const [cat, setCat] = useState<LeafCategory>("preocupacao");
+  const [now, setNow] = useState(Date.now());
+  const [sound, setSound] = useState(false);
+  const rafRef = useRef<number | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+
+  // animation loop
+  useEffect(() => {
+    const tick = () => {
+      setNow(Date.now());
+      rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, []);
+
+  // remote sync
+  useEffect(() => {
+    return room.on((m) => {
+      if (m.type === "rio:state") setState(m.payload as State);
+    });
+  }, [room]);
+
+  const broadcast = (next: State | ((s: State) => State)) => {
+    setState((prev) => {
+      const n = typeof next === "function" ? (next as (s: State) => State)(prev) : next;
+      room.send("rio:state", n);
+      return n;
+    });
+  };
+
+  // prune leaves that have finished travelling
+  useEffect(() => {
+    const expired = state.leaves.filter((l) => {
+      const elapsed = (now - l.bornAt) / 1000;
+      return elapsed > l.duration + 2;
+    });
+    if (expired.length > 0) {
+      broadcast((s) => ({ ...s, leaves: s.leaves.filter((l) => !expired.find((e) => e.id === l.id)) }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [Math.floor(now / 600)]);
+
+  // ambient mode: drop blank "let go" leaves automatically
+  const lastAmbientRef = useRef(0);
+  useEffect(() => {
+    if (!state.ambientMode || !state.running) return;
+    if (now - lastAmbientRef.current > 4500 && state.leaves.length < MAX_LEAVES - 2) {
+      lastAmbientRef.current = now;
+      releaseLeaf("…", "outro", false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [Math.floor(now / 500), state.ambientMode, state.running]);
+
+  const playChime = () => {
+    if (!sound) return;
+    try {
+      if (!audioCtxRef.current) audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const ctx = audioCtxRef.current;
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = "sine";
+      o.frequency.value = 440 + Math.random() * 220;
+      g.gain.value = 0.0001;
+      g.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 0.04);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.4);
+      o.connect(g).connect(ctx.destination);
+      o.start();
+      o.stop(ctx.currentTime + 1.5);
+    } catch { /* ignore */ }
+  };
+
+  const releaseLeaf = (txt: string, category: LeafCategory, allowStuck = true) => {
+    const duration = PACE_SECONDS[state.pace];
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    const stuck = allowStuck && Math.random() < 0.18 && txt.trim().length > 0;
+    const leaf: LeafItem = {
+      id,
+      text: txt.trim() || "…",
+      category,
+      bornAt: Date.now(),
+      duration,
+      lane: 0.15 + Math.random() * 0.7,
+      spin: (Math.random() - 0.5) * 720,
+      stuck,
+      freed: false,
+    };
+    broadcast((s) => ({
+      ...s,
+      released: s.released + 1,
+      leaves: [...s.leaves, leaf].slice(-MAX_LEAVES),
+      serial: s.serial + 1,
+    }));
+    playChime();
+  };
+
+  const onSubmit = () => {
+    if (!text.trim()) return;
+    releaseLeaf(text, cat);
+    setText("");
+  };
+
+  const nudgeLeaf = (id: string) => {
+    broadcast((s) => ({
+      ...s,
+      leaves: s.leaves.map((l) => (l.id === id ? { ...l, stuck: false, freed: true } : l)),
+    }));
+  };
+
+  const reset = () => {
+    broadcast({ ...DEFAULT_STATE, pace: state.pace });
+  };
+
+  const togglePlay = () => broadcast((s) => ({ ...s, running: !s.running }));
+  const cyclePace = () => {
+    const order: Pace[] = ["lento", "normal", "rapido"];
+    const next = order[(order.indexOf(state.pace) + 1) % order.length];
+    broadcast((s) => ({ ...s, pace: next }));
+  };
+
+  const catMeta = CATEGORIES.find((c) => c.id === cat)!;
+
+  return (
+    <div
+      className="h-full w-full p-3 md:p-5 flex flex-col gap-3 rounded-2xl border-4 border-amber-900/30 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.45)] relative overflow-hidden"
+      style={{
+        backgroundImage: `linear-gradient(rgba(254,243,199,0.18), rgba(0,0,0,0.18)), url(${rioBg})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
+      {/* header */}
+      <header className="flex items-center justify-between flex-wrap gap-3 bg-white/90 backdrop-blur rounded-2xl border-2 border-white shadow-lg px-4 py-2">
+        <div className="flex items-center gap-2">
+          <Leaf className="w-5 h-5 text-emerald-700" />
+          <div>
+            <h2 className="text-xl font-bold leading-tight">Folhas no Rio</h2>
+            <p className="text-[11px] text-muted-foreground leading-tight">
+              ACT · desfusão cognitiva — observe seus pensamentos passarem
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" onClick={cyclePace} title="Velocidade do rio">
+            <Sparkles className="w-4 h-4 mr-1" /> {state.pace}
+          </Button>
+          <Button
+            size="sm"
+            variant={state.ambientMode ? "default" : "outline"}
+            onClick={() => broadcast((s) => ({ ...s, ambientMode: !s.ambientMode }))}
+            title="Modo automático: folhas em branco a cada poucos segundos"
+          >
+            Auto
+          </Button>
+          {state.running ? (
+            <Button size="sm" variant="outline" onClick={togglePlay}>
+              <Pause className="w-4 h-4 mr-1" /> Pausar
+            </Button>
+          ) : (
+            <Button size="sm" onClick={togglePlay}>
+              <Play className="w-4 h-4 mr-1" /> Retomar
+            </Button>
+          )}
+          <Button size="sm" variant="ghost" onClick={() => setSound((v) => !v)} title="Som">
+            {sound ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+          </Button>
+          <Button size="sm" variant="ghost" onClick={reset}>
+            <RotateCcw className="w-4 h-4" />
+          </Button>
+        </div>
+      </header>
+
+      {/* river */}
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-3 min-h-0">
+        <River
+          state={state}
+          now={now}
+          onNudge={nudgeLeaf}
+        />
+
+        {/* side panel */}
+        <aside className="bg-white/90 backdrop-blur rounded-2xl border-2 border-white shadow-lg p-4 flex flex-col gap-3 min-h-0">
+          <div>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-1">
+              Escreva um pensamento
+            </h3>
+            <p className="text-[11px] text-muted-foreground leading-snug">
+              Coloque-o sobre uma folha e solte no rio. Não é pra resolver. É pra ver passar.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-1.5">
+            {CATEGORIES.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => setCat(c.id)}
+                className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border-2 transition-all ${
+                  cat === c.id ? "scale-105 shadow-sm" : "opacity-70 hover:opacity-100"
+                }`}
+                style={{
+                  borderColor: c.color,
+                  background: cat === c.id ? c.color : "transparent",
+                  color: cat === c.id ? "white" : c.color,
+                }}
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
+          <p className="text-[11px] italic text-muted-foreground -mt-1">{catMeta.tip}</p>
+
+          <Input
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && onSubmit()}
+            placeholder="ex: ninguém vai me entender"
+            maxLength={90}
+            className="border-2"
+          />
+          <Button onClick={onSubmit} disabled={!text.trim()} className="w-full">
+            <Hand className="w-4 h-4 mr-1" /> Soltar no rio
+          </Button>
+
+          <div className="mt-1 grid grid-cols-2 gap-2 text-center">
+            <div className="rounded-lg bg-emerald-50 border border-emerald-200 py-1.5">
+              <div className="text-[10px] uppercase tracking-wider font-bold text-emerald-700">Soltas</div>
+              <div className="text-2xl font-black tabular-nums text-emerald-800">{state.released}</div>
+            </div>
+            <div className="rounded-lg bg-amber-50 border border-amber-200 py-1.5">
+              <div className="text-[10px] uppercase tracking-wider font-bold text-amber-700">No rio</div>
+              <div className="text-2xl font-black tabular-nums text-amber-800">{state.leaves.length}</div>
+            </div>
+          </div>
+
+          <div className="mt-auto p-3 rounded-lg bg-primary/5 border border-primary/20">
+            <p className="text-xs text-foreground/80 leading-relaxed">
+              <strong>Dica clínica:</strong> se uma folha ficar presa numa pedra, toque nela
+              pra liberar. Praticamos juntos: pensamentos são eventos, não ordens.
+            </p>
+          </div>
+        </aside>
+      </div>
+    </div>
+  );
+}
+
+/* ============================ RIVER ============================ */
+
+function River({
+  state, now, onNudge,
+}: {
+  state: State;
+  now: number;
+  onNudge: (id: string) => void;
+}) {
+  // ambient sparkles — deterministic per session
+  const sparkles = useMemo(
+    () => Array.from({ length: 18 }, (_, i) => ({
+      x: (i * 53) % 100,
+      y: 20 + ((i * 37) % 70),
+      delay: (i * 0.31) % 3,
+      size: 2 + ((i * 7) % 5),
+    })),
+    [],
+  );
+
+  return (
+    <div className="relative rounded-2xl overflow-hidden border-2 border-white/70 shadow-inner bg-gradient-to-b from-amber-700/10 via-emerald-800/10 to-amber-900/20">
+      {/* gentle water shimmer overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-50"
+        style={{
+          background: `repeating-linear-gradient(115deg, transparent 0 14px, rgba(255,255,255,0.06) 14px 16px)`,
+          animation: "rio-shimmer 8s linear infinite",
+        }}
+      />
+      <style>{`
+        @keyframes rio-shimmer { from { background-position: 0 0; } to { background-position: 80px 0; } }
+        @keyframes rio-sparkle { 0%,100% { opacity: 0; transform: scale(0.6);} 50% { opacity: 0.9; transform: scale(1);} }
+        @keyframes rio-wobble { 0%,100% { transform: translateX(-6px); } 50% { transform: translateX(6px); } }
+      `}</style>
+
+      {/* sparkles */}
+      {sparkles.map((s, i) => (
+        <div
+          key={i}
+          className="absolute rounded-full bg-white pointer-events-none"
+          style={{
+            left: `${s.x}%`,
+            top: `${s.y}%`,
+            width: s.size,
+            height: s.size,
+            animation: `rio-sparkle 3s ease-in-out infinite`,
+            animationDelay: `${s.delay}s`,
+            filter: "blur(0.3px)",
+          }}
+        />
+      ))}
+
+      {/* leaves */}
+      {state.leaves.map((l) => (
+        <LeafSprite key={l.id} leaf={l} now={now} running={state.running} onNudge={() => onNudge(l.id)} />
+      ))}
+
+      {/* empty-state hint */}
+      {state.leaves.length === 0 && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="text-white/90 text-sm font-semibold drop-shadow-md bg-black/30 backdrop-blur px-4 py-2 rounded-full">
+            Escreva um pensamento → solte no rio →
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ============================ LEAF ============================ */
+
+function LeafSprite({
+  leaf, now, running, onNudge,
+}: {
+  leaf: LeafItem;
+  now: number;
+  running: boolean;
+  onNudge: () => void;
+}) {
+  const cat = CATEGORIES.find((c) => c.id === leaf.category)!;
+  const elapsed = (now - leaf.bornAt) / 1000;
+  let rawProgress = Math.min(1.05, elapsed / leaf.duration);
+
+  // stuck: pause at 55% until freed
+  const isStuck = leaf.stuck && !leaf.freed && rawProgress >= 0.55;
+  if (isStuck) rawProgress = 0.55;
+  if (!running) rawProgress = Math.min(rawProgress, rawProgress); // freeze handled by stopping bornAt? simple: leaves keep flowing visually
+
+  const y = 5 + rawProgress * 95; // top%
+  const wobble = Math.sin((elapsed + leaf.spin) * 1.4) * 4;
+  const x = leaf.lane * 100 + wobble;
+  const rotation = leaf.spin + rawProgress * 360;
+  const fading = rawProgress > 0.92;
+
+  return (
+    <div
+      className="absolute -translate-x-1/2 -translate-y-1/2 select-none"
+      style={{
+        left: `${x}%`,
+        top: `${y}%`,
+        transition: "opacity 600ms ease",
+        opacity: fading ? 0 : 1,
+        pointerEvents: isStuck ? "auto" : "none",
+        zIndex: isStuck ? 5 : 2,
+      }}
+    >
+      <div
+        style={{
+          transform: `rotate(${rotation}deg)`,
+          animation: isStuck ? "rio-wobble 0.9s ease-in-out infinite" : undefined,
+        }}
+      >
+        <LeafSvg color={cat.color} stuck={isStuck} />
+      </div>
+      <div
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[11px] font-bold text-stone-900 max-w-[140px] text-center leading-tight px-1.5 py-0.5 rounded bg-white/70 backdrop-blur-sm shadow-sm pointer-events-none"
+        style={{ whiteSpace: "normal" }}
+      >
+        {leaf.text}
+      </div>
+      {isStuck && (
+        <button
+          onClick={onNudge}
+          className="absolute -top-7 left-1/2 -translate-x-1/2 text-[10px] font-bold bg-amber-500 text-white px-2 py-0.5 rounded-full shadow-md animate-bounce whitespace-nowrap"
+        >
+          Toque para soltar
+        </button>
+      )}
+    </div>
+  );
+}
+
+function LeafSvg({ color, stuck }: { color: string; stuck: boolean }) {
+  return (
+    <svg width="92" height="64" viewBox="0 0 92 64" className={stuck ? "drop-shadow-lg" : "drop-shadow"}>
+      <defs>
+        <radialGradient id={`lg-${color}`} cx="35%" cy="40%" r="70%">
+          <stop offset="0%" stopColor="white" stopOpacity="0.55" />
+          <stop offset="55%" stopColor={color} stopOpacity="0.95" />
+          <stop offset="100%" stopColor={color} stopOpacity="1" />
+        </radialGradient>
+      </defs>
+      <path
+        d="M4 32 C 4 8, 46 0, 88 12 C 88 44, 46 64, 4 56 C 14 50, 18 42, 4 32 Z"
+        fill={`url(#lg-${color})`}
+        stroke="rgba(0,0,0,0.25)"
+        strokeWidth="1.4"
+      />
+      <path d="M10 38 C 30 32, 60 28, 84 22" stroke="rgba(0,0,0,0.25)" strokeWidth="1.2" fill="none" />
+      <path d="M30 40 L 36 30 M48 41 L 56 30 M64 38 L 70 28" stroke="rgba(0,0,0,0.18)" strokeWidth="1" fill="none" />
+    </svg>
+  );
+}
