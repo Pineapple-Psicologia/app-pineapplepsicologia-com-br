@@ -579,7 +579,7 @@ function LeafSprite({
           transition: "transform 120ms linear",
         }}
       >
-        <LeafSvg color={cat.color} stuck={isStuck} />
+        <LeafSvg color={autumnTone(leaf.spin)} stuck={isStuck} />
       </div>
       <div
         className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[11px] font-bold text-stone-900 max-w-[140px] text-center leading-tight px-1.5 py-0.5 rounded bg-white/75 backdrop-blur-sm shadow-sm pointer-events-none"
@@ -720,4 +720,19 @@ function shade(hex: string, amt: number) {
   g = Math.round((t - g) * p) + g;
   b = Math.round((t - b) * p) + b;
   return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
+}
+
+// dry-leaf / autumn palette that harmonizes with the sunset scene
+const AUTUMN_TONES = [
+  "#b8722a", // ocre quente
+  "#a05a23", // canela escuro
+  "#caa15a", // mostarda seca
+  "#8a4a1f", // sépia avermelhado
+  "#d49454", // âmbar
+  "#7a3b18", // marrom queimado
+  "#bd8146", // bronze suave
+];
+function autumnTone(seed: number) {
+  const i = Math.abs(Math.floor(seed)) % AUTUMN_TONES.length;
+  return AUTUMN_TONES[i];
 }
