@@ -600,23 +600,124 @@ function LeafSprite({
 }
 
 function LeafSvg({ color, stuck }: { color: string; stuck: boolean }) {
+  // sanitize color for use in SVG ids
+  const uid = color.replace(/[^a-zA-Z0-9]/g, "");
+  const dark = shade(color, -0.45);
+  const light = shade(color, 0.35);
   return (
-    <svg width="92" height="64" viewBox="0 0 92 64" className={stuck ? "drop-shadow-lg" : "drop-shadow"}>
+    <svg
+      width="104"
+      height="72"
+      viewBox="0 0 104 72"
+      className={stuke(stuck)}
+      style={{ overflow: "visible" }}
+    >
       <defs>
-        <radialGradient id={`lg-${color}`} cx="35%" cy="40%" r="70%">
-          <stop offset="0%" stopColor="white" stopOpacity="0.55" />
-          <stop offset="55%" stopColor={color} stopOpacity="0.95" />
-          <stop offset="100%" stopColor={color} stopOpacity="1" />
+        {/* painterly body — warm rim light from upper-left, deeper shadow bottom-right */}
+        <radialGradient id={`leaf-body-${uid}`} cx="28%" cy="30%" r="85%">
+          <stop offset="0%"  stopColor={light} stopOpacity="1" />
+          <stop offset="45%" stopColor={color} stopOpacity="1" />
+          <stop offset="100%" stopColor={dark}  stopOpacity="1" />
         </radialGradient>
+        {/* soft specular sheen */}
+        <radialGradient id={`leaf-sheen-${uid}`} cx="30%" cy="25%" r="40%">
+          <stop offset="0%"  stopColor="#ffffff" stopOpacity="0.55" />
+          <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+        </radialGradient>
+        {/* warm sunset rim around the leaf edge */}
+        <radialGradient id={`leaf-rim-${uid}`} cx="50%" cy="50%" r="60%">
+          <stop offset="80%" stopColor="#fff1d6" stopOpacity="0" />
+          <stop offset="100%" stopColor="#ffd28a" stopOpacity="0.85" />
+        </radialGradient>
+        {/* drop shadow */}
+        <filter id={`leaf-shadow-${uid}`} x="-20%" y="-20%" width="140%" height="160%">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="1.6" />
+          <feOffset dx="1" dy="2.5" result="off" />
+          <feComponentTransfer>
+            <feFuncA type="linear" slope="0.45" />
+          </feComponentTransfer>
+          <feMerge>
+            <feMergeNode />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
       </defs>
-      <path
-        d="M4 32 C 4 8, 46 0, 88 12 C 88 44, 46 64, 4 56 C 14 50, 18 42, 4 32 Z"
-        fill={`url(#lg-${color})`}
-        stroke="rgba(0,0,0,0.25)"
-        strokeWidth="1.4"
-      />
-      <path d="M10 38 C 30 32, 60 28, 84 22" stroke="rgba(0,0,0,0.25)" strokeWidth="1.2" fill="none" />
-      <path d="M30 40 L 36 30 M48 41 L 56 30 M64 38 L 70 28" stroke="rgba(0,0,0,0.18)" strokeWidth="1" fill="none" />
+
+      <g filter={`url(#leaf-shadow-${uid})`}>
+        {/* stem — curved, painterly */}
+        <path
+          d="M6 40 C 0 38, -2 34, 2 30"
+          stroke={dark}
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          fill="none"
+        />
+        {/* main leaf body — almond / lanceolate shape with a soft tip */}
+        <path
+          d="M6 36
+             C 14 12, 46 4, 78 8
+             C 96 10, 102 22, 96 36
+             C 90 52, 60 66, 30 60
+             C 16 57, 8 50, 6 36 Z"
+          fill={`url(#leaf-body-${uid})`}
+        />
+        {/* sunset rim glow */}
+        <path
+          d="M6 36
+             C 14 12, 46 4, 78 8
+             C 96 10, 102 22, 96 36
+             C 90 52, 60 66, 30 60
+             C 16 57, 8 50, 6 36 Z"
+          fill={`url(#leaf-rim-${uid})`}
+          style={{ mixBlendMode: "screen" }}
+        />
+        {/* central vein */}
+        <path
+          d="M8 38 C 30 30, 60 24, 96 22"
+          stroke={dark}
+          strokeOpacity="0.55"
+          strokeWidth="1.2"
+          fill="none"
+          strokeLinecap="round"
+        />
+        {/* side veins */}
+        <path
+          d="M22 42 C 28 36, 34 30, 40 24
+             M38 46 C 46 38, 54 30, 60 22
+             M56 50 C 64 42, 72 32, 78 22
+             M72 50 C 80 42, 86 32, 90 24"
+          stroke={dark}
+          strokeOpacity="0.35"
+          strokeWidth="0.9"
+          fill="none"
+          strokeLinecap="round"
+        />
+        {/* painterly highlight blob */}
+        <ellipse cx="34" cy="22" rx="22" ry="9" fill={`url(#leaf-sheen-${uid})`} />
+        {/* tiny dewdrop */}
+        <circle cx="62" cy="30" r="1.6" fill="#ffffff" fillOpacity="0.75" />
+        <circle cx="62" cy="30" r="0.6" fill="#ffffff" />
+      </g>
     </svg>
   );
+}
+
+// returns a class string for the leaf wrapper
+function stuke(stuck: boolean) {
+  return stuck ? "drop-shadow-xl" : "drop-shadow-md";
+}
+
+// lighten (>0) / darken (<0) a hex color by amount in [-1,1]
+function shade(hex: string, amt: number) {
+  const h = hex.replace("#", "");
+  const num = parseInt(h.length === 3 ? h.split("").map((c) => c + c).join("") : h, 16);
+  let r = (num >> 16) & 0xff;
+  let g = (num >> 8) & 0xff;
+  let b = num & 0xff;
+  const t = amt < 0 ? 0 : 255;
+  const p = Math.abs(amt);
+  r = Math.round((t - r) * p) + r;
+  g = Math.round((t - g) * p) + g;
+  b = Math.round((t - b) * p) + b;
+  return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
 }
