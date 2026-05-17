@@ -3,9 +3,10 @@ import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Compass, RotateCcw, ChevronRight, ChevronLeft,
+  Compass, RotateCcw, ChevronRight, ChevronLeft, Download,
   Heart, Briefcase, Users, HeartPulse, Palette, Mountain, BookOpen, Globe,
 } from "lucide-react";
+import jsPDF from "jspdf";
 import bussolaBg from "@/assets/scene-bussola.jpg";
 
 type Props = { room: ReturnType<typeof useRoom> };
