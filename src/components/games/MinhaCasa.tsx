@@ -679,6 +679,12 @@ function exportCasaPdf(state: State, proximity: { a: Placed; b: Placed; dist: nu
     y += 8;
   }
 
+  if (state.notes.length > 0) {
+    section(`Notas do paciente (${state.notes.length})`);
+    state.notes.forEach((n, i) => line(`${i + 1}. ${n.text.trim() || "(em branco)"}`));
+    y += 8;
+  }
+
   if (proximity.length > 0) {
     section("Proximidades simbólicas");
     proximity.slice(0, 10).forEach((p) => {
