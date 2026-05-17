@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
-import { Home, RotateCcw, Download, Trash2, Sun, Moon, Sparkles, Cloud } from "lucide-react";
+import { Home, RotateCcw, Download, Trash2, Sun, Moon, Sparkles, Cloud, EyeOff, X } from "lucide-react";
 import jsPDF from "jspdf";
 
 import casaBg from "@/assets/casa-pixar.jpg";
+import casaPequena from "@/assets/casa/casa-pequena.jpg";
+import casaApto from "@/assets/casa/casa-apartamento.jpg";
+import casaGrande from "@/assets/casa/casa-grande.jpg";
 import imgCrianca from "@/assets/casa/char-crianca.png";
 import imgAdolescente from "@/assets/casa/char-adolescente.png";
 import imgMae from "@/assets/casa/char-mae.png";
