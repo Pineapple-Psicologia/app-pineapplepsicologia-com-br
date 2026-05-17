@@ -3,6 +3,7 @@ import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
 import { RotateCcw, Eraser } from "lucide-react";
 import personagem from "@/assets/mapa-personagem.png";
+import mapaBg from "@/assets/scene-mapa-corporal.jpg";
 
 type Props = { room: ReturnType<typeof useRoom> };
 

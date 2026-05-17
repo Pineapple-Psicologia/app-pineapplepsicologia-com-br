@@ -381,10 +381,11 @@ export default function DetetiveTabuleiro({ room }: Props) {
 
   return (
     <div
-      className="h-full w-full rounded-xl border-4 border-amber-900/30 p-3 md:p-5 flex flex-col gap-3 overflow-auto"
+      className="h-full w-full rounded-xl border-4 border-amber-900/30 p-3 md:p-5 flex flex-col gap-3 overflow-auto relative"
       style={{
-        backgroundImage:
-          "radial-gradient(circle at 20% 15%, #fde68a 0%, transparent 40%), radial-gradient(circle at 85% 85%, #fbcfe8 0%, transparent 40%), radial-gradient(circle at 70% 20%, #bae6fd 0%, transparent 35%), linear-gradient(135deg, #fff7ed 0%, #ecfeff 100%)",
+        backgroundImage: `linear-gradient(rgba(255,247,237,0.55), rgba(253,230,138,0.4)), url(${tabuleiroBg})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
       }}
     >
       <header className="flex items-center justify-between flex-wrap gap-3">

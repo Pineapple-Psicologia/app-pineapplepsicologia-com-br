@@ -6,6 +6,7 @@ import imgSituacao from "@/assets/ciclo-situacao.png";
 import imgPensamento from "@/assets/ciclo-pensamento.png";
 import imgEmocao from "@/assets/ciclo-emocao.png";
 import imgComportamento from "@/assets/ciclo-comportamento.png";
+import trianguloBg from "@/assets/scene-triangulo.jpg";
 
 type Props = { room: ReturnType<typeof useRoom> };
 
