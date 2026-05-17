@@ -2,9 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
-  Compass, RotateCcw, ChevronRight, ChevronLeft, Sparkles, Check, Star,
+  Compass, RotateCcw, ChevronRight, ChevronLeft,
   Heart, Briefcase, Users, HeartPulse, Palette, Mountain, BookOpen, Globe,
 } from "lucide-react";
 import bussolaBg from "@/assets/scene-bussola.jpg";
@@ -59,16 +58,13 @@ const DOMAINS: { id: DomainId; label: string; emoji: string; angle: number; icon
   { id: "espiritualidade", label: "Espiritualidade", emoji: "✨",         angle: 315, icon: Mountain },     // NW
 ];
 
-type Step = "sort" | "rank" | "place" | "commit" | "summary";
-
-type Commitment = { domain: DomainId; valueId: string; action: string };
+type Step = "sort" | "rank" | "place";
 
 type State = {
   step: Step;
   importance: Record<string, Importance>;   // valueId -> importance
   rank: string[];                            // ordered top-5 valueIds
   placement: Partial<Record<DomainId, string>>; // domain -> valueId (top picks placed on compass)
-  commitments: Commitment[];
 };
 
 const DEFAULT_STATE: State = {
@@ -76,7 +72,6 @@ const DEFAULT_STATE: State = {
   importance: {},
   rank: [],
   placement: {},
-  commitments: [],
 };
 
 export default function BussolaValores({ room }: Props) {
@@ -134,8 +129,6 @@ export default function BussolaValores({ room }: Props) {
           <StepChip id="sort"    cur={state.step} label="1 · Triagem" />
           <StepChip id="rank"    cur={state.step} label="2 · Top 5" />
           <StepChip id="place"   cur={state.step} label="3 · Bússola" />
-          <StepChip id="commit"  cur={state.step} label="4 · Passo" />
-          <StepChip id="summary" cur={state.step} label="🗺️" />
         </div>
         <Button size="sm" variant="ghost" onClick={reset}>
           <RotateCcw className="w-4 h-4" />
@@ -152,12 +145,6 @@ export default function BussolaValores({ room }: Props) {
         {state.step === "place" && (
           <StepPlace state={state} broadcast={broadcast} />
         )}
-        {state.step === "commit" && (
-          <StepCommit state={state} broadcast={broadcast} />
-        )}
-        {state.step === "summary" && (
-          <StepSummary state={state} />
-        )}
       </div>
 
       {/* Footer nav */}
@@ -166,7 +153,7 @@ export default function BussolaValores({ room }: Props) {
           size="sm"
           variant="outline"
           onClick={() => {
-            const order: Step[] = ["sort", "rank", "place", "commit", "summary"];
+            const order: Step[] = ["sort", "rank", "place"];
             const idx = order.indexOf(state.step);
             if (idx > 0) goto(order[idx - 1]);
           }}
@@ -178,21 +165,18 @@ export default function BussolaValores({ room }: Props) {
           {state.step === "sort" && `Marque pelo menos 5 como "Muito" (${sortedMuito.length}/5)`}
           {state.step === "rank" && `Escolha 3–5 prioridades (${state.rank.length}/5)`}
           {state.step === "place" && `Coloque ao menos 3 na bússola (${placedCount}/${state.rank.length})`}
-          {state.step === "commit" && `Um micro-passo por valor placed (${state.commitments.length}/${placedCount})`}
-          {state.step === "summary" && `Seu mapa está pronto 🗺️`}
         </div>
         <Button
           size="sm"
           onClick={() => {
-            const order: Step[] = ["sort", "rank", "place", "commit", "summary"];
+            const order: Step[] = ["sort", "rank", "place"];
             const idx = order.indexOf(state.step);
             if (idx < order.length - 1) goto(order[idx + 1]);
           }}
           disabled={
             (state.step === "sort" && !canNextFromSort) ||
             (state.step === "rank" && !canNextFromRank) ||
-            (state.step === "place" && !canNextFromPlace) ||
-            state.step === "summary"
+            state.step === "place"
           }
         >
           Avançar <ChevronRight className="w-4 h-4 ml-1" />
@@ -509,104 +493,6 @@ function PlacePicker({
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-/* ============================ STEP 4 — COMMIT ============================ */
-
-function StepCommit({
-  state, broadcast,
-}: {
-  state: State;
-  broadcast: (n: State | ((s: State) => State)) => void;
-}) {
-  const setAction = (domain: DomainId, valueId: string, action: string) => {
-    broadcast((s) => {
-      const others = s.commitments.filter((c) => !(c.domain === domain && c.valueId === valueId));
-      return { ...s, commitments: [...others, { domain, valueId, action }] };
-    });
-  };
-
-  const entries = (Object.entries(state.placement) as [DomainId, string][])
-    .filter(([, id]) => Boolean(id));
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-      {entries.map(([domain, valueId]) => {
-        const d = DOMAINS.find((x) => x.id === domain)!;
-        const v = VALUES.find((x) => x.id === valueId)!;
-        const current = state.commitments.find((c) => c.domain === domain && c.valueId === valueId)?.action ?? "";
-        return (
-          <div key={domain} className="bg-white/95 backdrop-blur rounded-2xl border-2 border-white shadow-lg p-3">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xl">{d.emoji}</span>
-              <div>
-                <div className="text-[10px] uppercase tracking-wider font-bold text-stone-500">{d.label}</div>
-                <div className="text-sm font-bold text-amber-800">{v.emoji} {v.label}</div>
-              </div>
-            </div>
-            <Textarea
-              value={current}
-              onChange={(e) => setAction(domain, valueId, e.target.value)}
-              placeholder="Um passo pequeno essa semana (ex: ligar pra avó terça à noite)"
-              maxLength={140}
-              className="border-2 text-sm h-20 resize-none"
-            />
-            {current.trim() && (
-              <div className="mt-1.5 flex items-center gap-1 text-[11px] text-emerald-700 font-semibold">
-                <Check className="w-3 h-3" /> Compromisso anotado
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-/* ============================ STEP 5 — SUMMARY ============================ */
-
-function StepSummary({ state }: { state: State }) {
-  const entries = (Object.entries(state.placement) as [DomainId, string][])
-    .filter(([, id]) => Boolean(id));
-
-  return (
-    <div className="flex items-start justify-center">
-      <div
-        className="bg-[#fef9e7] rounded-2xl border-4 border-amber-700 shadow-2xl p-6 max-w-2xl w-full relative"
-        style={{
-          backgroundImage: "repeating-linear-gradient(135deg, rgba(180,130,40,0.05) 0 2px, transparent 2px 8px)",
-        }}
-      >
-        <div className="flex items-center gap-2 mb-3">
-          <Sparkles className="w-5 h-5 text-amber-700" />
-          <h3 className="text-xl font-bold text-amber-900">Seu Mapa de Valores</h3>
-        </div>
-        <p className="text-sm text-stone-700 italic mb-4">
-          Quando perder o norte, volte aqui. A bússola não muda o caminho — ela lembra a direção.
-        </p>
-
-        <div className="space-y-3">
-          {entries.length === 0 && (
-            <p className="text-sm text-muted-foreground italic">Nada colocado na bússola ainda.</p>
-          )}
-          {entries.map(([domain, valueId]) => {
-            const d = DOMAINS.find((x) => x.id === domain)!;
-            const v = VALUES.find((x) => x.id === valueId)!;
-            const c = state.commitments.find((x) => x.domain === domain && x.valueId === valueId)?.action;
-            return (
-              <div key={domain} className="border-l-4 border-amber-500 pl-3 py-1">
-                <div className="text-[10px] uppercase tracking-wider font-bold text-amber-700">
-                  {d.emoji} {d.label}
-                </div>
-                <div className="text-base font-bold text-amber-900">{v.emoji} {v.label}</div>
-                {c && <div className="text-sm text-stone-800 mt-0.5"><Star className="w-3 h-3 inline mr-1 text-amber-600" /> {c}</div>}
-              </div>
-            );
-          })}
-        </div>
-      </div>
     </div>
   );
 }
