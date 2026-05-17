@@ -267,6 +267,19 @@ export default function MinhaCasa({ room }: Props) {
           <span className="text-xs text-muted-foreground hidden md:inline">Quem mora aqui? Onde cada um fica?</span>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          <select
+            value={state.house}
+            onChange={(e) => setState((s) => ({ ...s, house: e.target.value as HouseId }))}
+            className="text-xs rounded-lg border bg-white/80 px-2 py-1.5 shadow-sm font-medium"
+            title="Escolher casa"
+          >
+            {HOUSES.map((h) => (
+              <option key={h.id} value={h.id}>🏠 {h.label}</option>
+            ))}
+          </select>
+          <Button size="sm" variant="outline" onClick={addCover} title="Cobrir um cômodo que não existe">
+            <EyeOff className="w-4 h-4" /> <span className="hidden sm:inline">Cobrir cômodo</span>
+          </Button>
           <div className="flex gap-1 rounded-lg bg-white/80 border p-1 shadow-sm">
             {MOODS.map((m) => {
               const Icon = m.icon;
