@@ -132,9 +132,20 @@ export default function BussolaValores({ room }: Props) {
           <StepChip id="rank"    cur={state.step} label="2 · Top 5" />
           <StepChip id="place"   cur={state.step} label="3 · Bússola" />
         </div>
-        <Button size="sm" variant="ghost" onClick={reset}>
-          <RotateCcw className="w-4 h-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={exportPdf}
+            disabled={placedCount === 0 && state.rank.length === 0 && sortedMuito.length === 0}
+            title="Baixar respostas em PDF"
+          >
+            <Download className="w-4 h-4 mr-1" /> PDF
+          </Button>
+          <Button size="sm" variant="ghost" onClick={reset}>
+            <RotateCcw className="w-4 h-4" />
+          </Button>
+        </div>
       </header>
 
       <div className="flex-1 min-h-0 overflow-auto">
