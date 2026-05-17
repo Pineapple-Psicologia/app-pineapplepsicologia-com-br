@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
-import { Home, RotateCcw, Download, Trash2, Sun, Moon, Sparkles, Cloud, EyeOff, X, StickyNote } from "lucide-react";
+import { Home, RotateCcw, Download, Trash2, Sun, Moon, Sparkles, Cloud, EyeOff, X, StickyNote, Smile } from "lucide-react";
 import jsPDF from "jspdf";
 
 import casaBg from "@/assets/casa-pixar.jpg";
