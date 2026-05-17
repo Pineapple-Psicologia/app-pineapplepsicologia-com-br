@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
-import { Home, RotateCcw, Download, Trash2, Sun, Moon, Sparkles, Cloud, EyeOff, X } from "lucide-react";
+import { Home, RotateCcw, Download, Trash2, Sun, Moon, Sparkles, Cloud, EyeOff, X, StickyNote } from "lucide-react";
 import jsPDF from "jspdf";
 
 import casaBg from "@/assets/casa-pixar.jpg";
@@ -108,8 +108,23 @@ type Cover = {
   label: string;
 };
 
-type State = { items: Placed[]; mood: Mood; covers: Cover[] };
-const DEFAULT_STATE: State = { items: [], mood: "dia", covers: [] };
+type Note = {
+  id: string;
+  x: number; y: number;   // top-left 0..1
+  w: number; h: number;   // 0..1
+  text: string;
+  color: "amarelo" | "rosa" | "azul" | "verde";
+};
+
+const NOTE_COLORS: Record<Note["color"], { bg: string; border: string }> = {
+  amarelo: { bg: "#fff7c2", border: "#f5d76e" },
+  rosa:    { bg: "#ffd6e0", border: "#f48fb1" },
+  azul:    { bg: "#cfe7ff", border: "#7fb8e8" },
+  verde:   { bg: "#d6f5d6", border: "#7fc77f" },
+};
+
+type State = { items: Placed[]; mood: Mood; covers: Cover[]; notes: Note[] };
+const DEFAULT_STATE: State = { items: [], mood: "dia", covers: [], notes: [] };
 const uid = () => Math.random().toString(36).slice(2, 9);
 
 export default function MinhaCasa({ room }: Props) {
@@ -122,7 +137,7 @@ export default function MinhaCasa({ room }: Props) {
     return room.on?.((m) => {
       if (m.type === "casa:state") {
         const p = m.payload as Partial<State>;
-        setState({ ...DEFAULT_STATE, ...p, covers: p.covers ?? [] });
+        setState({ ...DEFAULT_STATE, ...p, covers: p.covers ?? [], notes: p.notes ?? [] });
       }
     });
   }, [room]);
@@ -146,6 +161,7 @@ export default function MinhaCasa({ room }: Props) {
       ...s,
       items: s.items.filter((i) => i.id !== selectedId),
       covers: s.covers.filter((c) => c.id !== selectedId),
+      notes: s.notes.filter((n) => n.id !== selectedId),
     }));
     setSelectedId(null);
   };
@@ -170,9 +186,26 @@ export default function MinhaCasa({ room }: Props) {
     if (selectedId === id) setSelectedId(null);
   };
 
-  // drag (personagens + covers)
+  const addNote = () => {
+    const id = uid();
+    setState((s) => ({
+      ...s,
+      notes: [...s.notes, { id, x: 0.4, y: 0.4, w: 0.22, h: 0.18, text: "", color: "amarelo" }],
+    }));
+    setSelectedId(id);
+  };
+  const updateNote = (id: string, patch: Partial<Note>) => {
+    setState((s) => ({ ...s, notes: s.notes.map((n) => n.id === id ? { ...n, ...patch } : n) }));
+  };
+  const removeNote = (id: string) => {
+    setState((s) => ({ ...s, notes: s.notes.filter((n) => n.id !== id) }));
+    if (selectedId === id) setSelectedId(null);
+  };
+
+  // drag (personagens + covers + notas)
   type DragMode = "move" | "resize";
-  const dragRef = useRef<{ id: string; kind: "item" | "cover"; mode: DragMode; offX: number; offY: number } | null>(null);
+  type DragKind = "item" | "cover" | "note";
+  const dragRef = useRef<{ id: string; kind: DragKind; mode: DragMode; offX: number; offY: number } | null>(null);
 
   const onPointerDownItem = (e: React.PointerEvent, item: Placed) => {
     e.stopPropagation();
@@ -184,16 +217,21 @@ export default function MinhaCasa({ room }: Props) {
     dragRef.current = { id: item.id, kind: "item", mode: "move", offX: cx - item.x, offY: cy - item.y };
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
-  const onPointerDownCover = (e: React.PointerEvent, cover: Cover, mode: DragMode) => {
+  const onPointerDownBox = (
+    e: React.PointerEvent,
+    box: { id: string; x: number; y: number; w: number; h: number },
+    kind: "cover" | "note",
+    mode: DragMode,
+  ) => {
     e.stopPropagation();
-    setSelectedId(cover.id);
+    setSelectedId(box.id);
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
     const cx = (e.clientX - rect.left) / rect.width;
     const cy = (e.clientY - rect.top) / rect.height;
-    const offX = mode === "move" ? cx - cover.x : cx - (cover.x + cover.w);
-    const offY = mode === "move" ? cy - cover.y : cy - (cover.y + cover.h);
-    dragRef.current = { id: cover.id, kind: "cover", mode, offX, offY };
+    const offX = mode === "move" ? cx - box.x : cx - (box.x + box.w);
+    const offY = mode === "move" ? cy - box.y : cy - (box.y + box.h);
+    dragRef.current = { id: box.id, kind, mode, offX, offY };
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
   const onPointerMove = useCallback((e: React.PointerEvent) => {
@@ -212,18 +250,18 @@ export default function MinhaCasa({ room }: Props) {
           ),
         };
       }
-      return {
-        ...s,
-        covers: s.covers.map((c) => {
-          if (c.id !== d.id) return c;
+      const updateBox = <T extends { id: string; x: number; y: number; w: number; h: number }>(arr: T[]): T[] =>
+        arr.map((b) => {
+          if (b.id !== d.id) return b;
           if (d.mode === "move") {
-            return { ...c, x: Math.max(0, Math.min(1 - c.w, cx - d.offX)), y: Math.max(0, Math.min(1 - c.h, cy - d.offY)) };
+            return { ...b, x: Math.max(0, Math.min(1 - b.w, cx - d.offX)), y: Math.max(0, Math.min(1 - b.h, cy - d.offY)) };
           }
-          const nw = Math.max(0.08, Math.min(1 - c.x, cx - d.offX - c.x));
-          const nh = Math.max(0.08, Math.min(1 - c.y, cy - d.offY - c.y));
-          return { ...c, w: nw, h: nh };
-        }),
-      };
+          const nw = Math.max(0.08, Math.min(1 - b.x, cx - d.offX - b.x));
+          const nh = Math.max(0.06, Math.min(1 - b.y, cy - d.offY - b.y));
+          return { ...b, w: nw, h: nh };
+        });
+      if (d.kind === "cover") return { ...s, covers: updateBox(s.covers) };
+      return { ...s, notes: updateBox(s.notes) };
     });
   }, []);
   const onPointerUp = () => { dragRef.current = null; };
@@ -256,6 +294,9 @@ export default function MinhaCasa({ room }: Props) {
           <span className="text-xs text-muted-foreground hidden md:inline">Quem mora aqui? Onde cada um fica?</span>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          <Button size="sm" variant="outline" onClick={addNote} title="Adicionar uma nota / caixa de texto">
+            <StickyNote className="w-4 h-4" /> <span className="hidden sm:inline">Adicionar nota</span>
+          </Button>
           <Button size="sm" variant="outline" onClick={addCover} title="Cobrir um cômodo que não existe">
             <EyeOff className="w-4 h-4" /> <span className="hidden sm:inline">Cobrir cômodo</span>
           </Button>
@@ -276,7 +317,7 @@ export default function MinhaCasa({ room }: Props) {
               );
             })}
           </div>
-          <Button size="sm" variant="outline" onClick={exportPdf} disabled={state.items.length === 0}>
+          <Button size="sm" variant="outline" onClick={exportPdf} disabled={state.items.length === 0 && state.notes.length === 0 && state.covers.length === 0}>
             <Download className="w-4 h-4" /> PDF
           </Button>
           <Button size="sm" variant="ghost" onClick={reset}>
@@ -388,7 +429,7 @@ export default function MinhaCasa({ room }: Props) {
                 return (
                   <div
                     key={c.id}
-                    onPointerDown={(e) => onPointerDownCover(e, c, "move")}
+                    onPointerDown={(e) => onPointerDownBox(e, c, "cover", "move")}
                     className={`absolute cursor-move select-none rounded-xl border-2 flex items-center justify-center text-center backdrop-blur-sm transition ${isSel ? "border-amber-500" : "border-white/70"}`}
                     style={{
                       left: `${c.x * 100}%`,
@@ -411,8 +452,56 @@ export default function MinhaCasa({ room }: Props) {
                       <X className="w-3.5 h-3.5 text-red-600" />
                     </button>
                     <div
-                      onPointerDown={(e) => onPointerDownCover(e, c, "resize")}
+                      onPointerDown={(e) => onPointerDownBox(e, c, "cover", "resize")}
                       className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize bg-amber-500/80 rounded-tl-md"
+                      title="Redimensionar"
+                    />
+                  </div>
+                );
+              })}
+
+              {/* Notas / caixas de texto */}
+              {state.notes.map((n) => {
+                const isSel = n.id === selectedId;
+                const col = NOTE_COLORS[n.color];
+                return (
+                  <div
+                    key={n.id}
+                    onPointerDown={(e) => onPointerDownBox(e, n, "note", "move")}
+                    className={`absolute cursor-move select-none rounded-md flex flex-col transition ${isSel ? "ring-2 ring-amber-500" : ""}`}
+                    style={{
+                      left: `${n.x * 100}%`,
+                      top: `${n.y * 100}%`,
+                      width: `${n.w * 100}%`,
+                      height: `${n.h * 100}%`,
+                      background: col.bg,
+                      border: `1.5px solid ${col.border}`,
+                      boxShadow: "0 8px 18px -8px rgba(0,0,0,0.4), 2px 2px 0 rgba(0,0,0,0.04)",
+                      transform: "rotate(-1deg)",
+                    }}
+                  >
+                    <textarea
+                      value={n.text}
+                      maxLength={500}
+                      onChange={(e) => updateNote(n.id, { text: e.target.value })}
+                      onPointerDown={(e) => { e.stopPropagation(); setSelectedId(n.id); }}
+                      onClick={(e) => e.stopPropagation()}
+                      placeholder="o que acontece aqui? o que falam?"
+                      className="flex-1 w-full bg-transparent resize-none outline-none text-[12px] leading-tight font-medium text-amber-950/90 placeholder:text-amber-900/40 p-2"
+                      style={{ fontFamily: "'Caveat', 'Comic Sans MS', cursive" }}
+                    />
+                    <button
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onClick={(e) => { e.stopPropagation(); removeNote(n.id); }}
+                      className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-white border shadow flex items-center justify-center hover:bg-red-50 hover:border-red-300"
+                      title="Remover nota"
+                    >
+                      <X className="w-3.5 h-3.5 text-red-600" />
+                    </button>
+                    <div
+                      onPointerDown={(e) => onPointerDownBox(e, n, "note", "resize")}
+                      className="absolute bottom-0 right-0 w-3.5 h-3.5 cursor-se-resize"
+                      style={{ background: col.border, borderTopLeftRadius: 4 }}
                       title="Redimensionar"
                     />
                   </div>
@@ -424,6 +513,33 @@ export default function MinhaCasa({ room }: Props) {
           {/* painel inferior */}
           <div className="rounded-xl bg-white/85 border p-3 min-h-[96px]">
             {(() => {
+              const selectedNote = state.notes.find((n) => n.id === selectedId);
+              if (selectedNote) {
+                return (
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <StickyNote className="w-5 h-5 text-amber-700 shrink-0" />
+                    <div className="font-semibold">Nota</div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] text-muted-foreground">cor</span>
+                      {(Object.keys(NOTE_COLORS) as Note["color"][]).map((col) => (
+                        <button
+                          key={col}
+                          onClick={() => updateNote(selectedNote.id, { color: col })}
+                          className={`w-6 h-6 rounded-full border-2 transition ${selectedNote.color === col ? "ring-2 ring-amber-500 scale-110" : "border-white"}`}
+                          style={{ background: NOTE_COLORS[col].bg, borderColor: NOTE_COLORS[col].border }}
+                          title={col}
+                        />
+                      ))}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground">
+                      digite direto na nota · arraste o cantinho colorido para redimensionar
+                    </div>
+                    <Button size="sm" variant="outline" onClick={() => removeNote(selectedNote.id)} className="ml-auto">
+                      <Trash2 className="w-3.5 h-3.5" /> remover
+                    </Button>
+                  </div>
+                );
+              }
               const selectedCover = state.covers.find((c) => c.id === selectedId);
               if (selectedCover) {
                 return (
@@ -560,6 +676,12 @@ function exportCasaPdf(state: State, proximity: { a: Placed; b: Placed; dist: nu
   if (state.covers.length > 0) {
     section(`Cômodos cobertos (${state.covers.length})`);
     state.covers.forEach((c) => line(`• ${c.label || "(sem rótulo)"}`));
+    y += 8;
+  }
+
+  if (state.notes.length > 0) {
+    section(`Notas do paciente (${state.notes.length})`);
+    state.notes.forEach((n, i) => line(`${i + 1}. ${n.text.trim() || "(em branco)"}`));
     y += 8;
   }
 
