@@ -117,7 +117,14 @@ export default function MapaCorporal({ room }: Props) {
   })).filter((u) => u.zones.length > 0);
 
   return (
-    <div className="h-full w-full flex flex-col gap-3">
+    <div
+      className="h-full w-full flex flex-col gap-3 p-3 md:p-4 rounded-2xl border-4 border-amber-900/25 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.35)] relative overflow-hidden"
+      style={{
+        backgroundImage: `linear-gradient(rgba(255,250,240,0.5), rgba(186,230,253,0.35)), url(${mapaBg})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
       {/* Header */}
       <header className="flex items-center justify-between flex-wrap gap-3 bg-card border-2 rounded-2xl px-4 py-2 shadow-sm">
         <div className="flex items-center gap-2 min-w-0">

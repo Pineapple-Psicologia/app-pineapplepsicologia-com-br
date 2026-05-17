@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
 import { Anchor, RotateCcw, ArrowLeft, ArrowRight, Check } from "lucide-react";
+import ancoragemBg from "@/assets/scene-ancoragem.jpg";
 
 type Props = { room: ReturnType<typeof useRoom> };
 
