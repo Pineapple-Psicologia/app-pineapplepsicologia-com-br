@@ -40,6 +40,8 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [showSignInPwd, setShowSignInPwd] = useState(false);
   const [showSignUpPwd, setShowSignUpPwd] = useState(false);
+  const [remember, setRemember] = useState(true);
+  const [duration, setDuration] = useState<SessionDuration>("7d");
 
   useEffect(() => {
     if (!loading && user) navigate({ to: "/pacientes" });
