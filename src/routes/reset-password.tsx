@@ -38,7 +38,7 @@ function ResetPasswordPage() {
     if (error) toast.error(error);
     else {
       toast.success("Senha atualizada");
-      navigate({ to: "/pacientes" });
+      navigate({ to: "/" });
     }
   };
 
