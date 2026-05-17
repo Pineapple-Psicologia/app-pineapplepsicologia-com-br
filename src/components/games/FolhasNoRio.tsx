@@ -345,16 +345,16 @@ function River({
             >
               <animate
                 attributeName="baseFrequency"
-                dur="14s"
-                values="0.012 0.028;0.018 0.04;0.012 0.028"
+                dur="32s"
+                values="0.012 0.028;0.016 0.034;0.012 0.028"
                 repeatCount="indefinite"
               />
             </feTurbulence>
             {/* scroll the noise downstream so the distortion 'flows' */}
             <feOffset in="noise" dx="0" dy="0" result="noise2">
-              <animate attributeName="dy" from="0" to="-60" dur="2.6s" repeatCount="indefinite" />
+              <animate attributeName="dy" from="0" to="-60" dur="9s" repeatCount="indefinite" />
             </feOffset>
-            <feDisplacementMap in="SourceGraphic" in2="noise2" scale="7" xChannelSelector="R" yChannelSelector="G" />
+            <feDisplacementMap in="SourceGraphic" in2="noise2" scale="5" xChannelSelector="R" yChannelSelector="G" />
           </filter>
         </defs>
       </svg>
