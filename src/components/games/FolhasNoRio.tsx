@@ -721,3 +721,18 @@ function shade(hex: string, amt: number) {
   b = Math.round((t - b) * p) + b;
   return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
 }
+
+// dry-leaf / autumn palette that harmonizes with the sunset scene
+const AUTUMN_TONES = [
+  "#b8722a", // ocre quente
+  "#a05a23", // canela escuro
+  "#caa15a", // mostarda seca
+  "#8a4a1f", // sépia avermelhado
+  "#d49454", // âmbar
+  "#7a3b18", // marrom queimado
+  "#bd8146", // bronze suave
+];
+function autumnTone(seed: number) {
+  const i = Math.abs(Math.floor(seed)) % AUTUMN_TONES.length;
+  return AUTUMN_TONES[i];
+}
