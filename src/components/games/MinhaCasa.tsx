@@ -161,6 +161,7 @@ export default function MinhaCasa({ room }: Props) {
       ...s,
       items: s.items.filter((i) => i.id !== selectedId),
       covers: s.covers.filter((c) => c.id !== selectedId),
+      notes: s.notes.filter((n) => n.id !== selectedId),
     }));
     setSelectedId(null);
   };
@@ -185,9 +186,26 @@ export default function MinhaCasa({ room }: Props) {
     if (selectedId === id) setSelectedId(null);
   };
 
-  // drag (personagens + covers)
+  const addNote = () => {
+    const id = uid();
+    setState((s) => ({
+      ...s,
+      notes: [...s.notes, { id, x: 0.4, y: 0.4, w: 0.22, h: 0.18, text: "", color: "amarelo" }],
+    }));
+    setSelectedId(id);
+  };
+  const updateNote = (id: string, patch: Partial<Note>) => {
+    setState((s) => ({ ...s, notes: s.notes.map((n) => n.id === id ? { ...n, ...patch } : n) }));
+  };
+  const removeNote = (id: string) => {
+    setState((s) => ({ ...s, notes: s.notes.filter((n) => n.id !== id) }));
+    if (selectedId === id) setSelectedId(null);
+  };
+
+  // drag (personagens + covers + notas)
   type DragMode = "move" | "resize";
-  const dragRef = useRef<{ id: string; kind: "item" | "cover"; mode: DragMode; offX: number; offY: number } | null>(null);
+  type DragKind = "item" | "cover" | "note";
+  const dragRef = useRef<{ id: string; kind: DragKind; mode: DragMode; offX: number; offY: number } | null>(null);
 
   const onPointerDownItem = (e: React.PointerEvent, item: Placed) => {
     e.stopPropagation();
@@ -199,16 +217,21 @@ export default function MinhaCasa({ room }: Props) {
     dragRef.current = { id: item.id, kind: "item", mode: "move", offX: cx - item.x, offY: cy - item.y };
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
-  const onPointerDownCover = (e: React.PointerEvent, cover: Cover, mode: DragMode) => {
+  const onPointerDownBox = (
+    e: React.PointerEvent,
+    box: { id: string; x: number; y: number; w: number; h: number },
+    kind: "cover" | "note",
+    mode: DragMode,
+  ) => {
     e.stopPropagation();
-    setSelectedId(cover.id);
+    setSelectedId(box.id);
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
     const cx = (e.clientX - rect.left) / rect.width;
     const cy = (e.clientY - rect.top) / rect.height;
-    const offX = mode === "move" ? cx - cover.x : cx - (cover.x + cover.w);
-    const offY = mode === "move" ? cy - cover.y : cy - (cover.y + cover.h);
-    dragRef.current = { id: cover.id, kind: "cover", mode, offX, offY };
+    const offX = mode === "move" ? cx - box.x : cx - (box.x + box.w);
+    const offY = mode === "move" ? cy - box.y : cy - (box.y + box.h);
+    dragRef.current = { id: box.id, kind, mode, offX, offY };
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
   const onPointerMove = useCallback((e: React.PointerEvent) => {
@@ -227,18 +250,18 @@ export default function MinhaCasa({ room }: Props) {
           ),
         };
       }
-      return {
-        ...s,
-        covers: s.covers.map((c) => {
-          if (c.id !== d.id) return c;
+      const updateBox = <T extends { id: string; x: number; y: number; w: number; h: number }>(arr: T[]): T[] =>
+        arr.map((b) => {
+          if (b.id !== d.id) return b;
           if (d.mode === "move") {
-            return { ...c, x: Math.max(0, Math.min(1 - c.w, cx - d.offX)), y: Math.max(0, Math.min(1 - c.h, cy - d.offY)) };
+            return { ...b, x: Math.max(0, Math.min(1 - b.w, cx - d.offX)), y: Math.max(0, Math.min(1 - b.h, cy - d.offY)) };
           }
-          const nw = Math.max(0.08, Math.min(1 - c.x, cx - d.offX - c.x));
-          const nh = Math.max(0.08, Math.min(1 - c.y, cy - d.offY - c.y));
-          return { ...c, w: nw, h: nh };
-        }),
-      };
+          const nw = Math.max(0.08, Math.min(1 - b.x, cx - d.offX - b.x));
+          const nh = Math.max(0.06, Math.min(1 - b.y, cy - d.offY - b.y));
+          return { ...b, w: nw, h: nh };
+        });
+      if (d.kind === "cover") return { ...s, covers: updateBox(s.covers) };
+      return { ...s, notes: updateBox(s.notes) };
     });
   }, []);
   const onPointerUp = () => { dragRef.current = null; };
