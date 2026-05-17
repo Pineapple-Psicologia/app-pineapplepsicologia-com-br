@@ -426,7 +426,7 @@ export default function MinhaCasa({ room }: Props) {
                 return (
                   <div
                     key={c.id}
-                    onPointerDown={(e) => onPointerDownCover(e, c, "move")}
+                    onPointerDown={(e) => onPointerDownBox(e, c, "cover", "move")}
                     className={`absolute cursor-move select-none rounded-xl border-2 flex items-center justify-center text-center backdrop-blur-sm transition ${isSel ? "border-amber-500" : "border-white/70"}`}
                     style={{
                       left: `${c.x * 100}%`,
