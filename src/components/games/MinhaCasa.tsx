@@ -227,7 +227,7 @@ export default function MinhaCasa({ room }: Props) {
           {(["familia", "familia-negra", "extras", "pets"] as CharGroup[]).map((grp, idx) => {
             const items = CHARACTERS.filter((c) => c.group === grp);
             if (items.length === 0) return null;
-            const label = grp === "familia-negra" ? "Família · representatividade" : GROUP_LABELS[grp];
+            const label = GROUP_LABELS[grp];
             return (
               <div key={grp} className={idx > 0 ? "mt-3" : ""}>
                 <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground px-1 mb-1">{label}</div>
