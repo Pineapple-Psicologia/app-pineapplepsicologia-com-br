@@ -6,9 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
+import { setSessionPolicy, type SessionDuration } from "@/lib/session-policy";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -37,6 +40,8 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [showSignInPwd, setShowSignInPwd] = useState(false);
   const [showSignUpPwd, setShowSignUpPwd] = useState(false);
+  const [remember, setRemember] = useState(true);
+  const [duration, setDuration] = useState<SessionDuration>("7d");
 
   useEffect(() => {
     if (!loading && user) navigate({ to: "/pacientes" });
@@ -56,8 +61,12 @@ function AuthPage() {
     setBusy(true);
     const { error } = await signIn(parsed.data.email, parsed.data.password);
     setBusy(false);
-    if (error) toast.error(error);
-    else navigate({ to: "/pacientes" });
+    if (error) {
+      toast.error(error);
+    } else {
+      setSessionPolicy(remember ? duration : "session");
+      navigate({ to: "/pacientes" });
+    }
   };
 
   const onSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -133,6 +142,38 @@ function AuthPage() {
                     {showSignInPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
+              </div>
+              <div className="flex items-center gap-3 pt-1">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="remember"
+                    checked={remember}
+                    onCheckedChange={(v) => setRemember(v === true)}
+                  />
+                  <Label htmlFor="remember" className="text-sm cursor-pointer">
+                    Lembrar de mim
+                  </Label>
+                </div>
+                <Select
+                  value={remember ? duration : "session"}
+                  onValueChange={(v) => {
+                    if (v === "session") setRemember(false);
+                    else {
+                      setRemember(true);
+                      setDuration(v as SessionDuration);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="h-8 text-xs w-auto ml-auto">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="session">Apenas esta sessão</SelectItem>
+                    <SelectItem value="1d">1 dia</SelectItem>
+                    <SelectItem value="7d">7 dias</SelectItem>
+                    <SelectItem value="30d">30 dias</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <Button type="submit" className="w-full" disabled={busy}>Entrar</Button>
             </form>

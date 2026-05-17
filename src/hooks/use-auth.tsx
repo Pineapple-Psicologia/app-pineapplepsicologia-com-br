@@ -2,6 +2,11 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import {
+  clearSessionPolicy,
+  installSessionOnlyGuard,
+  isPolicyExpired,
+} from "@/lib/session-policy";
 
 type AuthContextValue = {
   user: User | null;
@@ -26,15 +31,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_evt, s) => {
       setSession(s);
       setUser(s?.user ?? null);
+      if (_evt === "SIGNED_OUT") clearSessionPolicy();
     });
 
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setUser(data.session?.user ?? null);
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (data.session && isPolicyExpired()) {
+        await supabase.auth.signOut({ scope: "local" });
+        clearSessionPolicy();
+        setSession(null);
+        setUser(null);
+      } else {
+        setSession(data.session);
+        setUser(data.session?.user ?? null);
+      }
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    const uninstall = installSessionOnlyGuard();
+
+    return () => {
+      subscription.unsubscribe();
+      uninstall();
+    };
   }, []);
 
   const signUp = async (email: string, password: string, fullName: string) => {
