@@ -3,9 +3,10 @@ import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Compass, RotateCcw, ChevronRight, ChevronLeft,
+  Compass, RotateCcw, ChevronRight, ChevronLeft, Download,
   Heart, Briefcase, Users, HeartPulse, Palette, Mountain, BookOpen, Globe,
 } from "lucide-react";
+import jsPDF from "jspdf";
 import bussolaBg from "@/assets/scene-bussola.jpg";
 
 type Props = { room: ReturnType<typeof useRoom> };
@@ -104,6 +105,7 @@ export default function BussolaValores({ room }: Props) {
   const canNextFromRank = state.rank.length >= 3;
   const placedCount = Object.values(state.placement).filter(Boolean).length;
   const canNextFromPlace = placedCount >= 3;
+  const exportPdf = () => exportBussolaPdf(state, sortedMuito);
 
   return (
     <div
@@ -130,9 +132,20 @@ export default function BussolaValores({ room }: Props) {
           <StepChip id="rank"    cur={state.step} label="2 · Top 5" />
           <StepChip id="place"   cur={state.step} label="3 · Bússola" />
         </div>
-        <Button size="sm" variant="ghost" onClick={reset}>
-          <RotateCcw className="w-4 h-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={exportPdf}
+            disabled={placedCount === 0 && state.rank.length === 0 && sortedMuito.length === 0}
+            title="Baixar respostas em PDF"
+          >
+            <Download className="w-4 h-4 mr-1" /> PDF
+          </Button>
+          <Button size="sm" variant="ghost" onClick={reset}>
+            <RotateCcw className="w-4 h-4" />
+          </Button>
+        </div>
       </header>
 
       <div className="flex-1 min-h-0 overflow-auto">
@@ -510,4 +523,169 @@ function StepChip({ id, cur, label }: { id: Step; cur: Step; label: string }) {
       {label}
     </span>
   );
+}
+
+/* ============================ PDF EXPORT ============================ */
+
+function exportBussolaPdf(state: State, _sortedMuito: ValueCard[]) {
+  void _sortedMuito;
+  const doc = new jsPDF({ unit: "pt", format: "a4" });
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const marginX = 48;
+  let y = 56;
+
+  const ensureSpace = (h: number) => {
+    if (y + h > pageH - 56) {
+      doc.addPage();
+      y = 56;
+    }
+  };
+
+  // Title
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(20);
+  doc.setTextColor(120, 72, 20);
+  doc.text("Bússola de Valores", marginX, y);
+  y += 24;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.setTextColor(110, 110, 110);
+  const today = new Date().toLocaleDateString("pt-BR", {
+    day: "2-digit", month: "long", year: "numeric",
+  });
+  doc.text(`Sessão · ${today}`, marginX, y);
+  y += 8;
+  doc.setDrawColor(220, 180, 100);
+  doc.setLineWidth(1);
+  doc.line(marginX, y, pageW - marginX, y);
+  y += 22;
+
+  // Section: Triagem
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.setTextColor(60, 60, 60);
+  doc.text("1 · Triagem — importância de cada valor", marginX, y);
+  y += 16;
+
+  const importanceGroups: Array<{ label: string; tone: [number, number, number]; ids: string[] }> = [
+    { label: "Muito importantes", tone: [180, 100, 30],
+      ids: Object.entries(state.importance).filter(([, v]) => v === "muito").map(([k]) => k) },
+    { label: "Média importância", tone: [140, 120, 60],
+      ids: Object.entries(state.importance).filter(([, v]) => v === "media").map(([k]) => k) },
+    { label: "Neutras",           tone: [130, 130, 130],
+      ids: Object.entries(state.importance).filter(([, v]) => v === "neutra").map(([k]) => k) },
+  ];
+
+  doc.setFontSize(10);
+  importanceGroups.forEach((g) => {
+    if (g.ids.length === 0) return;
+    ensureSpace(22);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(g.tone[0], g.tone[1], g.tone[2]);
+    doc.text(`${g.label} (${g.ids.length})`, marginX, y);
+    y += 13;
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(60, 60, 60);
+    const labels = g.ids
+      .map((id) => VALUES.find((v) => v.id === id)?.label)
+      .filter(Boolean)
+      .join(" · ");
+    const lines = doc.splitTextToSize(labels, pageW - marginX * 2);
+    ensureSpace(lines.length * 12 + 8);
+    doc.text(lines, marginX, y);
+    y += lines.length * 12 + 8;
+  });
+
+  if (importanceGroups.every((g) => g.ids.length === 0)) {
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(140, 140, 140);
+    doc.text("Nenhum valor classificado ainda.", marginX, y);
+    y += 14;
+  }
+  y += 8;
+
+  // Section: Top 5
+  ensureSpace(40);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.setTextColor(60, 60, 60);
+  doc.text("2 · Top prioridades", marginX, y);
+  y += 16;
+
+  doc.setFontSize(11);
+  if (state.rank.length === 0) {
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(140, 140, 140);
+    doc.text("Nenhuma prioridade ranqueada.", marginX, y);
+    y += 14;
+  } else {
+    state.rank.forEach((id, i) => {
+      const v = VALUES.find((x) => x.id === id);
+      if (!v) return;
+      ensureSpace(16);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(180, 100, 30);
+      doc.text(`${i + 1}.`, marginX, y);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(40, 40, 40);
+      doc.text(v.label, marginX + 22, y);
+      y += 15;
+    });
+  }
+  y += 12;
+
+  // Section: Bússola
+  ensureSpace(40);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.setTextColor(60, 60, 60);
+  doc.text("3 · Bússola — valor por domínio de vida", marginX, y);
+  y += 16;
+
+  const placedEntries = (Object.entries(state.placement) as [DomainId, string][])
+    .filter(([, id]) => Boolean(id));
+
+  if (placedEntries.length === 0) {
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(140, 140, 140);
+    doc.text("Nenhum valor colocado na bússola.", marginX, y);
+    y += 14;
+  } else {
+    DOMAINS.forEach((d) => {
+      const valId = state.placement[d.id];
+      if (!valId) return;
+      const v = VALUES.find((x) => x.id === valId);
+      if (!v) return;
+      ensureSpace(22);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(110, 110, 110);
+      doc.text(d.label.toUpperCase(), marginX, y);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(12);
+      doc.setTextColor(30, 30, 30);
+      doc.text(v.label, marginX + 130, y);
+      y += 18;
+    });
+  }
+
+  // Footer
+  const pageCount = doc.getNumberOfPages();
+  for (let p = 1; p <= pageCount; p++) {
+    doc.setPage(p);
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(9);
+    doc.setTextColor(160, 160, 160);
+    doc.text(
+      "Bússola de Valores · ACT · clarificação de valores",
+      marginX,
+      pageH - 28,
+    );
+    doc.text(`${p}/${pageCount}`, pageW - marginX, pageH - 28, { align: "right" });
+  }
+
+  const filename = `bussola-valores-${new Date().toISOString().slice(0, 10)}.pdf`;
+  doc.save(filename);
 }
