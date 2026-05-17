@@ -383,7 +383,7 @@ export default function DetetiveTabuleiro({ room }: Props) {
     <div
       className="h-full w-full rounded-xl border-4 border-amber-900/30 p-3 md:p-5 flex flex-col gap-3 overflow-auto relative"
       style={{
-        backgroundImage: `linear-gradient(rgba(255,247,237,0.55), rgba(253,230,138,0.4)), url(${tabuleiroBg})`,
+        backgroundImage: `linear-gradient(rgba(255,247,237,0.55), rgba(253,230,138,0.4)), url(${sceneBg})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
