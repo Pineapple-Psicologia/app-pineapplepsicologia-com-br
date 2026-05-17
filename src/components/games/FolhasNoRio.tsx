@@ -325,9 +325,9 @@ function River({
     [],
   );
 
-  // generous polygon covering the whole painted river bed (top waterfall → foreground)
+  // polygon covering the full painted river (narrow at the waterfall, edge-to-edge at the foreground)
   const riverPoly =
-    "polygon(34% 4%, 70% 4%, 82% 28%, 74% 50%, 64% 72%, 56% 95%, 50% 115%, 10% 115%, 16% 95%, 24% 72%, 30% 50%, 32% 28%)";
+    "polygon(40% 14%, 58% 14%, 74% 30%, 88% 48%, 100% 62%, 100% 115%, 0% 115%, 0% 70%, 12% 52%, 22% 36%)";
 
 
   return (
