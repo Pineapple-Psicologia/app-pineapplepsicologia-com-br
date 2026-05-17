@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +35,8 @@ function AuthPage() {
   const { user, loading, signIn, signUp, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
+  const [showSignInPwd, setShowSignInPwd] = useState(false);
+  const [showSignUpPwd, setShowSignUpPwd] = useState(false);
 
   useEffect(() => {
     if (!loading && user) navigate({ to: "/pacientes" });
@@ -112,7 +115,24 @@ function AuthPage() {
                     Esqueci minha senha
                   </Link>
                 </div>
-                <Input id="si-password" name="password" type="password" autoComplete="current-password" required />
+                <div className="relative">
+                  <Input
+                    id="si-password"
+                    name="password"
+                    type={showSignInPwd ? "text" : "password"}
+                    autoComplete="current-password"
+                    required
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowSignInPwd((v) => !v)}
+                    className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+                    aria-label={showSignInPwd ? "Ocultar senha" : "Mostrar senha"}
+                  >
+                    {showSignInPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
               <Button type="submit" className="w-full" disabled={busy}>Entrar</Button>
             </form>
@@ -130,7 +150,25 @@ function AuthPage() {
               </div>
               <div>
                 <Label htmlFor="su-password">Senha</Label>
-                <Input id="su-password" name="password" type="password" autoComplete="new-password" required minLength={8} />
+                <div className="relative">
+                  <Input
+                    id="su-password"
+                    name="password"
+                    type={showSignUpPwd ? "text" : "password"}
+                    autoComplete="new-password"
+                    required
+                    minLength={8}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowSignUpPwd((v) => !v)}
+                    className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+                    aria-label={showSignUpPwd ? "Ocultar senha" : "Mostrar senha"}
+                  >
+                    {showSignUpPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
                 <p className="text-xs text-muted-foreground mt-1">Mínimo 8 caracteres.</p>
               </div>
               <Button type="submit" className="w-full" disabled={busy}>Criar conta</Button>
