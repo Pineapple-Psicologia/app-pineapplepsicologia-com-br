@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
-import { Home, RotateCcw, Download, Trash2, Sun, Moon, Sparkles, Cloud } from "lucide-react";
+import { Home, RotateCcw, Download, Trash2, Sun, Moon, Sparkles, Cloud, EyeOff, X } from "lucide-react";
 import jsPDF from "jspdf";
 
 import casaBg from "@/assets/casa-pixar.jpg";
+import casaPequena from "@/assets/casa/casa-pequena.jpg";
+import casaApto from "@/assets/casa/casa-apartamento.jpg";
+import casaGrande from "@/assets/casa/casa-grande.jpg";
 import imgCrianca from "@/assets/casa/char-crianca.png";
 import imgAdolescente from "@/assets/casa/char-adolescente.png";
 import imgMae from "@/assets/casa/char-mae.png";
@@ -101,8 +104,23 @@ type Placed = {
   emotion: Emotion;
 };
 
-type State = { items: Placed[]; mood: Mood };
-const DEFAULT_STATE: State = { items: [], mood: "dia" };
+type Cover = {
+  id: string;
+  x: number; y: number;   // top-left 0..1
+  w: number; h: number;   // 0..1
+  label: string;
+};
+
+type HouseId = "media" | "pequena" | "apartamento" | "grande";
+const HOUSES: { id: HouseId; label: string; img: string }[] = [
+  { id: "media",        label: "Casa aconchegante", img: casaBg },
+  { id: "pequena",      label: "Casa pequena",      img: casaPequena },
+  { id: "apartamento",  label: "Apartamento",       img: casaApto },
+  { id: "grande",       label: "Casa grande",       img: casaGrande },
+];
+
+type State = { items: Placed[]; mood: Mood; house: HouseId; covers: Cover[] };
+const DEFAULT_STATE: State = { items: [], mood: "dia", house: "media", covers: [] };
 const uid = () => Math.random().toString(36).slice(2, 9);
 
 export default function MinhaCasa({ room }: Props) {
@@ -110,15 +128,19 @@ export default function MinhaCasa({ room }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  // sync realtime
+  // sync realtime (mescla defaults para compat com payloads antigos)
   useEffect(() => {
     return room.on?.((m) => {
-      if (m.type === "casa:state") setState(m.payload as State);
+      if (m.type === "casa:state") {
+        const p = m.payload as Partial<State>;
+        setState({ ...DEFAULT_STATE, ...p, covers: p.covers ?? [] });
+      }
     });
   }, [room]);
   useEffect(() => { room.send?.("casa:state", state); }, [state, room]);
 
   const mood = MOODS.find((m) => m.id === state.mood)!;
+  const currentHouse = HOUSES.find((h) => h.id === state.house) ?? HOUSES[0];
 
   const addCharacter = (c: CharDef) => {
     setState((s) => ({
@@ -131,7 +153,11 @@ export default function MinhaCasa({ room }: Props) {
   };
   const removeSelected = () => {
     if (!selectedId) return;
-    setState((s) => ({ ...s, items: s.items.filter((i) => i.id !== selectedId) }));
+    setState((s) => ({
+      ...s,
+      items: s.items.filter((i) => i.id !== selectedId),
+      covers: s.covers.filter((c) => c.id !== selectedId),
+    }));
     setSelectedId(null);
   };
   const updateSelected = (patch: Partial<Placed>) => {
@@ -139,8 +165,26 @@ export default function MinhaCasa({ room }: Props) {
     setState((s) => ({ ...s, items: s.items.map((i) => i.id === selectedId ? { ...i, ...patch } : i) }));
   };
 
-  // drag
-  const dragRef = useRef<{ id: string; offX: number; offY: number } | null>(null);
+  const addCover = () => {
+    const id = uid();
+    setState((s) => ({
+      ...s,
+      covers: [...s.covers, { id, x: 0.35, y: 0.35, w: 0.3, h: 0.25, label: "não tenho" }],
+    }));
+    setSelectedId(id);
+  };
+  const updateCover = (id: string, patch: Partial<Cover>) => {
+    setState((s) => ({ ...s, covers: s.covers.map((c) => c.id === id ? { ...c, ...patch } : c) }));
+  };
+  const removeCover = (id: string) => {
+    setState((s) => ({ ...s, covers: s.covers.filter((c) => c.id !== id) }));
+    if (selectedId === id) setSelectedId(null);
+  };
+
+  // drag (personagens + covers)
+  type DragMode = "move" | "resize";
+  const dragRef = useRef<{ id: string; kind: "item" | "cover"; mode: DragMode; offX: number; offY: number } | null>(null);
+
   const onPointerDownItem = (e: React.PointerEvent, item: Placed) => {
     e.stopPropagation();
     setSelectedId(item.id);
@@ -148,7 +192,19 @@ export default function MinhaCasa({ room }: Props) {
     if (!rect) return;
     const cx = (e.clientX - rect.left) / rect.width;
     const cy = (e.clientY - rect.top) / rect.height;
-    dragRef.current = { id: item.id, offX: cx - item.x, offY: cy - item.y };
+    dragRef.current = { id: item.id, kind: "item", mode: "move", offX: cx - item.x, offY: cy - item.y };
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+  const onPointerDownCover = (e: React.PointerEvent, cover: Cover, mode: DragMode) => {
+    e.stopPropagation();
+    setSelectedId(cover.id);
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const cx = (e.clientX - rect.left) / rect.width;
+    const cy = (e.clientY - rect.top) / rect.height;
+    const offX = mode === "move" ? cx - cover.x : cx - (cover.x + cover.w);
+    const offY = mode === "move" ? cy - cover.y : cy - (cover.y + cover.h);
+    dragRef.current = { id: cover.id, kind: "cover", mode, offX, offY };
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
   const onPointerMove = useCallback((e: React.PointerEvent) => {
@@ -158,12 +214,28 @@ export default function MinhaCasa({ room }: Props) {
     if (!rect) return;
     const cx = (e.clientX - rect.left) / rect.width;
     const cy = (e.clientY - rect.top) / rect.height;
-    setState((s) => ({
-      ...s,
-      items: s.items.map((i) =>
-        i.id !== d.id ? i : { ...i, x: Math.max(0.02, Math.min(0.98, cx - d.offX)), y: Math.max(0.05, Math.min(0.98, cy - d.offY)) },
-      ),
-    }));
+    setState((s) => {
+      if (d.kind === "item") {
+        return {
+          ...s,
+          items: s.items.map((i) =>
+            i.id !== d.id ? i : { ...i, x: Math.max(0.02, Math.min(0.98, cx - d.offX)), y: Math.max(0.05, Math.min(0.98, cy - d.offY)) },
+          ),
+        };
+      }
+      return {
+        ...s,
+        covers: s.covers.map((c) => {
+          if (c.id !== d.id) return c;
+          if (d.mode === "move") {
+            return { ...c, x: Math.max(0, Math.min(1 - c.w, cx - d.offX)), y: Math.max(0, Math.min(1 - c.h, cy - d.offY)) };
+          }
+          const nw = Math.max(0.08, Math.min(1 - c.x, cx - d.offX - c.x));
+          const nh = Math.max(0.08, Math.min(1 - c.y, cy - d.offY - c.y));
+          return { ...c, w: nw, h: nh };
+        }),
+      };
+    });
   }, []);
   const onPointerUp = () => { dragRef.current = null; };
 
@@ -195,6 +267,19 @@ export default function MinhaCasa({ room }: Props) {
           <span className="text-xs text-muted-foreground hidden md:inline">Quem mora aqui? Onde cada um fica?</span>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          <select
+            value={state.house}
+            onChange={(e) => setState((s) => ({ ...s, house: e.target.value as HouseId }))}
+            className="text-xs rounded-lg border bg-white/80 px-2 py-1.5 shadow-sm font-medium"
+            title="Escolher casa"
+          >
+            {HOUSES.map((h) => (
+              <option key={h.id} value={h.id}>🏠 {h.label}</option>
+            ))}
+          </select>
+          <Button size="sm" variant="outline" onClick={addCover} title="Cobrir um cômodo que não existe">
+            <EyeOff className="w-4 h-4" /> <span className="hidden sm:inline">Cobrir cômodo</span>
+          </Button>
           <div className="flex gap-1 rounded-lg bg-white/80 border p-1 shadow-sm">
             {MOODS.map((m) => {
               const Icon = m.icon;
@@ -255,8 +340,8 @@ export default function MinhaCasa({ room }: Props) {
         <div className="flex-1 min-w-0 flex flex-col gap-2">
           <div className="relative flex-1 rounded-2xl border-4 border-amber-900/20 overflow-hidden shadow-[0_25px_60px_-20px_rgba(0,0,0,0.4)]">
             <img
-              src={casaBg}
-              alt="Casa"
+              src={currentHouse.img}
+              alt={currentHouse.label}
               className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
               draggable={false}
             />
@@ -317,57 +402,118 @@ export default function MinhaCasa({ room }: Props) {
                   </div>
                 );
               })}
+
+              {/* Coberturas de cômodos */}
+              {state.covers.map((c) => {
+                const isSel = c.id === selectedId;
+                return (
+                  <div
+                    key={c.id}
+                    onPointerDown={(e) => onPointerDownCover(e, c, "move")}
+                    className={`absolute cursor-move select-none rounded-xl border-2 flex items-center justify-center text-center backdrop-blur-sm transition ${isSel ? "border-amber-500" : "border-white/70"}`}
+                    style={{
+                      left: `${c.x * 100}%`,
+                      top: `${c.y * 100}%`,
+                      width: `${c.w * 100}%`,
+                      height: `${c.h * 100}%`,
+                      background: "repeating-linear-gradient(135deg, rgba(255,255,255,0.78), rgba(255,255,255,0.78) 10px, rgba(245,235,220,0.78) 10px, rgba(245,235,220,0.78) 20px)",
+                      boxShadow: isSel ? "0 0 0 3px rgba(251,191,36,0.35), 0 10px 25px -10px rgba(0,0,0,0.4)" : "0 6px 18px -8px rgba(0,0,0,0.35)",
+                    }}
+                  >
+                    <span className="text-xs font-semibold text-amber-900/80 px-2 pointer-events-none">
+                      {c.label}
+                    </span>
+                    <button
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onClick={(e) => { e.stopPropagation(); removeCover(c.id); }}
+                      className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-white border shadow flex items-center justify-center hover:bg-red-50 hover:border-red-300"
+                      title="Remover cobertura"
+                    >
+                      <X className="w-3.5 h-3.5 text-red-600" />
+                    </button>
+                    <div
+                      onPointerDown={(e) => onPointerDownCover(e, c, "resize")}
+                      className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize bg-amber-500/80 rounded-tl-md"
+                      title="Redimensionar"
+                    />
+                  </div>
+                );
+              })}
             </div>
           </div>
 
           {/* painel inferior */}
           <div className="rounded-xl bg-white/85 border p-3 min-h-[96px]">
-            {selected && selectedDef ? (
-              <div className="flex gap-3 items-start">
-                <div className="w-16 h-16 rounded-lg bg-gradient-to-b from-amber-50 to-white border flex items-end justify-center overflow-hidden shrink-0">
-                  <img src={selectedDef.img} alt="" className="h-full w-auto object-contain" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="font-semibold">{selectedDef.label}</div>
-                    <button
-                      onClick={() => updateSelected({ flip: !selected.flip })}
-                      className="text-[10px] px-2 py-0.5 rounded-full border bg-white hover:bg-amber-50"
-                      title="Virar"
-                    >
-                      ⇄ virar
-                    </button>
-                    <div className="flex items-center gap-1 text-[10px]">
-                      <span className="text-muted-foreground">tamanho</span>
-                      <input
-                        type="range" min={0.6} max={1.6} step={0.05}
-                        value={selected.scale}
-                        onChange={(e) => updateSelected({ scale: parseFloat(e.target.value) })}
-                        className="w-24"
-                      />
-                    </div>
-                    <Button size="sm" variant="outline" onClick={removeSelected} className="ml-auto">
+            {(() => {
+              const selectedCover = state.covers.find((c) => c.id === selectedId);
+              if (selectedCover) {
+                return (
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <EyeOff className="w-5 h-5 text-amber-700 shrink-0" />
+                    <div className="font-semibold">Cobertura de cômodo</div>
+                    <input
+                      type="text"
+                      value={selectedCover.label}
+                      onChange={(e) => updateCover(selectedCover.id, { label: e.target.value })}
+                      placeholder="ex.: não tenho, não uso, vazio"
+                      className="text-xs border rounded-md px-2 py-1 bg-white min-w-[180px]"
+                    />
+                    <div className="text-[11px] text-muted-foreground">arraste para mover · canto inferior direito redimensiona</div>
+                    <Button size="sm" variant="outline" onClick={() => removeCover(selectedCover.id)} className="ml-auto">
                       <Trash2 className="w-3.5 h-3.5" /> remover
                     </Button>
                   </div>
-                  <div className="flex flex-wrap gap-1">
-                    {EMOTIONS.map((e) => (
-                      <button
-                        key={e.id}
-                        onClick={() => updateSelected({ emotion: e.id })}
-                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs border transition ${selected.emotion === e.id ? "bg-amber-100 border-amber-400 font-semibold" : "bg-white hover:bg-amber-50"}`}
-                      >
-                        <span
-                          className="w-3 h-3 rounded-full border"
-                          style={{ background: e.color === "transparent" ? "white" : e.color, borderColor: e.color === "transparent" ? "#cbd5e1" : "transparent" }}
-                        />
-                        {e.label}
-                      </button>
-                    ))}
+                );
+              }
+              if (selected && selectedDef) {
+                return (
+                  <div className="flex gap-3 items-start">
+                    <div className="w-16 h-16 rounded-lg bg-gradient-to-b from-amber-50 to-white border flex items-end justify-center overflow-hidden shrink-0">
+                      <img src={selectedDef.img} alt="" className="h-full w-auto object-contain" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="font-semibold">{selectedDef.label}</div>
+                        <button
+                          onClick={() => updateSelected({ flip: !selected.flip })}
+                          className="text-[10px] px-2 py-0.5 rounded-full border bg-white hover:bg-amber-50"
+                          title="Virar"
+                        >
+                          ⇄ virar
+                        </button>
+                        <div className="flex items-center gap-1 text-[10px]">
+                          <span className="text-muted-foreground">tamanho</span>
+                          <input
+                            type="range" min={0.6} max={1.6} step={0.05}
+                            value={selected.scale}
+                            onChange={(e) => updateSelected({ scale: parseFloat(e.target.value) })}
+                            className="w-24"
+                          />
+                        </div>
+                        <Button size="sm" variant="outline" onClick={removeSelected} className="ml-auto">
+                          <Trash2 className="w-3.5 h-3.5" /> remover
+                        </Button>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {EMOTIONS.map((e) => (
+                          <button
+                            key={e.id}
+                            onClick={() => updateSelected({ emotion: e.id })}
+                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs border transition ${selected.emotion === e.id ? "bg-amber-100 border-amber-400 font-semibold" : "bg-white hover:bg-amber-50"}`}
+                          >
+                            <span
+                              className="w-3 h-3 rounded-full border"
+                              style={{ background: e.color === "transparent" ? "white" : e.color, borderColor: e.color === "transparent" ? "#cbd5e1" : "transparent" }}
+                            />
+                            {e.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            ) : (
+                );
+              }
+              return (
               <div className="text-sm text-muted-foreground">
                 <strong>Como brincar:</strong> escolha pessoas e pets na lateral, arraste-os para os cômodos da casa. Clique em alguém para mudar tamanho, virar e escolher uma emoção (o brilho ao redor representa o sentimento). A iluminação muda a atmosfera da casa toda.
                 {characters.length >= 2 && (
@@ -382,7 +528,8 @@ export default function MinhaCasa({ room }: Props) {
                   </div>
                 )}
               </div>
-            )}
+              );
+            })()}
           </div>
         </div>
       </div>
@@ -405,7 +552,8 @@ function exportCasaPdf(state: State, proximity: { a: Placed; b: Placed; dist: nu
   doc.setFontSize(10);
   doc.setTextColor(120);
   const moodLabel = MOODS.find(m => m.id === state.mood)?.label;
-  doc.text(`Sessão · ${new Date().toLocaleDateString("pt-BR")} · Atmosfera: ${moodLabel}`, 40, y);
+  const houseLabel = HOUSES.find(h => h.id === state.house)?.label;
+  doc.text(`Sessão · ${new Date().toLocaleDateString("pt-BR")} · Casa: ${houseLabel} · Atmosfera: ${moodLabel}`, 40, y);
   y += 24;
   doc.setTextColor(20);
 
@@ -430,6 +578,12 @@ function exportCasaPdf(state: State, proximity: { a: Placed; b: Placed; dist: nu
     line(`• ${def?.label ?? it.charId} — emoção: ${emo?.label ?? "neutro"}`);
   });
   y += 8;
+
+  if (state.covers.length > 0) {
+    section(`Cômodos cobertos (${state.covers.length})`);
+    state.covers.forEach((c) => line(`• ${c.label || "(sem rótulo)"}`));
+    y += 8;
+  }
 
   if (proximity.length > 0) {
     section("Proximidades simbólicas");
