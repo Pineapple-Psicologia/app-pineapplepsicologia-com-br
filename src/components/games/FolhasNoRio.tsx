@@ -344,6 +344,11 @@ function River({
         @keyframes rio-shimmer { from { background-position: 0 0; } to { background-position: 80px 0; } }
         @keyframes rio-sparkle { 0%,100% { opacity: 0; transform: scale(0.6);} 50% { opacity: 0.9; transform: scale(1);} }
         @keyframes rio-wobble { 0%,100% { transform: translateX(-6px); } 50% { transform: translateX(6px); } }
+        @keyframes rio-streak {
+          0%   { opacity: 0; transform: translate(0,0) scaleX(0.4); }
+          25%  { opacity: 0.75; }
+          100% { opacity: 0; transform: translate(var(--sx), var(--sy)) scaleX(1); }
+        }
       `}</style>
 
       {/* sparkles */}
