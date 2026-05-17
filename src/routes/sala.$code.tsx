@@ -11,6 +11,7 @@ import DetetiveAventura from "@/components/games/DetetiveAventura";
 import MapaCorporal from "@/components/games/MapaCorporal";
 import TrianguloCognitivo from "@/components/games/TrianguloCognitivo";
 import EntreLentes from "@/components/games/EntreLentes";
+import LiveProntuarioPanel from "@/components/LiveProntuarioPanel";
 import { Copy, Check, ArrowLeft, Wifi, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 import { getGame } from "@/lib/games";
@@ -77,25 +78,28 @@ function SalaPage() {
         </div>
       </header>
 
-      <main className="flex-1 overflow-auto p-4">
-        {game === "termometro" ? (
-          <Termometro room={room} />
-        ) : game === "detetive" ? (
-          <Detetive room={room} />
-        ) : game === "detetive-tabuleiro" ? (
-          <DetetiveTabuleiro room={room} />
-        ) : game === "detetive-aventura" ? (
-          <DetetiveAventura room={room} />
-        ) : game === "mapa-corporal" ? (
-          <MapaCorporal room={room} />
-        ) : game === "triangulo" ? (
-          <TrianguloCognitivo room={room} />
-        ) : game === "entre-lentes" ? (
-          <EntreLentes room={room} />
-        ) : (
-          <Whiteboard room={room} role={role} />
-        )}
-      </main>
+      <div className="flex-1 flex min-h-0">
+        <main className="flex-1 overflow-auto p-4">
+          {game === "termometro" ? (
+            <Termometro room={room} />
+          ) : game === "detetive" ? (
+            <Detetive room={room} />
+          ) : game === "detetive-tabuleiro" ? (
+            <DetetiveTabuleiro room={room} />
+          ) : game === "detetive-aventura" ? (
+            <DetetiveAventura room={room} />
+          ) : game === "mapa-corporal" ? (
+            <MapaCorporal room={room} />
+          ) : game === "triangulo" ? (
+            <TrianguloCognitivo room={room} />
+          ) : game === "entre-lentes" ? (
+            <EntreLentes room={room} />
+          ) : (
+            <Whiteboard room={room} role={role} />
+          )}
+        </main>
+        {role === "psi" && <LiveProntuarioPanel roomCode={code} />}
+      </div>
     </div>
   );
 }
