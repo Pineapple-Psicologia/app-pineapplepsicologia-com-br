@@ -2,9 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
-  Compass, RotateCcw, ChevronRight, ChevronLeft, Sparkles, Check, Star,
+  Compass, RotateCcw, ChevronRight, ChevronLeft,
   Heart, Briefcase, Users, HeartPulse, Palette, Mountain, BookOpen, Globe,
 } from "lucide-react";
 import bussolaBg from "@/assets/scene-bussola.jpg";
