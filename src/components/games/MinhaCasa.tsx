@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
-import { Home, RotateCcw, Download, Trash2, Sun, Moon, Sparkles, Cloud, EyeOff, X, StickyNote } from "lucide-react";
+import { Home, RotateCcw, Download, Trash2, Sun, Moon, Sparkles, Cloud, EyeOff, X, StickyNote, Smile } from "lucide-react";
 import jsPDF from "jspdf";
 
 import casaBg from "@/assets/casa-pixar.jpg";
@@ -123,13 +123,74 @@ const NOTE_COLORS: Record<Note["color"], { bg: string; border: string }> = {
   verde:   { bg: "#d6f5d6", border: "#7fc77f" },
 };
 
-type State = { items: Placed[]; mood: Mood; covers: Cover[]; notes: Note[] };
-const DEFAULT_STATE: State = { items: [], mood: "dia", covers: [], notes: [] };
+type Sticker = {
+  id: string;
+  x: number; y: number;   // 0..1 (centro)
+  scale: number;          // 0.6..2.2
+  emoji: string;
+};
+
+const EMOJI_GROUPS: { label: string; items: { emoji: string; name: string }[] }[] = [
+  {
+    label: "Sentimentos",
+    items: [
+      { emoji: "😀", name: "feliz" },
+      { emoji: "😊", name: "contente" },
+      { emoji: "🥰", name: "amoroso" },
+      { emoji: "😍", name: "apaixonado" },
+      { emoji: "🤗", name: "abraço" },
+      { emoji: "😌", name: "calmo" },
+      { emoji: "😴", name: "sono" },
+      { emoji: "😢", name: "triste" },
+      { emoji: "😭", name: "chorando" },
+      { emoji: "😞", name: "desanimado" },
+      { emoji: "😟", name: "preocupado" },
+      { emoji: "😨", name: "com medo" },
+      { emoji: "😰", name: "ansioso" },
+      { emoji: "😡", name: "bravo" },
+      { emoji: "🤬", name: "muito bravo" },
+      { emoji: "😤", name: "irritado" },
+      { emoji: "😳", name: "envergonhado" },
+      { emoji: "😬", name: "tenso" },
+      { emoji: "🤒", name: "doente" },
+      { emoji: "🤕", name: "machucado" },
+      { emoji: "🥱", name: "entediado" },
+      { emoji: "😶", name: "calado" },
+      { emoji: "🤔", name: "pensativo" },
+      { emoji: "😎", name: "confiante" },
+    ],
+  },
+  {
+    label: "Símbolos",
+    items: [
+      { emoji: "❤️", name: "amor" },
+      { emoji: "💔", name: "coração partido" },
+      { emoji: "✨", name: "brilho" },
+      { emoji: "⭐", name: "estrela" },
+      { emoji: "🌈", name: "arco-íris" },
+      { emoji: "☀️", name: "sol" },
+      { emoji: "☁️", name: "nuvem" },
+      { emoji: "⛈️", name: "tempestade" },
+      { emoji: "🔥", name: "fogo" },
+      { emoji: "💤", name: "dormir" },
+      { emoji: "💭", name: "pensamento" },
+      { emoji: "💬", name: "fala" },
+      { emoji: "❓", name: "dúvida" },
+      { emoji: "❗", name: "atenção" },
+      { emoji: "🚫", name: "não" },
+      { emoji: "🎉", name: "festa" },
+    ],
+  },
+];
+
+type State = { items: Placed[]; mood: Mood; covers: Cover[]; notes: Note[]; stickers: Sticker[] };
+const DEFAULT_STATE: State = { items: [], mood: "dia", covers: [], notes: [], stickers: [] };
 const uid = () => Math.random().toString(36).slice(2, 9);
 
 export default function MinhaCasa({ room }: Props) {
   const [state, setState] = useState<State>(DEFAULT_STATE);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [emojiOpen, setEmojiOpen] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
 
   // sync realtime (mescla defaults para compat com payloads antigos)
@@ -137,7 +198,7 @@ export default function MinhaCasa({ room }: Props) {
     return room.on?.((m) => {
       if (m.type === "casa:state") {
         const p = m.payload as Partial<State>;
-        setState({ ...DEFAULT_STATE, ...p, covers: p.covers ?? [], notes: p.notes ?? [] });
+        setState({ ...DEFAULT_STATE, ...p, covers: p.covers ?? [], notes: p.notes ?? [], stickers: p.stickers ?? [] });
       }
     });
   }, [room]);
@@ -162,6 +223,7 @@ export default function MinhaCasa({ room }: Props) {
       items: s.items.filter((i) => i.id !== selectedId),
       covers: s.covers.filter((c) => c.id !== selectedId),
       notes: s.notes.filter((n) => n.id !== selectedId),
+      stickers: s.stickers.filter((st) => st.id !== selectedId),
     }));
     setSelectedId(null);
   };
@@ -202,9 +264,25 @@ export default function MinhaCasa({ room }: Props) {
     if (selectedId === id) setSelectedId(null);
   };
 
-  // drag (personagens + covers + notas)
+  const addSticker = (emoji: string) => {
+    const id = uid();
+    setState((s) => ({
+      ...s,
+      stickers: [...s.stickers, { id, x: 0.5, y: 0.5, scale: 1, emoji }],
+    }));
+    setSelectedId(id);
+  };
+  const updateSticker = (id: string, patch: Partial<Sticker>) => {
+    setState((s) => ({ ...s, stickers: s.stickers.map((st) => st.id === id ? { ...st, ...patch } : st) }));
+  };
+  const removeSticker = (id: string) => {
+    setState((s) => ({ ...s, stickers: s.stickers.filter((st) => st.id !== id) }));
+    if (selectedId === id) setSelectedId(null);
+  };
+
+  // drag (personagens + covers + notas + stickers)
   type DragMode = "move" | "resize";
-  type DragKind = "item" | "cover" | "note";
+  type DragKind = "item" | "cover" | "note" | "sticker";
   const dragRef = useRef<{ id: string; kind: DragKind; mode: DragMode; offX: number; offY: number } | null>(null);
 
   const onPointerDownItem = (e: React.PointerEvent, item: Placed) => {
@@ -234,6 +312,16 @@ export default function MinhaCasa({ room }: Props) {
     dragRef.current = { id: box.id, kind, mode, offX, offY };
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
+  const onPointerDownSticker = (e: React.PointerEvent, st: Sticker) => {
+    e.stopPropagation();
+    setSelectedId(st.id);
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const cx = (e.clientX - rect.left) / rect.width;
+    const cy = (e.clientY - rect.top) / rect.height;
+    dragRef.current = { id: st.id, kind: "sticker", mode: "move", offX: cx - st.x, offY: cy - st.y };
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
   const onPointerMove = useCallback((e: React.PointerEvent) => {
     const d = dragRef.current;
     if (!d) return;
@@ -247,6 +335,14 @@ export default function MinhaCasa({ room }: Props) {
           ...s,
           items: s.items.map((i) =>
             i.id !== d.id ? i : { ...i, x: Math.max(0.02, Math.min(0.98, cx - d.offX)), y: Math.max(0.05, Math.min(0.98, cy - d.offY)) },
+          ),
+        };
+      }
+      if (d.kind === "sticker") {
+        return {
+          ...s,
+          stickers: s.stickers.map((st) =>
+            st.id !== d.id ? st : { ...st, x: Math.max(0.02, Math.min(0.98, cx - d.offX)), y: Math.max(0.02, Math.min(0.98, cy - d.offY)) },
           ),
         };
       }
@@ -293,7 +389,36 @@ export default function MinhaCasa({ room }: Props) {
           <h2 className="font-display text-xl font-bold">Minha Casa</h2>
           <span className="text-xs text-muted-foreground hidden md:inline">Quem mora aqui? Onde cada um fica?</span>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap relative">
+          <div className="relative">
+            <Button size="sm" variant="outline" onClick={() => setEmojiOpen((v) => !v)} title="Adicionar emoji">
+              <Smile className="w-4 h-4" /> <span className="hidden sm:inline">Emojis</span>
+            </Button>
+            {emojiOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setEmojiOpen(false)} />
+                <div className="absolute right-0 top-full mt-2 z-50 w-[320px] max-h-[360px] overflow-auto bg-white border rounded-xl shadow-xl p-3">
+                  {EMOJI_GROUPS.map((grp) => (
+                    <div key={grp.label} className="mb-2 last:mb-0">
+                      <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground px-1 mb-1">{grp.label}</div>
+                      <div className="grid grid-cols-8 gap-1">
+                        {grp.items.map((it) => (
+                          <button
+                            key={it.emoji}
+                            onClick={() => { addSticker(it.emoji); setEmojiOpen(false); }}
+                            title={it.name}
+                            className="aspect-square flex items-center justify-center text-2xl rounded-md hover:bg-amber-50 transition"
+                          >
+                            {it.emoji}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
           <Button size="sm" variant="outline" onClick={addNote} title="Adicionar uma nota / caixa de texto">
             <StickyNote className="w-4 h-4" /> <span className="hidden sm:inline">Adicionar nota</span>
           </Button>
@@ -317,7 +442,7 @@ export default function MinhaCasa({ room }: Props) {
               );
             })}
           </div>
-          <Button size="sm" variant="outline" onClick={exportPdf} disabled={state.items.length === 0 && state.notes.length === 0 && state.covers.length === 0}>
+          <Button size="sm" variant="outline" onClick={exportPdf} disabled={state.items.length === 0 && state.notes.length === 0 && state.covers.length === 0 && state.stickers.length === 0}>
             <Download className="w-4 h-4" /> PDF
           </Button>
           <Button size="sm" variant="ghost" onClick={reset}>
@@ -507,12 +632,70 @@ export default function MinhaCasa({ room }: Props) {
                   </div>
                 );
               })}
+
+              {/* Stickers / Emojis */}
+              {state.stickers.map((st) => {
+                const isSel = st.id === selectedId;
+                const size = 56 * st.scale;
+                return (
+                  <div
+                    key={st.id}
+                    onPointerDown={(e) => onPointerDownSticker(e, st)}
+                    onClick={(e) => e.stopPropagation()}
+                    className="absolute -translate-x-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing select-none flex items-center justify-center"
+                    style={{
+                      left: `${st.x * 100}%`,
+                      top: `${st.y * 100}%`,
+                      fontSize: `${size}px`,
+                      lineHeight: 1,
+                      filter: isSel
+                        ? "drop-shadow(0 0 10px rgba(251,191,36,0.9)) drop-shadow(0 4px 6px rgba(0,0,0,0.3))"
+                        : "drop-shadow(0 3px 5px rgba(0,0,0,0.35))",
+                      transition: "filter 0.2s",
+                    }}
+                  >
+                    <span className="pointer-events-none">{st.emoji}</span>
+                    {isSel && (
+                      <button
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onClick={(e) => { e.stopPropagation(); removeSticker(st.id); }}
+                        className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-white border shadow flex items-center justify-center hover:bg-red-50 hover:border-red-300"
+                        title="Remover emoji"
+                      >
+                        <X className="w-3.5 h-3.5 text-red-600" />
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
 
           {/* painel inferior */}
           <div className="rounded-xl bg-white/85 border p-3 min-h-[96px]">
             {(() => {
+              const selectedSticker = state.stickers.find((s) => s.id === selectedId);
+              if (selectedSticker) {
+                return (
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <span className="text-2xl leading-none">{selectedSticker.emoji}</span>
+                    <div className="font-semibold">Emoji</div>
+                    <div className="flex items-center gap-1.5 text-[11px]">
+                      <span className="text-muted-foreground">tamanho</span>
+                      <input
+                        type="range" min={0.6} max={2.2} step={0.05}
+                        value={selectedSticker.scale}
+                        onChange={(e) => updateSticker(selectedSticker.id, { scale: parseFloat(e.target.value) })}
+                        className="w-32"
+                      />
+                    </div>
+                    <div className="text-[11px] text-muted-foreground">arraste para mover</div>
+                    <Button size="sm" variant="outline" onClick={() => removeSticker(selectedSticker.id)} className="ml-auto">
+                      <Trash2 className="w-3.5 h-3.5" /> remover
+                    </Button>
+                  </div>
+                );
+              }
               const selectedNote = state.notes.find((n) => n.id === selectedId);
               if (selectedNote) {
                 return (
@@ -682,6 +865,17 @@ function exportCasaPdf(state: State, proximity: { a: Placed; b: Placed; dist: nu
   if (state.notes.length > 0) {
     section(`Notas do paciente (${state.notes.length})`);
     state.notes.forEach((n, i) => line(`${i + 1}. ${n.text.trim() || "(em branco)"}`));
+    y += 8;
+  }
+
+  if (state.stickers.length > 0) {
+    const counts = new Map<string, number>();
+    state.stickers.forEach((s) => counts.set(s.emoji, (counts.get(s.emoji) ?? 0) + 1));
+    section(`Emojis colocados (${state.stickers.length})`);
+    Array.from(counts.entries()).forEach(([emo, n]) => {
+      const meta = EMOJI_GROUPS.flatMap((g) => g.items).find((i) => i.emoji === emo);
+      line(`• ${emo} ${meta?.name ?? ""} ×${n}`);
+    });
     y += 8;
   }
 
