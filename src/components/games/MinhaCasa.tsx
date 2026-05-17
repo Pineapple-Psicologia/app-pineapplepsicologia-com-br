@@ -128,15 +128,19 @@ export default function MinhaCasa({ room }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  // sync realtime
+  // sync realtime (mescla defaults para compat com payloads antigos)
   useEffect(() => {
     return room.on?.((m) => {
-      if (m.type === "casa:state") setState(m.payload as State);
+      if (m.type === "casa:state") {
+        const p = m.payload as Partial<State>;
+        setState({ ...DEFAULT_STATE, ...p, covers: p.covers ?? [] });
+      }
     });
   }, [room]);
   useEffect(() => { room.send?.("casa:state", state); }, [state, room]);
 
   const mood = MOODS.find((m) => m.id === state.mood)!;
+  const currentHouse = HOUSES.find((h) => h.id === state.house) ?? HOUSES[0];
 
   const addCharacter = (c: CharDef) => {
     setState((s) => ({
@@ -149,7 +153,11 @@ export default function MinhaCasa({ room }: Props) {
   };
   const removeSelected = () => {
     if (!selectedId) return;
-    setState((s) => ({ ...s, items: s.items.filter((i) => i.id !== selectedId) }));
+    setState((s) => ({
+      ...s,
+      items: s.items.filter((i) => i.id !== selectedId),
+      covers: s.covers.filter((c) => c.id !== selectedId),
+    }));
     setSelectedId(null);
   };
   const updateSelected = (patch: Partial<Placed>) => {
@@ -157,8 +165,26 @@ export default function MinhaCasa({ room }: Props) {
     setState((s) => ({ ...s, items: s.items.map((i) => i.id === selectedId ? { ...i, ...patch } : i) }));
   };
 
-  // drag
-  const dragRef = useRef<{ id: string; offX: number; offY: number } | null>(null);
+  const addCover = () => {
+    const id = uid();
+    setState((s) => ({
+      ...s,
+      covers: [...s.covers, { id, x: 0.35, y: 0.35, w: 0.3, h: 0.25, label: "não tenho" }],
+    }));
+    setSelectedId(id);
+  };
+  const updateCover = (id: string, patch: Partial<Cover>) => {
+    setState((s) => ({ ...s, covers: s.covers.map((c) => c.id === id ? { ...c, ...patch } : c) }));
+  };
+  const removeCover = (id: string) => {
+    setState((s) => ({ ...s, covers: s.covers.filter((c) => c.id !== id) }));
+    if (selectedId === id) setSelectedId(null);
+  };
+
+  // drag (personagens + covers)
+  type DragMode = "move" | "resize";
+  const dragRef = useRef<{ id: string; kind: "item" | "cover"; mode: DragMode; offX: number; offY: number } | null>(null);
+
   const onPointerDownItem = (e: React.PointerEvent, item: Placed) => {
     e.stopPropagation();
     setSelectedId(item.id);
@@ -166,7 +192,19 @@ export default function MinhaCasa({ room }: Props) {
     if (!rect) return;
     const cx = (e.clientX - rect.left) / rect.width;
     const cy = (e.clientY - rect.top) / rect.height;
-    dragRef.current = { id: item.id, offX: cx - item.x, offY: cy - item.y };
+    dragRef.current = { id: item.id, kind: "item", mode: "move", offX: cx - item.x, offY: cy - item.y };
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+  const onPointerDownCover = (e: React.PointerEvent, cover: Cover, mode: DragMode) => {
+    e.stopPropagation();
+    setSelectedId(cover.id);
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const cx = (e.clientX - rect.left) / rect.width;
+    const cy = (e.clientY - rect.top) / rect.height;
+    const offX = mode === "move" ? cx - cover.x : cx - (cover.x + cover.w);
+    const offY = mode === "move" ? cy - cover.y : cy - (cover.y + cover.h);
+    dragRef.current = { id: cover.id, kind: "cover", mode, offX, offY };
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
   const onPointerMove = useCallback((e: React.PointerEvent) => {
@@ -176,12 +214,28 @@ export default function MinhaCasa({ room }: Props) {
     if (!rect) return;
     const cx = (e.clientX - rect.left) / rect.width;
     const cy = (e.clientY - rect.top) / rect.height;
-    setState((s) => ({
-      ...s,
-      items: s.items.map((i) =>
-        i.id !== d.id ? i : { ...i, x: Math.max(0.02, Math.min(0.98, cx - d.offX)), y: Math.max(0.05, Math.min(0.98, cy - d.offY)) },
-      ),
-    }));
+    setState((s) => {
+      if (d.kind === "item") {
+        return {
+          ...s,
+          items: s.items.map((i) =>
+            i.id !== d.id ? i : { ...i, x: Math.max(0.02, Math.min(0.98, cx - d.offX)), y: Math.max(0.05, Math.min(0.98, cy - d.offY)) },
+          ),
+        };
+      }
+      return {
+        ...s,
+        covers: s.covers.map((c) => {
+          if (c.id !== d.id) return c;
+          if (d.mode === "move") {
+            return { ...c, x: Math.max(0, Math.min(1 - c.w, cx - d.offX)), y: Math.max(0, Math.min(1 - c.h, cy - d.offY)) };
+          }
+          const nw = Math.max(0.08, Math.min(1 - c.x, cx - d.offX - c.x));
+          const nh = Math.max(0.08, Math.min(1 - c.y, cy - d.offY - c.y));
+          return { ...c, w: nw, h: nh };
+        }),
+      };
+    });
   }, []);
   const onPointerUp = () => { dragRef.current = null; };
 
