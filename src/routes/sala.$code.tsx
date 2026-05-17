@@ -15,6 +15,7 @@ import RespiracaoQuadrada from "@/components/games/RespiracaoQuadrada";
 import Ancoragem54321 from "@/components/games/Ancoragem54321";
 import FolhasNoRio from "@/components/games/FolhasNoRio";
 import BussolaValores from "@/components/games/BussolaValores";
+import MinhaCasa from "@/components/games/MinhaCasa";
 
 import { Copy, Check, ArrowLeft, Wifi, WifiOff } from "lucide-react";
 import { toast } from "sonner";
