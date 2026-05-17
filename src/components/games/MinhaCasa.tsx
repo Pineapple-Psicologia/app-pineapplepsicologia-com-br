@@ -528,7 +528,8 @@ export default function MinhaCasa({ room }: Props) {
                   </div>
                 )}
               </div>
-            )}
+              );
+            })()}
           </div>
         </div>
       </div>
