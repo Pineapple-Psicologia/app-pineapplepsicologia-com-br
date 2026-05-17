@@ -102,6 +102,10 @@ function SalaPage() {
             <RespiracaoQuadrada room={room} />
           ) : game === "ancoragem" ? (
             <Ancoragem54321 room={room} />
+          ) : game === "folhas-no-rio" ? (
+            <FolhasNoRio room={room} />
+          ) : game === "bussola" ? (
+            <BussolaValores room={room} />
           ) : (
             <Whiteboard room={room} role={role} />
           )}
