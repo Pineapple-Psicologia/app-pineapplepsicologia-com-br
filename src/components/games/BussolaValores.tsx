@@ -688,6 +688,4 @@ function exportBussolaPdf(state: State, _sortedMuito: ValueCard[]) {
 
   const filename = `bussola-valores-${new Date().toISOString().slice(0, 10)}.pdf`;
   doc.save(filename);
-  // silence unused warning
-  void sortedMuito;
 }
