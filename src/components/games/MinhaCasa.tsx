@@ -317,7 +317,7 @@ export default function MinhaCasa({ room }: Props) {
               );
             })}
           </div>
-          <Button size="sm" variant="outline" onClick={exportPdf} disabled={state.items.length === 0}>
+          <Button size="sm" variant="outline" onClick={exportPdf} disabled={state.items.length === 0 && state.notes.length === 0 && state.covers.length === 0}>
             <Download className="w-4 h-4" /> PDF
           </Button>
           <Button size="sm" variant="ghost" onClick={reset}>
