@@ -579,7 +579,7 @@ function LeafSprite({
           transition: "transform 120ms linear",
         }}
       >
-        <LeafSvg color={cat.color} stuck={isStuck} />
+        <LeafSvg color={autumnTone(leaf.spin)} stuck={isStuck} />
       </div>
       <div
         className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[11px] font-bold text-stone-900 max-w-[140px] text-center leading-tight px-1.5 py-0.5 rounded bg-white/75 backdrop-blur-sm shadow-sm pointer-events-none"
