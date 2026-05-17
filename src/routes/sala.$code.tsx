@@ -13,6 +13,8 @@ import TrianguloCognitivo from "@/components/games/TrianguloCognitivo";
 import EntreLentes from "@/components/games/EntreLentes";
 import RespiracaoQuadrada from "@/components/games/RespiracaoQuadrada";
 import Ancoragem54321 from "@/components/games/Ancoragem54321";
+import FolhasNoRio from "@/components/games/FolhasNoRio";
+import BussolaValores from "@/components/games/BussolaValores";
 
 import { Copy, Check, ArrowLeft, Wifi, WifiOff } from "lucide-react";
 import { toast } from "sonner";
@@ -20,7 +22,7 @@ import { getGame } from "@/lib/games";
 
 const searchSchema = z.object({
   role: z.enum(["psi", "paciente"]).default("paciente"),
-  game: z.enum(["whiteboard", "termometro", "detetive", "detetive-tabuleiro", "detetive-aventura", "mapa-corporal", "triangulo", "entre-lentes", "respiracao", "ancoragem"]).default("whiteboard"),
+  game: z.enum(["whiteboard", "termometro", "detetive", "detetive-tabuleiro", "detetive-aventura", "mapa-corporal", "triangulo", "entre-lentes", "respiracao", "ancoragem", "folhas-no-rio", "bussola"]).default("whiteboard"),
 });
 
 export const Route = createFileRoute("/sala/$code")({

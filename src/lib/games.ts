@@ -1,4 +1,4 @@
-export type GameId = "whiteboard" | "termometro" | "detetive" | "detetive-tabuleiro" | "detetive-aventura" | "mapa-corporal" | "triangulo" | "entre-lentes" | "respiracao" | "ancoragem";
+export type GameId = "whiteboard" | "termometro" | "detetive" | "detetive-tabuleiro" | "detetive-aventura" | "mapa-corporal" | "triangulo" | "entre-lentes" | "respiracao" | "ancoragem" | "folhas-no-rio" | "bussola";
 
 export type GameMeta = {
   id: GameId;
@@ -109,6 +109,26 @@ export const GAMES: GameMeta[] = [
       "Grounding guiado pelos 5 sentidos para crises de ansiedade ou dissociação. Mede intensidade antes e depois.",
     ageRange: "7–17 anos",
     approach: "Grounding · ansiedade aguda",
+    available: true,
+  },
+  {
+    id: "folhas-no-rio",
+    title: "Folhas no Rio",
+    emoji: "🍃",
+    description:
+      "ACT · desfusão cognitiva. Escreva pensamentos em folhas e veja-as fluir num rio Pixar. Algumas ficam presas em pedras — pratique soltar.",
+    ageRange: "9–17 anos",
+    approach: "ACT · desfusão",
+    available: true,
+  },
+  {
+    id: "bussola",
+    title: "Bússola de Valores",
+    emoji: "🧭",
+    description:
+      "ACT · clarificação de valores. Triagem de 24 valores, ranking, bússola de 8 domínios e micro-compromissos para a semana.",
+    ageRange: "11–17 anos",
+    approach: "ACT · valores",
     available: true,
   },
   {
