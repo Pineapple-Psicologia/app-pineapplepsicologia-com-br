@@ -188,12 +188,7 @@ export default function FolhasNoRio({ room }: Props) {
 
   return (
     <div
-      className="h-full w-full p-3 md:p-5 flex flex-col gap-3 rounded-2xl border-4 border-amber-900/30 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.45)] relative overflow-hidden"
-      style={{
-        backgroundImage: `linear-gradient(rgba(254,243,199,0.18), rgba(0,0,0,0.18)), url(${rioBg})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
+      className="h-full w-full p-3 md:p-5 flex flex-col gap-3 rounded-2xl border-4 border-amber-900/30 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.45)] relative overflow-hidden bg-gradient-to-b from-amber-900/40 via-emerald-950/30 to-amber-950/40"
     >
       {/* header */}
       <header className="flex items-center justify-between flex-wrap gap-3 bg-white/90 backdrop-blur rounded-2xl border-2 border-white shadow-lg px-4 py-2">
@@ -330,14 +325,79 @@ function River({
     [],
   );
 
+  // polygon enveloping the painted river (used to clip the warped water layer)
+  const riverPoly =
+    "polygon(44% 8%, 60% 8%, 70% 30%, 60% 58%, 50% 82%, 44% 110%, 26% 110%, 34% 82%, 44% 55%, 50% 30%)";
+
   return (
-    <div className="relative rounded-2xl overflow-hidden border-2 border-white/70 shadow-inner bg-gradient-to-b from-amber-700/10 via-emerald-800/10 to-amber-900/20">
+    <div className="relative rounded-2xl overflow-hidden border-2 border-white/70 shadow-inner">
+      {/* SVG filter that animates the water surface */}
+      <svg className="absolute w-0 h-0" aria-hidden>
+        <defs>
+          <filter id="water-warp" x="-5%" y="-5%" width="110%" height="110%">
+            <feTurbulence
+              type="fractalNoise"
+              baseFrequency="0.012 0.028"
+              numOctaves="2"
+              seed="2"
+              result="noise"
+            >
+              <animate
+                attributeName="baseFrequency"
+                dur="14s"
+                values="0.012 0.028;0.018 0.04;0.012 0.028"
+                repeatCount="indefinite"
+              />
+            </feTurbulence>
+            {/* scroll the noise downstream so the distortion 'flows' */}
+            <feOffset in="noise" dx="0" dy="0" result="noise2">
+              <animate attributeName="dy" from="0" to="-60" dur="2.6s" repeatCount="indefinite" />
+            </feOffset>
+            <feDisplacementMap in="SourceGraphic" in2="noise2" scale="7" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+        </defs>
+      </svg>
+
+      {/* static base scene */}
+      <img
+        src={rioBg}
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover select-none"
+        draggable={false}
+      />
+      {/* warped water — same image, clipped to the river area, filtered */}
+      <img
+        src={rioBg}
+        alt=""
+        aria-hidden
+        className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+        draggable={false}
+        style={{
+          filter: "url(#water-warp) saturate(1.05) brightness(1.02)",
+          clipPath: riverPoly,
+          WebkitClipPath: riverPoly,
+        }}
+      />
+      {/* subtle highlight glaze inside the river clip */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          clipPath: riverPoly,
+          WebkitClipPath: riverPoly,
+          background:
+            "linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0) 40%, rgba(0,0,0,0.08))",
+          mixBlendMode: "soft-light",
+        }}
+      />
+
       {/* gentle water shimmer overlay */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-50"
+        className="absolute inset-0 pointer-events-none opacity-30"
         style={{
           background: `repeating-linear-gradient(115deg, transparent 0 14px, rgba(255,255,255,0.06) 14px 16px)`,
           animation: "rio-shimmer 8s linear infinite",
+          clipPath: riverPoly,
+          WebkitClipPath: riverPoly,
         }}
       />
       <style>{`
