@@ -449,7 +449,7 @@ export default function MinhaCasa({ room }: Props) {
                       <X className="w-3.5 h-3.5 text-red-600" />
                     </button>
                     <div
-                      onPointerDown={(e) => onPointerDownCover(e, c, "resize")}
+                      onPointerDown={(e) => onPointerDownBox(e, c, "cover", "resize")}
                       className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize bg-amber-500/80 rounded-tl-md"
                       title="Redimensionar"
                     />
