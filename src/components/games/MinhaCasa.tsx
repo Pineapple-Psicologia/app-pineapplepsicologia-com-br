@@ -424,7 +424,7 @@ function CanvasInner({
   state, canvasRef, selectedId, onPointerDownItem,
 }: {
   state: State;
-  canvasRef: React.RefObject<HTMLDivElement>;
+  canvasRef: React.RefObject<HTMLDivElement | null>;
   selectedId: string | null;
   onPointerDownItem: (e: React.PointerEvent, item: Placed, mode?: "move" | "resize") => void;
 }) {
@@ -498,7 +498,7 @@ function CanvasInner({
 }
 
 // dummy para silenciar warning de canvasRef não usado no inner
-function PointerProxy({ canvasRef }: { canvasRef: React.RefObject<HTMLDivElement> }) {
+function PointerProxy({ canvasRef }: { canvasRef: React.RefObject<HTMLDivElement | null> }) {
   void canvasRef;
   return null;
 }
