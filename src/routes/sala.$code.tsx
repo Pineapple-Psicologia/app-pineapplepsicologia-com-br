@@ -107,6 +107,8 @@ function SalaPage() {
             <FolhasNoRio room={room} />
           ) : game === "bussola" ? (
             <BussolaValores room={room} />
+          ) : game === "minha-casa" ? (
+            <MinhaCasa room={room} />
           ) : (
             <Whiteboard room={room} role={role} />
           )}
