@@ -402,6 +402,43 @@ export default function MinhaCasa({ room }: Props) {
                   </div>
                 );
               })}
+
+              {/* Coberturas de cômodos */}
+              {state.covers.map((c) => {
+                const isSel = c.id === selectedId;
+                return (
+                  <div
+                    key={c.id}
+                    onPointerDown={(e) => onPointerDownCover(e, c, "move")}
+                    className={`absolute cursor-move select-none rounded-xl border-2 flex items-center justify-center text-center backdrop-blur-sm transition ${isSel ? "border-amber-500" : "border-white/70"}`}
+                    style={{
+                      left: `${c.x * 100}%`,
+                      top: `${c.y * 100}%`,
+                      width: `${c.w * 100}%`,
+                      height: `${c.h * 100}%`,
+                      background: "repeating-linear-gradient(135deg, rgba(255,255,255,0.78), rgba(255,255,255,0.78) 10px, rgba(245,235,220,0.78) 10px, rgba(245,235,220,0.78) 20px)",
+                      boxShadow: isSel ? "0 0 0 3px rgba(251,191,36,0.35), 0 10px 25px -10px rgba(0,0,0,0.4)" : "0 6px 18px -8px rgba(0,0,0,0.35)",
+                    }}
+                  >
+                    <span className="text-xs font-semibold text-amber-900/80 px-2 pointer-events-none">
+                      {c.label}
+                    </span>
+                    <button
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onClick={(e) => { e.stopPropagation(); removeCover(c.id); }}
+                      className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-white border shadow flex items-center justify-center hover:bg-red-50 hover:border-red-300"
+                      title="Remover cobertura"
+                    >
+                      <X className="w-3.5 h-3.5 text-red-600" />
+                    </button>
+                    <div
+                      onPointerDown={(e) => onPointerDownCover(e, c, "resize")}
+                      className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize bg-amber-500/80 rounded-tl-md"
+                      title="Redimensionar"
+                    />
+                  </div>
+                );
+              })}
             </div>
           </div>
 
