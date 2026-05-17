@@ -104,8 +104,23 @@ type Placed = {
   emotion: Emotion;
 };
 
-type State = { items: Placed[]; mood: Mood };
-const DEFAULT_STATE: State = { items: [], mood: "dia" };
+type Cover = {
+  id: string;
+  x: number; y: number;   // top-left 0..1
+  w: number; h: number;   // 0..1
+  label: string;
+};
+
+type HouseId = "media" | "pequena" | "apartamento" | "grande";
+const HOUSES: { id: HouseId; label: string; img: string }[] = [
+  { id: "media",        label: "Casa aconchegante", img: casaBg },
+  { id: "pequena",      label: "Casa pequena",      img: casaPequena },
+  { id: "apartamento",  label: "Apartamento",       img: casaApto },
+  { id: "grande",       label: "Casa grande",       img: casaGrande },
+];
+
+type State = { items: Placed[]; mood: Mood; house: HouseId; covers: Cover[] };
+const DEFAULT_STATE: State = { items: [], mood: "dia", house: "media", covers: [] };
 const uid = () => Math.random().toString(36).slice(2, 9);
 
 export default function MinhaCasa({ room }: Props) {
