@@ -134,8 +134,6 @@ export default function BussolaValores({ room }: Props) {
           <StepChip id="sort"    cur={state.step} label="1 · Triagem" />
           <StepChip id="rank"    cur={state.step} label="2 · Top 5" />
           <StepChip id="place"   cur={state.step} label="3 · Bússola" />
-          <StepChip id="commit"  cur={state.step} label="4 · Passo" />
-          <StepChip id="summary" cur={state.step} label="🗺️" />
         </div>
         <Button size="sm" variant="ghost" onClick={reset}>
           <RotateCcw className="w-4 h-4" />
@@ -152,12 +150,6 @@ export default function BussolaValores({ room }: Props) {
         {state.step === "place" && (
           <StepPlace state={state} broadcast={broadcast} />
         )}
-        {state.step === "commit" && (
-          <StepCommit state={state} broadcast={broadcast} />
-        )}
-        {state.step === "summary" && (
-          <StepSummary state={state} />
-        )}
       </div>
 
       {/* Footer nav */}
@@ -166,7 +158,7 @@ export default function BussolaValores({ room }: Props) {
           size="sm"
           variant="outline"
           onClick={() => {
-            const order: Step[] = ["sort", "rank", "place", "commit", "summary"];
+            const order: Step[] = ["sort", "rank", "place"];
             const idx = order.indexOf(state.step);
             if (idx > 0) goto(order[idx - 1]);
           }}
@@ -178,21 +170,18 @@ export default function BussolaValores({ room }: Props) {
           {state.step === "sort" && `Marque pelo menos 5 como "Muito" (${sortedMuito.length}/5)`}
           {state.step === "rank" && `Escolha 3–5 prioridades (${state.rank.length}/5)`}
           {state.step === "place" && `Coloque ao menos 3 na bússola (${placedCount}/${state.rank.length})`}
-          {state.step === "commit" && `Um micro-passo por valor placed (${state.commitments.length}/${placedCount})`}
-          {state.step === "summary" && `Seu mapa está pronto 🗺️`}
         </div>
         <Button
           size="sm"
           onClick={() => {
-            const order: Step[] = ["sort", "rank", "place", "commit", "summary"];
+            const order: Step[] = ["sort", "rank", "place"];
             const idx = order.indexOf(state.step);
             if (idx < order.length - 1) goto(order[idx + 1]);
           }}
           disabled={
             (state.step === "sort" && !canNextFromSort) ||
             (state.step === "rank" && !canNextFromRank) ||
-            (state.step === "place" && !canNextFromPlace) ||
-            state.step === "summary"
+            state.step === "place"
           }
         >
           Avançar <ChevronRight className="w-4 h-4 ml-1" />
