@@ -444,52 +444,76 @@ export default function MinhaCasa({ room }: Props) {
 
           {/* painel inferior */}
           <div className="rounded-xl bg-white/85 border p-3 min-h-[96px]">
-            {selected && selectedDef ? (
-              <div className="flex gap-3 items-start">
-                <div className="w-16 h-16 rounded-lg bg-gradient-to-b from-amber-50 to-white border flex items-end justify-center overflow-hidden shrink-0">
-                  <img src={selectedDef.img} alt="" className="h-full w-auto object-contain" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="font-semibold">{selectedDef.label}</div>
-                    <button
-                      onClick={() => updateSelected({ flip: !selected.flip })}
-                      className="text-[10px] px-2 py-0.5 rounded-full border bg-white hover:bg-amber-50"
-                      title="Virar"
-                    >
-                      ⇄ virar
-                    </button>
-                    <div className="flex items-center gap-1 text-[10px]">
-                      <span className="text-muted-foreground">tamanho</span>
-                      <input
-                        type="range" min={0.6} max={1.6} step={0.05}
-                        value={selected.scale}
-                        onChange={(e) => updateSelected({ scale: parseFloat(e.target.value) })}
-                        className="w-24"
-                      />
-                    </div>
-                    <Button size="sm" variant="outline" onClick={removeSelected} className="ml-auto">
+            {(() => {
+              const selectedCover = state.covers.find((c) => c.id === selectedId);
+              if (selectedCover) {
+                return (
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <EyeOff className="w-5 h-5 text-amber-700 shrink-0" />
+                    <div className="font-semibold">Cobertura de cômodo</div>
+                    <input
+                      type="text"
+                      value={selectedCover.label}
+                      onChange={(e) => updateCover(selectedCover.id, { label: e.target.value })}
+                      placeholder="ex.: não tenho, não uso, vazio"
+                      className="text-xs border rounded-md px-2 py-1 bg-white min-w-[180px]"
+                    />
+                    <div className="text-[11px] text-muted-foreground">arraste para mover · canto inferior direito redimensiona</div>
+                    <Button size="sm" variant="outline" onClick={() => removeCover(selectedCover.id)} className="ml-auto">
                       <Trash2 className="w-3.5 h-3.5" /> remover
                     </Button>
                   </div>
-                  <div className="flex flex-wrap gap-1">
-                    {EMOTIONS.map((e) => (
-                      <button
-                        key={e.id}
-                        onClick={() => updateSelected({ emotion: e.id })}
-                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs border transition ${selected.emotion === e.id ? "bg-amber-100 border-amber-400 font-semibold" : "bg-white hover:bg-amber-50"}`}
-                      >
-                        <span
-                          className="w-3 h-3 rounded-full border"
-                          style={{ background: e.color === "transparent" ? "white" : e.color, borderColor: e.color === "transparent" ? "#cbd5e1" : "transparent" }}
-                        />
-                        {e.label}
-                      </button>
-                    ))}
+                );
+              }
+              if (selected && selectedDef) {
+                return (
+                  <div className="flex gap-3 items-start">
+                    <div className="w-16 h-16 rounded-lg bg-gradient-to-b from-amber-50 to-white border flex items-end justify-center overflow-hidden shrink-0">
+                      <img src={selectedDef.img} alt="" className="h-full w-auto object-contain" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="font-semibold">{selectedDef.label}</div>
+                        <button
+                          onClick={() => updateSelected({ flip: !selected.flip })}
+                          className="text-[10px] px-2 py-0.5 rounded-full border bg-white hover:bg-amber-50"
+                          title="Virar"
+                        >
+                          ⇄ virar
+                        </button>
+                        <div className="flex items-center gap-1 text-[10px]">
+                          <span className="text-muted-foreground">tamanho</span>
+                          <input
+                            type="range" min={0.6} max={1.6} step={0.05}
+                            value={selected.scale}
+                            onChange={(e) => updateSelected({ scale: parseFloat(e.target.value) })}
+                            className="w-24"
+                          />
+                        </div>
+                        <Button size="sm" variant="outline" onClick={removeSelected} className="ml-auto">
+                          <Trash2 className="w-3.5 h-3.5" /> remover
+                        </Button>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {EMOTIONS.map((e) => (
+                          <button
+                            key={e.id}
+                            onClick={() => updateSelected({ emotion: e.id })}
+                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs border transition ${selected.emotion === e.id ? "bg-amber-100 border-amber-400 font-semibold" : "bg-white hover:bg-amber-50"}`}
+                          >
+                            <span
+                              className="w-3 h-3 rounded-full border"
+                              style={{ background: e.color === "transparent" ? "white" : e.color, borderColor: e.color === "transparent" ? "#cbd5e1" : "transparent" }}
+                            />
+                            {e.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            ) : (
+                );
+              }
+              return (
               <div className="text-sm text-muted-foreground">
                 <strong>Como brincar:</strong> escolha pessoas e pets na lateral, arraste-os para os cômodos da casa. Clique em alguém para mudar tamanho, virar e escolher uma emoção (o brilho ao redor representa o sentimento). A iluminação muda a atmosfera da casa toda.
                 {characters.length >= 2 && (
