@@ -5,9 +5,6 @@ import { Home, RotateCcw, Download, Trash2, Sun, Moon, Sparkles, Cloud, EyeOff, 
 import jsPDF from "jspdf";
 
 import casaBg from "@/assets/casa-pixar.jpg";
-import casaPequena from "@/assets/casa/casa-pequena.jpg";
-import casaApto from "@/assets/casa/casa-apartamento.jpg";
-import casaGrande from "@/assets/casa/casa-grande.jpg";
 import imgCrianca from "@/assets/casa/char-crianca.png";
 import imgAdolescente from "@/assets/casa/char-adolescente.png";
 import imgMae from "@/assets/casa/char-mae.png";
@@ -111,16 +108,8 @@ type Cover = {
   label: string;
 };
 
-type HouseId = "media" | "pequena" | "apartamento" | "grande";
-const HOUSES: { id: HouseId; label: string; img: string }[] = [
-  { id: "media",        label: "Casa aconchegante", img: casaBg },
-  { id: "pequena",      label: "Casa pequena",      img: casaPequena },
-  { id: "apartamento",  label: "Apartamento",       img: casaApto },
-  { id: "grande",       label: "Casa grande",       img: casaGrande },
-];
-
-type State = { items: Placed[]; mood: Mood; house: HouseId; covers: Cover[] };
-const DEFAULT_STATE: State = { items: [], mood: "dia", house: "media", covers: [] };
+type State = { items: Placed[]; mood: Mood; covers: Cover[] };
+const DEFAULT_STATE: State = { items: [], mood: "dia", covers: [] };
 const uid = () => Math.random().toString(36).slice(2, 9);
 
 export default function MinhaCasa({ room }: Props) {
@@ -140,7 +129,7 @@ export default function MinhaCasa({ room }: Props) {
   useEffect(() => { room.send?.("casa:state", state); }, [state, room]);
 
   const mood = MOODS.find((m) => m.id === state.mood)!;
-  const currentHouse = HOUSES.find((h) => h.id === state.house) ?? HOUSES[0];
+  
 
   const addCharacter = (c: CharDef) => {
     setState((s) => ({
@@ -267,16 +256,6 @@ export default function MinhaCasa({ room }: Props) {
           <span className="text-xs text-muted-foreground hidden md:inline">Quem mora aqui? Onde cada um fica?</span>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <select
-            value={state.house}
-            onChange={(e) => setState((s) => ({ ...s, house: e.target.value as HouseId }))}
-            className="text-xs rounded-lg border bg-white/80 px-2 py-1.5 shadow-sm font-medium"
-            title="Escolher casa"
-          >
-            {HOUSES.map((h) => (
-              <option key={h.id} value={h.id}>🏠 {h.label}</option>
-            ))}
-          </select>
           <Button size="sm" variant="outline" onClick={addCover} title="Cobrir um cômodo que não existe">
             <EyeOff className="w-4 h-4" /> <span className="hidden sm:inline">Cobrir cômodo</span>
           </Button>
@@ -340,8 +319,8 @@ export default function MinhaCasa({ room }: Props) {
         <div className="flex-1 min-w-0 flex flex-col gap-2">
           <div className="relative flex-1 rounded-2xl border-4 border-amber-900/20 overflow-hidden shadow-[0_25px_60px_-20px_rgba(0,0,0,0.4)]">
             <img
-              src={currentHouse.img}
-              alt={currentHouse.label}
+              src={casaBg}
+              alt="Casa"
               className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
               draggable={false}
             />
@@ -552,8 +531,7 @@ function exportCasaPdf(state: State, proximity: { a: Placed; b: Placed; dist: nu
   doc.setFontSize(10);
   doc.setTextColor(120);
   const moodLabel = MOODS.find(m => m.id === state.mood)?.label;
-  const houseLabel = HOUSES.find(h => h.id === state.house)?.label;
-  doc.text(`Sessão · ${new Date().toLocaleDateString("pt-BR")} · Casa: ${houseLabel} · Atmosfera: ${moodLabel}`, 40, y);
+  doc.text(`Sessão · ${new Date().toLocaleDateString("pt-BR")} · Atmosfera: ${moodLabel}`, 40, y);
   y += 24;
   doc.setTextColor(20);
 
