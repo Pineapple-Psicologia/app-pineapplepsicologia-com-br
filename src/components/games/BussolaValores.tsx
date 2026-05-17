@@ -105,6 +105,7 @@ export default function BussolaValores({ room }: Props) {
   const canNextFromRank = state.rank.length >= 3;
   const placedCount = Object.values(state.placement).filter(Boolean).length;
   const canNextFromPlace = placedCount >= 3;
+  const exportPdf = () => exportBussolaPdf(state, sortedMuito);
 
   return (
     <div
