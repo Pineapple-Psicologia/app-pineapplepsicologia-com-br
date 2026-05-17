@@ -263,9 +263,25 @@ export default function MinhaCasa({ room }: Props) {
     if (selectedId === id) setSelectedId(null);
   };
 
-  // drag (personagens + covers + notas)
+  const addSticker = (emoji: string) => {
+    const id = uid();
+    setState((s) => ({
+      ...s,
+      stickers: [...s.stickers, { id, x: 0.5, y: 0.5, scale: 1, emoji }],
+    }));
+    setSelectedId(id);
+  };
+  const updateSticker = (id: string, patch: Partial<Sticker>) => {
+    setState((s) => ({ ...s, stickers: s.stickers.map((st) => st.id === id ? { ...st, ...patch } : st) }));
+  };
+  const removeSticker = (id: string) => {
+    setState((s) => ({ ...s, stickers: s.stickers.filter((st) => st.id !== id) }));
+    if (selectedId === id) setSelectedId(null);
+  };
+
+  // drag (personagens + covers + notas + stickers)
   type DragMode = "move" | "resize";
-  type DragKind = "item" | "cover" | "note";
+  type DragKind = "item" | "cover" | "note" | "sticker";
   const dragRef = useRef<{ id: string; kind: DragKind; mode: DragMode; offX: number; offY: number } | null>(null);
 
   const onPointerDownItem = (e: React.PointerEvent, item: Placed) => {
