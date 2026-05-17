@@ -579,6 +579,12 @@ function exportCasaPdf(state: State, proximity: { a: Placed; b: Placed; dist: nu
   });
   y += 8;
 
+  if (state.covers.length > 0) {
+    section(`Cômodos cobertos (${state.covers.length})`);
+    state.covers.forEach((c) => line(`• ${c.label || "(sem rótulo)"}`));
+    y += 8;
+  }
+
   if (proximity.length > 0) {
     section("Proximidades simbólicas");
     proximity.slice(0, 10).forEach((p) => {
