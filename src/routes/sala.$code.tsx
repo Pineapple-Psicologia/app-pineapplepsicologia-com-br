@@ -11,6 +11,7 @@ import DetetiveAventura from "@/components/games/DetetiveAventura";
 import MapaCorporal from "@/components/games/MapaCorporal";
 import TrianguloCognitivo from "@/components/games/TrianguloCognitivo";
 import EntreLentes from "@/components/games/EntreLentes";
+import LiveProntuarioPanel from "@/components/LiveProntuarioPanel";
 import { Copy, Check, ArrowLeft, Wifi, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 import { getGame } from "@/lib/games";
