@@ -355,9 +355,6 @@ function River({
         @keyframes rio-breathe   { 0%,100% { opacity: 0.35; } 50% { opacity: 0.6; } }
       `}</style>
 
-      {/* flowing-water SVG over the river bed */}
-      <FlowingRiver />
-
 
       {/* sparkles */}
       {sparkles.map((s, i) => (
