@@ -325,9 +325,10 @@ function River({
     [],
   );
 
-  // polygon enveloping the painted river (used to clip the warped water layer)
+  // generous polygon covering the whole painted river bed (top waterfall → foreground)
   const riverPoly =
-    "polygon(44% 8%, 60% 8%, 70% 30%, 60% 58%, 50% 82%, 44% 110%, 26% 110%, 34% 82%, 44% 55%, 50% 30%)";
+    "polygon(34% 4%, 70% 4%, 82% 28%, 74% 50%, 64% 72%, 56% 95%, 50% 115%, 10% 115%, 16% 95%, 24% 72%, 30% 50%, 32% 28%)";
+
 
   return (
     <div className="relative rounded-2xl overflow-hidden border-2 border-white/70 shadow-inner">
