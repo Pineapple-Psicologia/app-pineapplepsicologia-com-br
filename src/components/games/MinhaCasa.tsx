@@ -294,6 +294,9 @@ export default function MinhaCasa({ room }: Props) {
           <span className="text-xs text-muted-foreground hidden md:inline">Quem mora aqui? Onde cada um fica?</span>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          <Button size="sm" variant="outline" onClick={addNote} title="Adicionar uma nota / caixa de texto">
+            <StickyNote className="w-4 h-4" /> <span className="hidden sm:inline">Adicionar nota</span>
+          </Button>
           <Button size="sm" variant="outline" onClick={addCover} title="Cobrir um cômodo que não existe">
             <EyeOff className="w-4 h-4" /> <span className="hidden sm:inline">Cobrir cômodo</span>
           </Button>
