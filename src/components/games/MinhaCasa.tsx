@@ -129,7 +129,7 @@ export default function MinhaCasa({ room }: Props) {
   useEffect(() => { room.send?.("casa:state", state); }, [state, room]);
 
   const mood = MOODS.find((m) => m.id === state.mood)!;
-  const currentHouse = HOUSES.find((h) => h.id === state.house) ?? HOUSES[0];
+  
 
   const addCharacter = (c: CharDef) => {
     setState((s) => ({
