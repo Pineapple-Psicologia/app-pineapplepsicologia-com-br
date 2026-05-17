@@ -222,6 +222,7 @@ export default function MinhaCasa({ room }: Props) {
       items: s.items.filter((i) => i.id !== selectedId),
       covers: s.covers.filter((c) => c.id !== selectedId),
       notes: s.notes.filter((n) => n.id !== selectedId),
+      stickers: s.stickers.filter((st) => st.id !== selectedId),
     }));
     setSelectedId(null);
   };
