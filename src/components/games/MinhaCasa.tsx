@@ -223,23 +223,32 @@ export default function MinhaCasa({ room }: Props) {
 
       <div className="flex-1 flex gap-3 min-h-0">
         {/* sidebar de personagens */}
-        <aside className="w-44 shrink-0 bg-white/85 border rounded-xl p-2 overflow-auto">
-          <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground px-1 mb-1">Família · Pets</div>
-          <div className="grid grid-cols-2 gap-1.5">
-            {CHARACTERS.map((c) => (
-              <button
-                key={c.id}
-                onClick={() => addCharacter(c)}
-                title={`Adicionar ${c.label}`}
-                className="group flex flex-col items-center gap-0.5 p-1.5 rounded-lg border bg-white hover:bg-amber-50 hover:border-amber-300 transition"
-              >
-                <div className="w-full aspect-square bg-gradient-to-b from-amber-50 to-white rounded-md overflow-hidden flex items-end justify-center">
-                  <img src={c.img} alt={c.label} className="h-full w-auto object-contain group-hover:scale-105 transition-transform" loading="lazy" />
+        <aside className="w-48 shrink-0 bg-white/85 border rounded-xl p-2 overflow-auto">
+          {(["familia", "familia-negra", "extras", "pets"] as CharGroup[]).map((grp, idx) => {
+            const items = CHARACTERS.filter((c) => c.group === grp);
+            if (items.length === 0) return null;
+            const label = grp === "familia-negra" ? "Família · representatividade" : GROUP_LABELS[grp];
+            return (
+              <div key={grp} className={idx > 0 ? "mt-3" : ""}>
+                <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground px-1 mb-1">{label}</div>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {items.map((c) => (
+                    <button
+                      key={c.id}
+                      onClick={() => addCharacter(c)}
+                      title={`Adicionar ${c.label}`}
+                      className="group flex flex-col items-center gap-0.5 p-1.5 rounded-lg border bg-white hover:bg-amber-50 hover:border-amber-300 transition"
+                    >
+                      <div className="w-full aspect-square bg-gradient-to-b from-amber-50 to-white rounded-md overflow-hidden flex items-end justify-center">
+                        <img src={c.img} alt={c.label} className="h-full w-auto object-contain group-hover:scale-105 transition-transform" loading="lazy" />
+                      </div>
+                      <span className="text-[10px] font-semibold text-center leading-tight">{c.label}</span>
+                    </button>
+                  ))}
                 </div>
-                <span className="text-[10px] font-semibold text-center leading-tight">{c.label}</span>
-              </button>
-            ))}
-          </div>
+              </div>
+            );
+          })}
         </aside>
 
         {/* canvas casa */}
