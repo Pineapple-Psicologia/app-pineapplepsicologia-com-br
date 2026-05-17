@@ -61,14 +61,11 @@ const DOMAINS: { id: DomainId; label: string; emoji: string; angle: number; icon
 
 type Step = "sort" | "rank" | "place";
 
-type Commitment = { domain: DomainId; valueId: string; action: string };
-
 type State = {
   step: Step;
   importance: Record<string, Importance>;   // valueId -> importance
   rank: string[];                            // ordered top-5 valueIds
   placement: Partial<Record<DomainId, string>>; // domain -> valueId (top picks placed on compass)
-  commitments: Commitment[];
 };
 
 const DEFAULT_STATE: State = {
@@ -76,7 +73,6 @@ const DEFAULT_STATE: State = {
   importance: {},
   rank: [],
   placement: {},
-  commitments: [],
 };
 
 export default function BussolaValores({ room }: Props) {
