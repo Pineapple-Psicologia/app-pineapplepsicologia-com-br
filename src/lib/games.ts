@@ -1,4 +1,4 @@
-export type GameId = "whiteboard" | "termometro" | "detetive" | "detetive-tabuleiro" | "detetive-aventura" | "mapa-corporal" | "triangulo" | "entre-lentes";
+export type GameId = "whiteboard" | "termometro" | "detetive" | "detetive-tabuleiro" | "detetive-aventura" | "mapa-corporal" | "triangulo" | "entre-lentes" | "respiracao" | "ancoragem";
 
 export type GameMeta = {
   id: GameId;
@@ -89,6 +89,26 @@ export const GAMES: GameMeta[] = [
       "Jogo narrativo: a mesma cena escolar muda conforme a lente cognitiva equipada (vergonha, catástrofe, curiosa). Investigue pistas pra ganhar clareza.",
     ageRange: "9–16 anos",
     approach: "TCC · flexibilidade cognitiva",
+    available: true,
+  },
+  {
+    id: "respiracao",
+    title: "Respiração Quadrada",
+    emoji: "🌬️",
+    description:
+      "Box breathing animado e sincronizado. Quadrado pulsante guia inspirar, segurar, expirar e segurar. Regulação parassimpática ao vivo.",
+    ageRange: "6–17 anos",
+    approach: "Mindfulness · regulação somática",
+    available: true,
+  },
+  {
+    id: "ancoragem",
+    title: "5-4-3-2-1 Ancoragem",
+    emoji: "⚓",
+    description:
+      "Grounding guiado pelos 5 sentidos para crises de ansiedade ou dissociação. Mede intensidade antes e depois.",
+    ageRange: "7–17 anos",
+    approach: "Grounding · ansiedade aguda",
     available: true,
   },
   {
