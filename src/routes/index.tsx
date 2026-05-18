@@ -154,6 +154,19 @@ function Home() {
             <span className="inline-flex items-center gap-2"><Sparkles className="w-4 h-4 text-accent" /> Sem download</span>
           </div>
         </section>
+
+        <footer className="mt-16 pt-6 border-t border-border/60 text-center text-xs text-muted-foreground">
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link to="/termos" className="hover:text-foreground transition-colors">
+              Termos de Uso
+            </Link>
+            <span aria-hidden>·</span>
+            <Link to="/privacidade" className="hover:text-foreground transition-colors">
+              Política de Privacidade
+            </Link>
+          </div>
+          <p className="mt-3">© {new Date().getFullYear()} Lúdico Clínico</p>
+        </footer>
       </div>
     </main>
   );
