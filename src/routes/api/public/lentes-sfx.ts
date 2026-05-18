@@ -17,6 +17,23 @@ const DURATION_SECONDS = 14;
 
 const cache = new Map<LensId, ArrayBuffer>();
 
+// Basic per-IP rate limit (token-bucket style, in-memory).
+// Limit: 20 requests per minute per IP. Resets on process restart.
+const RATE_LIMIT = 20;
+const RATE_WINDOW_MS = 60_000;
+const rateBuckets = new Map<string, { count: number; resetAt: number }>();
+
+function rateLimited(ip: string): boolean {
+  const now = Date.now();
+  const b = rateBuckets.get(ip);
+  if (!b || b.resetAt < now) {
+    rateBuckets.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS });
+    return false;
+  }
+  b.count += 1;
+  return b.count > RATE_LIMIT;
+}
+
 async function generate(lens: LensId): Promise<ArrayBuffer> {
   const cached = cache.get(lens);
   if (cached) return cached;
@@ -39,6 +56,7 @@ async function generate(lens: LensId): Promise<ArrayBuffer> {
 
   if (!res.ok) {
     const err = await res.text();
+    // Log full error server-side only; never forward to caller.
     throw new Error(`ElevenLabs SFX failed [${res.status}]: ${err}`);
   }
 
@@ -56,6 +74,19 @@ export const Route = createFileRoute("/api/public/lentes-sfx")({
         if (!lens || !(lens in PROMPTS)) {
           return new Response("Invalid lens", { status: 400 });
         }
+
+        const ip =
+          request.headers.get("cf-connecting-ip") ||
+          request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+          "unknown";
+
+        if (rateLimited(ip)) {
+          return new Response("Too many requests", {
+            status: 429,
+            headers: { "Retry-After": "60" },
+          });
+        }
+
         try {
           const audio = await generate(lens);
           return new Response(audio, {
@@ -66,9 +97,9 @@ export const Route = createFileRoute("/api/public/lentes-sfx")({
             },
           });
         } catch (e) {
-          const msg = (e as Error).message;
-          console.error("[lentes-sfx] error:", msg);
-          return new Response(msg, { status: 500 });
+          // Log full error server-side; return generic message to caller.
+          console.error("[lentes-sfx] error:", (e as Error).message);
+          return new Response("Audio generation failed", { status: 500 });
         }
       },
     },
