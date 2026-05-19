@@ -276,34 +276,22 @@ export default function DetetiveBoard3D({ locations, currentIdx, completed, onSe
 
   return (
     <Canvas
-      shadows
-      dpr={[1, 2]}
+      dpr={[1, 1.5]}
       camera={{ position: [0, 9, 11], fov: 42 }}
       style={{ width: "100%", height: "100%" }}
-      gl={{ antialias: true, alpha: true }}
+      gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
     >
       {/* transparent background to let the Pixar diorama scene show through */}
       <fog attach="fog" args={["#fde6c2", 22, 42]} />
 
       <Suspense fallback={null}>
-        <Environment preset="sunset" />
-
-        {/* lights */}
-        <ambientLight intensity={0.55} />
-        <directionalLight
-          position={[6, 10, 6]}
-          intensity={1.4}
-          castShadow
-          shadow-mapSize-width={1024}
-          shadow-mapSize-height={1024}
-          shadow-camera-left={-12}
-          shadow-camera-right={12}
-          shadow-camera-top={12}
-          shadow-camera-bottom={-12}
-        />
-        <pointLight position={[-6, 5, -5]} intensity={15} color="#a78bfa" distance={18} decay={1.5} />
-        <pointLight position={[6, 5, 5]} intensity={15} color="#f472b6" distance={18} decay={1.5} />
+        {/* lights — sem sombras nem HDR para evitar context loss em mobile/tablet */}
+        <ambientLight intensity={0.85} />
+        <directionalLight position={[6, 10, 6]} intensity={1.2} />
+        <pointLight position={[-6, 5, -5]} intensity={10} color="#a78bfa" distance={18} decay={1.5} />
+        <pointLight position={[6, 5, 5]} intensity={10} color="#f472b6" distance={18} decay={1.5} />
         <MovingLight />
+
 
         {/* colorful Pixar-style floating board */}
         <group>
