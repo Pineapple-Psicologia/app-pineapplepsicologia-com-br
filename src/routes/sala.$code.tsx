@@ -53,7 +53,15 @@ function SalaPage() {
   const meta = getGame(game);
 
   const copyCode = async () => {
-    const url = `${window.location.origin}/sala/${code}?role=paciente&game=${game}`;
+    const origin = window.location.origin;
+    // No editor/preview do Lovable, força usar o site publicado (público).
+    const publicOrigin =
+      origin.includes("lovableproject.com") ||
+      origin.includes("id-preview--") ||
+      origin.includes("localhost")
+        ? "https://mundo-pine.lovable.app"
+        : origin;
+    const url = `${publicOrigin}/sala/${code}?role=paciente&game=${game}`;
     await navigator.clipboard.writeText(url);
     setCopied(true);
     toast.success("Link do paciente copiado", {
