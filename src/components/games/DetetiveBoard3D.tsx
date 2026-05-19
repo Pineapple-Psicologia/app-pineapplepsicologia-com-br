@@ -1,6 +1,6 @@
 import { Suspense, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, RoundedBox, Text, Float, Sparkles, Environment, ContactShadows } from "@react-three/drei";
+import { OrbitControls, RoundedBox, Text, Float, Sparkles } from "@react-three/drei";
 import * as THREE from "three";
 
 export type Board3DLocation = {
