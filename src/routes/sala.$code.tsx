@@ -17,7 +17,7 @@ import FolhasNoRio from "@/components/games/FolhasNoRio";
 import BussolaValores from "@/components/games/BussolaValores";
 import MinhaCasa from "@/components/games/MinhaCasa";
 
-import { Copy, Check, ArrowLeft, Wifi, WifiOff } from "lucide-react";
+import { Copy, Check, ArrowLeft, Wifi, WifiOff, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { getGame } from "@/lib/games";
 
