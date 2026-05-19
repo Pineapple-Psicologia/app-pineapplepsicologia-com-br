@@ -53,9 +53,12 @@ function SalaPage() {
   const meta = getGame(game);
 
   const copyCode = async () => {
-    await navigator.clipboard.writeText(code);
+    const url = `${window.location.origin}/sala/${code}?role=paciente&game=${game}`;
+    await navigator.clipboard.writeText(url);
     setCopied(true);
-    toast.success("Código copiado");
+    toast.success("Link do paciente copiado", {
+      description: "Cole no WhatsApp — abre direto no mesmo jogo.",
+    });
     setTimeout(() => setCopied(false), 1500);
   };
 
