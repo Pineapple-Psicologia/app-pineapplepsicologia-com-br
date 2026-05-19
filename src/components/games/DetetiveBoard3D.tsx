@@ -355,9 +355,8 @@ export default function DetetiveBoard3D({ locations, currentIdx, completed, onSe
 
         <Pawn x={px} z={pz} />
 
-        <Sparkles count={60} scale={[14, 4, 14]} size={3} speed={0.4} color="#fde68a" />
+        <Sparkles count={24} scale={[14, 4, 14]} size={3} speed={0.4} color="#fde68a" />
 
-        <ContactShadows position={[0, 0.36, 0]} opacity={0.45} scale={20} blur={2.4} far={6} />
 
         <OrbitControls
           enablePan={false}
