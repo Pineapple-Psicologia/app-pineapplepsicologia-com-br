@@ -52,7 +52,7 @@ function SalaPage() {
 
   const meta = getGame(game);
 
-  const copyCode = async () => {
+  const buildPatientUrl = () => {
     const origin = window.location.origin;
     // No editor/preview do Lovable, força usar o site publicado (público).
     const publicOrigin =
@@ -61,13 +61,24 @@ function SalaPage() {
       origin.includes("localhost")
         ? "https://mundo-pine.lovable.app"
         : origin;
-    const url = `${publicOrigin}/sala/${code}?role=paciente&game=${game}`;
+    return `${publicOrigin}/sala/${code}?role=paciente&game=${game}`;
+  };
+
+  const copyCode = async () => {
+    const url = buildPatientUrl();
     await navigator.clipboard.writeText(url);
     setCopied(true);
     toast.success("Link do paciente copiado", {
       description: "Cole no WhatsApp — abre direto no mesmo jogo.",
     });
     setTimeout(() => setCopied(false), 1500);
+  };
+
+  const shareWhatsApp = () => {
+    const url = buildPatientUrl();
+    const text = `Oi! Vamos fazer nossa sessão? Clica aqui para entrar no jogo: ${url}`;
+    const wa = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(wa, "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -88,11 +99,25 @@ function SalaPage() {
           </div>
         </div>
 
-        <div className={`flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full ${room.peers > 1 ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
-          {room.peers > 1 ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}
-          {room.peers > 1 ? "Conectados" : "Aguardando..."}
+        <div className="flex items-center gap-2">
+          {role === "psi" && (
+            <Button
+              size="sm"
+              onClick={shareWhatsApp}
+              className="bg-[#25D366] hover:bg-[#1ebe57] text-white font-semibold"
+            >
+              <Share2 className="w-4 h-4 mr-1.5" />
+              <span className="hidden sm:inline">Enviar no WhatsApp</span>
+              <span className="sm:hidden">WhatsApp</span>
+            </Button>
+          )}
+          <div className={`flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full ${room.peers > 1 ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
+            {room.peers > 1 ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}
+            {room.peers > 1 ? "Conectados" : "Aguardando..."}
+          </div>
         </div>
       </header>
+
 
       <div className="flex-1 flex min-h-0">
         <main className="flex-1 overflow-auto p-4">
