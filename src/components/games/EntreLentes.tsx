@@ -262,6 +262,7 @@ const CLUES: Clue[] = [
 
 // ---------- Estado sincronizado ----------
 type State = {
+  started: boolean;
   lens: LensId;
   intensity: Record<LensId, number>;
   clarity: number;
@@ -276,6 +277,7 @@ const emptyIntensity = (): Record<LensId, number> =>
   }, {} as Record<LensId, number>);
 
 const initialState: State = {
+  started: false,
   lens: "neutra",
   intensity: emptyIntensity(),
   clarity: 0,
