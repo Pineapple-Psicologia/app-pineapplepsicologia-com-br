@@ -36,7 +36,7 @@ function PrivacidadePage() {
 
           <section className="space-y-4 text-foreground/90 leading-relaxed">
             <p>
-              Esta Política descreve como o Lúdico Clínico ("Plataforma")
+              Esta Política descreve como o Mundo Pine ("Plataforma")
               coleta, utiliza e protege seus dados pessoais, em conformidade
               com a Lei Geral de Proteção de Dados — LGPD (Lei nº
               13.709/2018).
