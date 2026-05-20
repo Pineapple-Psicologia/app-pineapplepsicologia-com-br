@@ -459,10 +459,14 @@ export default function DetetiveAventura({ room }: Props) {
                 );
               })}
             </div>
-            <Button size="sm" disabled={state.distortions.length === 0} onClick={() => update({ scene: "arquivo", activeHint: null })} className="self-end">
-              Próxima cena → Arquivo
+            <Button size="sm" disabled={state.distortions.length === 0} onClick={() => update({ scene: "analise", activeHint: null })} className="self-end">
+              Próxima cena → Tribunal
             </Button>
           </div>
+        )}
+
+        {state.scene === "analise" && (
+          <AnalisePanel state={state} update={update} />
         )}
 
         {state.scene === "arquivo" && (
