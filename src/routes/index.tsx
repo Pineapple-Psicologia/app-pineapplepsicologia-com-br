@@ -29,9 +29,27 @@ function genCode() {
 
 function Home() {
   const navigate = useNavigate();
+  const { user, loading, signOut } = useAuth();
   const [code, setCode] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!user) { setIsAdmin(false); return; }
+    supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "admin")
+      .maybeSingle()
+      .then(({ data }) => setIsAdmin(!!data));
+  }, [user]);
 
   const openGame = (game: GameId) => {
+    if (!user) {
+      toast.error("Faça login para abrir um jogo.");
+      navigate({ to: "/auth" });
+      return;
+    }
     navigate({
       to: "/sala/$code",
       params: { code: genCode() },
