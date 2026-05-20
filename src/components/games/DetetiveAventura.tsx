@@ -718,7 +718,7 @@ async function downloadCasePdf(state: State) {
   const writeList = (label: string, items: string[], color: [number, number, number]) => {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
-    doc.setTextColor(...color);
+    doc.setTextColor(color[0], color[1], color[2]);
     ensureSpace(18);
     doc.text(label, margin, y);
     y += 16;
