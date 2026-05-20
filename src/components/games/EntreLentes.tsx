@@ -1,12 +1,22 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
-import { Eye, RotateCcw, Search, Sparkles, Volume2, VolumeX } from "lucide-react";
+import { Eye, RotateCcw, Search, Sparkles } from "lucide-react";
 import salaImg from "@/assets/lentes-sala.jpg";
 
 type Props = { room: ReturnType<typeof useRoom> };
 
-type LensId = "neutra" | "vergonha" | "catastrofe" | "curiosa";
+type LensId =
+  | "neutra"
+  | "curiosa"
+  | "catastrofe"
+  | "personalizacao"
+  | "leituraMental"
+  | "adivinhacao"
+  | "generalizacao"
+  | "tudoOuNada"
+  | "filtroMental"
+  | "rotulacao";
 
 type Lens = {
   id: LensId;
@@ -16,7 +26,7 @@ type Lens = {
   ring: string;
   emoji: string;
   description: string;
-  audio: string;
+  distortion?: string; // nome técnico da distorção cognitiva
 };
 
 const LENSES: Lens[] = [
@@ -28,27 +38,6 @@ const LENSES: Lens[] = [
     ring: "#c9caa7",
     emoji: "👁️",
     description: "Você vê a cena sem nenhuma interpretação automática. É raro ficarmos assim por muito tempo.",
-    audio: "Burburinho ambiente da sala, neutro.",
-  },
-  {
-    id: "vergonha",
-    label: "Lente da vergonha",
-    short: "‘Estão rindo de mim’",
-    color: "#b85c7a",
-    ring: "#7a3450",
-    emoji: "🫣",
-    description: "Pequenos sinais ficam enormes. A atenção dos outros parece sempre voltada pra você.",
-    audio: "Sons abafados, eco interno, batimento cardíaco subindo.",
-  },
-  {
-    id: "catastrofe",
-    label: "Lente da catástrofe",
-    short: "‘Vai dar tudo errado’",
-    color: "#7a3a2a",
-    ring: "#4a1f15",
-    emoji: "🌩️",
-    description: "Qualquer detalhe vira o começo de algo terrível. O futuro escurece.",
-    audio: "Trilha tensa, distorção grave, silêncio nas vozes.",
   },
   {
     id: "curiosa",
@@ -57,20 +46,109 @@ const LENSES: Lens[] = [
     color: "#7a8a3a",
     ring: "#4a5a2a",
     emoji: "🔍",
-    description: "A cena vira um quebra-cabeça aberto. Você procura contexto antes de concluir.",
-    audio: "Sons claros, conversas inteligíveis, leveza.",
+    description: "A cena vira um quebra-cabeça aberto. Você procura contexto antes de concluir. Não é uma distorção — é o caminho saudável.",
+  },
+  {
+    id: "catastrofe",
+    label: "Catastrofização",
+    short: "‘Vai dar tudo errado’",
+    color: "#7a3a2a",
+    ring: "#4a1f15",
+    emoji: "🌩️",
+    description: "Qualquer detalhe vira o começo de algo terrível. O futuro escurece e o pior cenário parece o único possível.",
+    distortion: "Catastrofização",
+  },
+  {
+    id: "personalizacao",
+    label: "Personalização",
+    short: "‘É por minha causa’",
+    color: "#b85c7a",
+    ring: "#7a3450",
+    emoji: "🫣",
+    description: "Você se sente responsável ou alvo de coisas que, na verdade, não têm a ver com você.",
+    distortion: "Personalização",
+  },
+  {
+    id: "leituraMental",
+    label: "Leitura mental",
+    short: "‘Sei o que pensam de mim’",
+    color: "#5a6cb8",
+    ring: "#2f3d7a",
+    emoji: "🧠",
+    description: "Você assume saber o que os outros estão pensando — geralmente algo ruim sobre você — sem nenhuma evidência.",
+    distortion: "Leitura mental",
+  },
+  {
+    id: "adivinhacao",
+    label: "Adivinhação do futuro",
+    short: "‘Já sei como vai terminar’",
+    color: "#7a5ab8",
+    ring: "#4a307a",
+    emoji: "🔮",
+    description: "Você prevê o pior antes mesmo de tentar, como se já soubesse o final da história.",
+    distortion: "Adivinhação",
+  },
+  {
+    id: "generalizacao",
+    label: "Generalização",
+    short: "‘Sempre acontece comigo’",
+    color: "#8a6a3a",
+    ring: "#5a4220",
+    emoji: "♾️",
+    description: "Um acontecimento vira regra: ‘sempre’, ‘nunca’, ‘ninguém’, ‘todo mundo’.",
+    distortion: "Generalização excessiva",
+  },
+  {
+    id: "tudoOuNada",
+    label: "Tudo ou nada",
+    short: "‘Ou perfeito, ou péssimo’",
+    color: "#3a3a3a",
+    ring: "#1a1a1a",
+    emoji: "⚖️",
+    description: "Pensamento em preto e branco: ou foi um sucesso total, ou foi um fracasso completo. Sem meio-termo.",
+    distortion: "Pensamento dicotômico",
+  },
+  {
+    id: "filtroMental",
+    label: "Filtro mental",
+    short: "‘Só vejo o que deu errado’",
+    color: "#3a5a6a",
+    ring: "#1f3a4a",
+    emoji: "🕶️",
+    description: "Você foca só nos detalhes negativos e ignora tudo o que está dando certo na cena.",
+    distortion: "Filtro mental",
+  },
+  {
+    id: "rotulacao",
+    label: "Rotulação",
+    short: "‘Sou um(a) fracassado(a)’",
+    color: "#a05a3a",
+    ring: "#6a3820",
+    emoji: "🏷️",
+    description: "Em vez de descrever um comportamento, você cola um rótulo permanente em si ou nos outros.",
+    distortion: "Rotulação",
   },
 ];
 
 const lensById = (id: LensId) => LENSES.find((l) => l.id === id)!;
 
+const DISTORTING_LENSES: LensId[] = [
+  "catastrofe",
+  "personalizacao",
+  "leituraMental",
+  "adivinhacao",
+  "generalizacao",
+  "tudoOuNada",
+  "filtroMental",
+  "rotulacao",
+];
+
 // ---------- Cena: sala de aula. 4 NPCs + protagonista entrando pela porta. ----------
 type NpcId = "ana" | "bruno" | "clara" | "diego";
 
 type NpcView = {
-  expression: string; // emoji shown above head
+  expression: string;
   thoughtPerLens: Record<LensId, string>;
-  // What they are *actually* doing (revealed by investigating clues)
   truth: string;
 };
 
@@ -84,9 +162,15 @@ const NPCS: Record<NpcId, { name: string; x: number; y: number; color: string; v
       expression: "😂",
       thoughtPerLens: {
         neutra: "Ana está rindo olhando pro celular.",
-        vergonha: "Ana riu assim que você entrou. Deve ser de você.",
-        catastrofe: "Se ela está rindo, com certeza fez piada com você. Amanhã a turma toda vai saber.",
         curiosa: "Ana segura o celular. Será que viu algo engraçado?",
+        catastrofe: "Se ela está rindo, fez piada com você. Amanhã a turma toda vai saber.",
+        personalizacao: "Ana riu assim que você entrou. É de você.",
+        leituraMental: "Dá pra ver no rosto da Ana: ela está pensando ‘que ridículo’.",
+        adivinhacao: "Já sei: ela vai contar pra todo mundo no recreio.",
+        generalizacao: "Sempre que entro num lugar a Ana ri assim. Sempre.",
+        tudoOuNada: "Ou ela é minha amiga, ou ela me odeia. E claramente me odeia.",
+        filtroMental: "Nem vi se ela acenou. Só vi o sorriso debochado.",
+        rotulacao: "Ana é uma pessoa cruel. Ponto.",
       },
       truth: "Está vendo um vídeo de gato no celular há 10 minutos.",
     },
@@ -100,9 +184,15 @@ const NPCS: Record<NpcId, { name: string; x: number; y: number; color: string; v
       expression: "😄",
       thoughtPerLens: {
         neutra: "Bruno ri junto da Ana, olhando a mesma tela.",
-        vergonha: "Bruno olhou pra você e depois riu. Foi de você.",
-        catastrofe: "Os dois estão combinando alguma humilhação.",
         curiosa: "Bruno também está olhando o celular da Ana. Riram da mesma coisa.",
+        catastrofe: "Os dois estão combinando alguma humilhação pública.",
+        personalizacao: "Bruno olhou pra você e depois riu. Foi de você.",
+        leituraMental: "Bruno está pensando ‘olha esse aí entrando’.",
+        adivinhacao: "Ele vai te zoar na frente da turma hoje.",
+        generalizacao: "Bruno nunca te trata bem. Nunca.",
+        tudoOuNada: "Se ele ri com a Ana e não comigo, ele está contra mim.",
+        filtroMental: "Ignora que ele te cumprimentou ontem. Hoje ele riu.",
+        rotulacao: "Bruno é um falso.",
       },
       truth: "Está vendo o mesmo vídeo da Ana, debruçado na carteira dela.",
     },
@@ -116,9 +206,15 @@ const NPCS: Record<NpcId, { name: string; x: number; y: number; color: string; v
       expression: "🙂",
       thoughtPerLens: {
         neutra: "Clara está organizando o caderno.",
-        vergonha: "Clara fingiu não ver você entrar. Te ignorou.",
-        catastrofe: "Ela vai contar pra todo mundo que você chegou esquisito.",
         curiosa: "Clara parece concentrada. Talvez nem tenha notado a porta abrir.",
+        catastrofe: "Ela vai contar pra todo mundo que você chegou esquisito.",
+        personalizacao: "Clara fingiu não ver você entrar. Te ignorou de propósito.",
+        leituraMental: "Clara está pensando ‘nem vou cumprimentar, não vale a pena’.",
+        adivinhacao: "Ela vai parar de falar com você essa semana.",
+        generalizacao: "Todo mundo me ignora quando entro na sala.",
+        tudoOuNada: "Ou ela me cumprimenta, ou nossa amizade acabou.",
+        filtroMental: "Esquece que ela te chamou ontem. Hoje não olhou.",
+        rotulacao: "Clara é uma pessoa fria.",
       },
       truth: "Está copiando a matéria que perdeu ontem, totalmente focada.",
     },
@@ -132,9 +228,15 @@ const NPCS: Record<NpcId, { name: string; x: number; y: number; color: string; v
       expression: "😐",
       thoughtPerLens: {
         neutra: "Marina olhou pra porta quando você entrou.",
-        vergonha: "Marina encarou você. Reparou em tudo.",
-        catastrofe: "Aquele olhar foi de quem viu alguma coisa muito errada em você.",
         curiosa: "Marina olhou pra porta como qualquer pessoa olha quando ouve barulho.",
+        catastrofe: "Aquele olhar foi de quem viu algo muito errado em você.",
+        personalizacao: "Marina encarou você. Reparou em tudo.",
+        leituraMental: "Marina está pensando ‘credo, olha como ele entrou’.",
+        adivinhacao: "Ela vai comentar com a turma toda no intervalo.",
+        generalizacao: "Todo mundo sempre repara em mim quando entro.",
+        tudoOuNada: "Ou ela sorri, ou ela está me julgando. Não sorriu.",
+        filtroMental: "Nem vi se ela voltou pro caderno. Só registrei o olhar.",
+        rotulacao: "Marina é mala.",
       },
       truth: "Estava esperando a professora, achou que você fosse ela.",
     },
@@ -148,14 +250,7 @@ const CLUE_POSITIONS = {
   relogio: { x: 57, y: 18 },
 } as const;
 
-// ---------- Pistas investigáveis: cada uma revela contexto e adiciona "clareza". ----------
-type Clue = {
-  id: string;
-  label: string;
-  x: number; // % within scene
-  y: number;
-  reveals: string;
-};
+type Clue = { id: string; label: string; x: number; y: number; reveals: string };
 
 const CLUES: Clue[] = [
   { id: "celular", label: "Celular da Ana", x: CLUE_POSITIONS.celular.x, y: CLUE_POSITIONS.celular.y, reveals: "É um vídeo de gato caindo da estante. Ana mostrou pro Bruno antes de você entrar." },
@@ -167,15 +262,21 @@ const CLUES: Clue[] = [
 // ---------- Estado sincronizado ----------
 type State = {
   lens: LensId;
-  intensity: Record<LensId, number>; // 0..3
-  clarity: number; // 0..CLUES.length
+  intensity: Record<LensId, number>;
+  clarity: number;
   revealedClues: string[];
   log: { lens: LensId; at: number }[];
 };
 
+const emptyIntensity = (): Record<LensId, number> =>
+  LENSES.reduce((acc, l) => {
+    acc[l.id] = 0;
+    return acc;
+  }, {} as Record<LensId, number>);
+
 const initialState: State = {
   lens: "neutra",
-  intensity: { neutra: 0, vergonha: 0, catastrofe: 0, curiosa: 0 },
+  intensity: emptyIntensity(),
   clarity: 0,
   revealedClues: [],
   log: [],
@@ -183,75 +284,12 @@ const initialState: State = {
 
 export default function EntreLentes({ room }: Props) {
   const [state, setState] = useState<State>(initialState);
-  const [muted, setMuted] = useState(false);
-  const [audioReady, setAudioReady] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const blobCache = useRef<Map<LensId, string>>(new Map());
 
   useEffect(() => {
     return room.on((m) => {
       if (m.type === "lentes:state") setState(m.payload);
     });
   }, [room]);
-
-  // Load + play SFX whenever the lens changes
-  useEffect(() => {
-    let cancelled = false;
-    const lensId = state.lens;
-    (async () => {
-      try {
-        let url = blobCache.current.get(lensId);
-        if (!url) {
-          const res = await fetch(`/api/public/lentes-sfx?lens=${lensId}`);
-          if (!res.ok) return;
-          const blob = await res.blob();
-          url = URL.createObjectURL(blob);
-          blobCache.current.set(lensId, url);
-        }
-        if (cancelled) return;
-        if (!audioRef.current) {
-          audioRef.current = new Audio();
-          audioRef.current.loop = true;
-          audioRef.current.volume = 0.55;
-        }
-        const a = audioRef.current;
-        if (a.src !== url) {
-          a.src = url;
-        }
-        a.muted = muted;
-        try {
-          await a.play();
-          setAudioReady(true);
-        } catch {
-          // Browser blocked autoplay — wait for user gesture
-          setAudioReady(false);
-        }
-      } catch {
-        /* silent */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [state.lens, muted]);
-
-  useEffect(() => {
-    return () => {
-      audioRef.current?.pause();
-      blobCache.current.forEach((u) => URL.revokeObjectURL(u));
-      blobCache.current.clear();
-    };
-  }, []);
-
-  const tryStartAudio = async () => {
-    if (!audioRef.current) return;
-    try {
-      await audioRef.current.play();
-      setAudioReady(true);
-    } catch {
-      /* still blocked */
-    }
-  };
 
   const update = (patch: Partial<State> | ((s: State) => State)) => {
     setState((prev) => {
@@ -264,13 +302,10 @@ export default function EntreLentes({ room }: Props) {
   const equipLens = (id: LensId) => {
     update((s) => {
       const bumped = id === "neutra" ? s.intensity[id] : Math.min(3, s.intensity[id] + 1);
-      // Curious lens slightly "cleans" itself by adding clarity gently
-      const bonusClarity = id === "curiosa" ? Math.min(CLUES.length, s.clarity + (s.clarity < CLUES.length ? 0 : 0)) : s.clarity;
       return {
         ...s,
         lens: id,
         intensity: { ...s.intensity, [id]: bumped },
-        clarity: bonusClarity,
         log: [...s.log.slice(-5), { lens: id, at: Date.now() }],
       };
     });
@@ -280,10 +315,8 @@ export default function EntreLentes({ room }: Props) {
     update((s) => {
       if (s.revealedClues.includes(clueId)) return s;
       const revealed = [...s.revealedClues, clueId];
-      // Each clue reduces intensity of the currently equipped *distorting* lens
-      const decayable: LensId[] = ["vergonha", "catastrofe"];
       const intensity = { ...s.intensity };
-      for (const k of decayable) intensity[k] = Math.max(0, intensity[k] - 1);
+      for (const k of DISTORTING_LENSES) intensity[k] = Math.max(0, intensity[k] - 1);
       return {
         ...s,
         revealedClues: revealed,
@@ -297,44 +330,50 @@ export default function EntreLentes({ room }: Props) {
 
   const lens = lensById(state.lens);
   const intensity = state.intensity[state.lens];
+  const isDistorting = DISTORTING_LENSES.includes(state.lens);
 
-  // Visual envelope: filter, vignette and shake derived from lens + intensity
+  // Visual envelope per lens
   const sceneStyle = useMemo<React.CSSProperties>(() => {
     const t = intensity / 3;
     const clarityT = state.clarity / CLUES.length;
-    const dampen = 1 - clarityT * 0.55; // clarity softens distortion
-    if (state.lens === "neutra") {
-      return { filter: "saturate(1) contrast(1)" };
+    const dampen = 1 - clarityT * 0.55;
+    if (state.lens === "neutra") return { filter: "saturate(1) contrast(1)" };
+    if (state.lens === "curiosa") return { filter: `saturate(${1 + t * 0.15}) brightness(${1 + t * 0.05})` };
+
+    // Distorting lenses — each with its own visual signature
+    switch (state.lens) {
+      case "personalizacao": {
+        const desat = 1 - t * 0.5 * dampen;
+        return { filter: `saturate(${desat}) blur(${t * 1.2 * dampen}px) brightness(${1 - t * 0.15 * dampen})` };
+      }
+      case "catastrofe":
+        return { filter: `contrast(${1 + t * 0.45 * dampen}) saturate(${1 - t * 0.25 * dampen}) hue-rotate(${-t * 12 * dampen}deg) brightness(${1 - t * 0.22 * dampen})` };
+      case "leituraMental":
+        return { filter: `saturate(${1 - t * 0.2 * dampen}) hue-rotate(${t * 15 * dampen}deg) blur(${t * 0.6 * dampen}px)` };
+      case "adivinhacao":
+        return { filter: `sepia(${t * 0.4 * dampen}) hue-rotate(${-t * 25 * dampen}deg) brightness(${1 - t * 0.12 * dampen})` };
+      case "generalizacao":
+        return { filter: `saturate(${1 - t * 0.45 * dampen}) brightness(${1 - t * 0.1 * dampen}) blur(${t * 0.4 * dampen}px)` };
+      case "tudoOuNada":
+        return { filter: `grayscale(${t * 0.85 * dampen}) contrast(${1 + t * 0.6 * dampen})` };
+      case "filtroMental":
+        return { filter: `brightness(${1 - t * 0.35 * dampen}) saturate(${1 - t * 0.4 * dampen})` };
+      case "rotulacao":
+        return { filter: `sepia(${t * 0.55 * dampen}) saturate(${1 - t * 0.2 * dampen}) contrast(${1 + t * 0.2 * dampen})` };
     }
-    if (state.lens === "curiosa") {
-      return { filter: `saturate(${1 + t * 0.15}) brightness(${1 + t * 0.05})` };
-    }
-    if (state.lens === "vergonha") {
-      const desat = 1 - t * 0.55 * dampen;
-      const blur = t * 1.4 * dampen;
-      return {
-        filter: `saturate(${desat}) blur(${blur}px) brightness(${1 - t * 0.18 * dampen})`,
-      };
-    }
-    // catastrofe
-    const contrast = 1 + t * 0.45 * dampen;
-    return {
-      filter: `contrast(${contrast}) saturate(${1 - t * 0.25 * dampen}) hue-rotate(${-t * 12 * dampen}deg) brightness(${1 - t * 0.22 * dampen})`,
-    };
+    return {};
   }, [state.lens, intensity, state.clarity]);
 
-  const vignetteAlpha = state.lens === "neutra" || state.lens === "curiosa"
+  const vignetteAlpha = !isDistorting
     ? 0
     : Math.min(0.78, (intensity / 3) * 0.8 * (1 - (state.clarity / CLUES.length) * 0.6));
 
-  const tintColor = state.lens === "vergonha"
-    ? "rgba(184,92,122,VAR)"
-    : state.lens === "catastrofe"
-      ? "rgba(40,15,10,VAR)"
-      : "rgba(0,0,0,VAR)";
+  const tintColor = !isDistorting
+    ? "rgba(0,0,0,VAR)"
+    : `rgba(${hexToRgb(lens.ring)},VAR)`;
 
   return (
-    <div className="h-full w-full grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 text-stone-800">
+    <div className="h-full w-full grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4 text-stone-800">
       {/* ---------------- SCENE ---------------- */}
       <div className="relative rounded-2xl overflow-hidden border-4 border-[#4a5a2a]/30 shadow-[0_20px_50px_-15px_rgba(40,50,20,0.45)] bg-[#e9ead4]">
         <div className="absolute inset-0 transition-[filter] duration-700" style={sceneStyle}>
@@ -372,9 +411,8 @@ export default function EntreLentes({ room }: Props) {
           );
         })}
 
-        {/* NPC thoughts overlay — staggered to avoid overlap */}
+        {/* NPC thoughts overlay */}
         {(() => {
-          // per-NPC bubble placement: vertical lift + horizontal shift so balões não se sobrepõem
           const layout: Record<NpcId, { dx: number; dy: number; align: "center" | "left" | "right" }> = {
             ana:   { dx: -6, dy: -62,  align: "center" },
             bruno: { dx: 0,  dy: -70,  align: "center" },
@@ -384,7 +422,7 @@ export default function EntreLentes({ room }: Props) {
           return (Object.keys(NPCS) as NpcId[]).map((id) => {
             const npc = NPCS[id];
             const cfg = layout[id];
-            const text = state.revealedClues.length >= 2 && state.lens !== "vergonha" && state.lens !== "catastrofe"
+            const text = state.revealedClues.length >= 2 && !isDistorting
               ? npc.view.truth
               : npc.view.thoughtPerLens[state.lens];
             const translateX = cfg.align === "center" ? "-50%" : cfg.align === "left" ? "0%" : "-100%";
@@ -416,19 +454,6 @@ export default function EntreLentes({ room }: Props) {
           </div>
         </div>
 
-        {/* Audio controls */}
-        <button
-          onClick={() => {
-            if (!audioReady) tryStartAudio();
-            else setMuted((m) => !m);
-          }}
-          className="absolute top-3 right-3 flex items-center gap-2 rounded-full bg-black/60 hover:bg-black/75 text-white text-[11px] px-3 py-1.5 backdrop-blur transition"
-          title={!audioReady ? "Ativar som" : muted ? "Som mudo" : "Som ligado"}
-        >
-          {muted || !audioReady ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
-          {!audioReady ? "Ativar som" : muted ? "Mudo" : "Som ao vivo"}
-        </button>
-
         {/* Lens chip */}
         <div className="absolute top-3 left-3 flex items-center gap-2 rounded-full px-3 py-1.5 text-white text-xs font-bold backdrop-blur"
              style={{ background: lens.ring }}>
@@ -442,10 +467,10 @@ export default function EntreLentes({ room }: Props) {
         <header className="rounded-2xl bg-[#4a5a2a] text-[#f4f4d8] p-4 shadow">
           <div className="text-[10px] uppercase tracking-widest opacity-80">Cena</div>
           <h2 className="font-bold text-lg leading-tight">Sala de aula · você acabou de entrar</h2>
-          <p className="text-xs opacity-90 mt-1">Algumas pessoas riem. O mesmo momento muda dependendo da lente que você equipa.</p>
+          <p className="text-xs opacity-90 mt-1">Algumas pessoas riem. O mesmo momento muda dependendo da lente — da distorção cognitiva — que você equipa.</p>
         </header>
 
-        <section className="rounded-2xl bg-white border border-[#4a5a2a]/20 p-3 shadow-sm">
+        <section className="rounded-2xl bg-white border border-[#4a5a2a]/20 p-3 shadow-sm overflow-y-auto">
           <div className="flex items-center gap-2 mb-2 text-[#4a5a2a]">
             <Eye className="w-4 h-4" />
             <h3 className="font-bold text-sm">Suas lentes</h3>
@@ -480,6 +505,7 @@ export default function EntreLentes({ room }: Props) {
             })}
           </div>
           <p className="text-[11px] text-stone-600 mt-2 leading-snug">
+            {lens.distortion && <span className="font-semibold text-[#4a5a2a]">Distorção: {lens.distortion}. </span>}
             {lens.description}
           </p>
         </section>
@@ -499,17 +525,6 @@ export default function EntreLentes({ room }: Props) {
           <p className="text-[11px] text-stone-600 mt-2 leading-snug">
             Investigue as pistas na cena (botões pulsantes). Cada nova informação reduz a força das lentes que distorcem.
           </p>
-          <ul className="mt-2 space-y-1 text-[11px]">
-            {CLUES.map((c) => {
-              const found = state.revealedClues.includes(c.id);
-              return (
-                <li key={c.id} className={`rounded-md px-2 py-1 ${found ? "bg-[#eef0d4] text-stone-700" : "text-stone-400"}`}>
-                  <span className="font-semibold">{found ? "✓" : "○"} {c.label}</span>
-                  {found && <span className="block text-stone-600 italic">{c.reveals}</span>}
-                </li>
-              );
-            })}
-          </ul>
         </section>
 
         <div className="mt-auto flex gap-2">
@@ -522,21 +537,51 @@ export default function EntreLentes({ room }: Props) {
   );
 }
 
+function hexToRgb(hex: string): string {
+  const h = hex.replace("#", "");
+  const r = parseInt(h.substring(0, 2), 16);
+  const g = parseInt(h.substring(2, 4), 16);
+  const b = parseInt(h.substring(4, 6), 16);
+  return `${r},${g},${b}`;
+}
+
 function protagonistThought(lens: LensId, intensity: number, clarity: number): string {
   if (lens === "neutra") return "Entrei na sala. Algumas pessoas riram em algum momento.";
   if (lens === "curiosa") {
     if (clarity >= 2) return "Faz sentido. Cada um tava no seu mundo. A risada não era sobre mim.";
     return "Hum, será que riram de algo no celular? Vou olhar antes de concluir.";
   }
-  if (lens === "vergonha") {
-    if (clarity >= 3) return "Ainda incomoda um pouco… mas dá pra ver que não era de mim.";
-    if (intensity >= 3) return "Todo mundo notou. Eu não devia ter entrado assim.";
-    if (intensity === 2) return "Acho que estão olhando pra mim. Que vergonha.";
+  if (lens === "personalizacao") {
+    if (clarity >= 3) return "Ainda incomoda… mas dá pra ver que não era de mim.";
+    if (intensity >= 3) return "Tudo o que acontece aqui é por minha causa.";
     return "Será que riram de mim?";
   }
-  // catastrofe
-  if (clarity >= 3) return "Ok, talvez não fosse o fim do mundo. Respira.";
-  if (intensity >= 3) return "Amanhã a escola toda vai saber. Acabou.";
-  if (intensity === 2) return "Isso vai virar uma fofoca enorme.";
-  return "E se isso ficar pra sempre?";
+  if (lens === "catastrofe") {
+    if (clarity >= 3) return "Ok, talvez não fosse o fim do mundo. Respira.";
+    if (intensity >= 3) return "Amanhã a escola toda vai saber. Acabou.";
+    return "E se isso ficar pra sempre?";
+  }
+  if (lens === "leituraMental") {
+    if (clarity >= 3) return "Espera — eu não sei mesmo o que eles pensam.";
+    return "Eu sei exatamente o que cada um tá pensando de mim.";
+  }
+  if (lens === "adivinhacao") {
+    if (clarity >= 3) return "Talvez eu esteja prevendo um futuro que não existe ainda.";
+    return "Já sei como esse dia vai terminar: mal.";
+  }
+  if (lens === "generalizacao") {
+    if (clarity >= 3) return "Não é ‘sempre’. É hoje, é agora, e tem contexto.";
+    return "Sempre acontece comigo. Toda. Santa. Vez.";
+  }
+  if (lens === "tudoOuNada") {
+    if (clarity >= 3) return "Existe um meio-termo. Nem tudo é fracasso.";
+    return "Ou eu entro bem, ou eu fracassei totalmente.";
+  }
+  if (lens === "filtroMental") {
+    if (clarity >= 3) return "Tinha coisas neutras e boas também — eu só não vi.";
+    return "Só vejo o que deu errado nessa entrada.";
+  }
+  // rotulacao
+  if (clarity >= 3) return "Um momento desconfortável não me define.";
+  return "Sou um desastre. Sempre fui.";
 }
