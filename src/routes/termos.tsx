@@ -37,14 +37,14 @@ function TermosPage() {
           <section className="space-y-4 text-foreground/90 leading-relaxed">
             <h2 className="text-xl font-bold mt-6">1. Aceitação</h2>
             <p>
-              Ao acessar ou utilizar o Lúdico Clínico ("Plataforma"), você
+              Ao acessar ou utilizar o Mundo Pine ("Plataforma"), você
               declara ter lido, compreendido e concordado com estes Termos de
               Uso. Caso não concorde, por favor não utilize a Plataforma.
             </p>
 
             <h2 className="text-xl font-bold mt-6">2. Sobre a Plataforma</h2>
             <p>
-              O Lúdico Clínico é uma ferramenta de apoio para psicólogas e
+              O Mundo Pine é uma ferramenta de apoio para psicólogas e
               psicólogos que atendem crianças e adolescentes online,
               oferecendo jogos e recursos terapêuticos colaborativos. A
               Plataforma <strong>não substitui</strong> o julgamento clínico
