@@ -178,7 +178,7 @@ function PrivacidadePage() {
               11. Contato
             </h2>
             <p>
-              E-mail do responsável: <em>contato@ludicoclinico.com.br</em>{" "}
+              E-mail do responsável: <em>contato@mundo-pine.com.br</em>{" "}
               (substitua pelo seu e-mail oficial antes de publicar).
             </p>
           </section>
