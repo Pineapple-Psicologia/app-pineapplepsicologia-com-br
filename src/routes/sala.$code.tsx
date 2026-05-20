@@ -54,13 +54,16 @@ function SalaPage() {
 
   const buildPatientUrl = () => {
     const origin = window.location.origin;
-    // No editor/preview do Lovable, força usar o site publicado (público).
-    const publicOrigin =
+    // No editor/preview do Lovable, força usar o site publicado (público),
+    // para que o paciente não caia numa tela de login do Lovable.
+    const isInternal =
       origin.includes("lovableproject.com") ||
       origin.includes("id-preview--") ||
-      origin.includes("localhost")
-        ? "https://mundo-pine.lovable.app"
-        : origin;
+      origin.includes("lovable.dev") ||
+      origin.includes("localhost");
+    const publicOrigin = isInternal
+      ? "https://app-pineapplepsicologia-com-br.lovable.app"
+      : origin;
     return `${publicOrigin}/sala/${code}?role=paciente&game=${game}`;
   };
 
