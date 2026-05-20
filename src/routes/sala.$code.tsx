@@ -74,12 +74,6 @@ function SalaPage() {
     setTimeout(() => setCopied(false), 1500);
   };
 
-  const shareWhatsApp = () => {
-    const url = buildPatientUrl();
-    const text = `Oi! Vamos fazer nossa sessão? Clica aqui para entrar no jogo: ${url}`;
-    const wa = `https://wa.me/?text=${encodeURIComponent(text)}`;
-    window.open(wa, "_blank", "noopener,noreferrer");
-  };
 
   return (
     <div className="h-screen flex flex-col">
