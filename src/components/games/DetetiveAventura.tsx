@@ -681,3 +681,110 @@ function AnalisePanel({ state, update }: { state: State; update: (p: Partial<Sta
     </div>
   );
 }
+
+async function downloadCasePdf(state: State) {
+  const { jsPDF } = await import("jspdf");
+  const doc = new jsPDF({ unit: "pt", format: "a4" });
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const margin = 48;
+  const maxW = pageW - margin * 2;
+  let y = margin;
+
+  const ensureSpace = (h: number) => {
+    if (y + h > pageH - margin) {
+      doc.addPage();
+      y = margin;
+    }
+  };
+
+  const writeBlock = (label: string, text: string, opts?: { italic?: boolean; color?: [number, number, number] }) => {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(120, 120, 120);
+    ensureSpace(16);
+    doc.text(label.toUpperCase(), margin, y);
+    y += 14;
+    doc.setFont("helvetica", opts?.italic ? "italic" : "normal");
+    doc.setFontSize(12);
+    const [r, g, b] = opts?.color ?? [30, 30, 30];
+    doc.setTextColor(r, g, b);
+    const lines = doc.splitTextToSize(text || "—", maxW);
+    ensureSpace(lines.length * 16 + 8);
+    doc.text(lines, margin, y);
+    y += lines.length * 16 + 12;
+  };
+
+  const writeList = (label: string, items: string[], color: [number, number, number]) => {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(...color);
+    ensureSpace(18);
+    doc.text(label, margin, y);
+    y += 16;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.setTextColor(40, 40, 40);
+    if (items.length === 0) {
+      ensureSpace(16);
+      doc.setTextColor(150, 150, 150);
+      doc.text("— (nenhuma)", margin + 12, y);
+      y += 18;
+      return;
+    }
+    items.forEach((it) => {
+      const lines = doc.splitTextToSize(`• ${it}`, maxW - 12);
+      ensureSpace(lines.length * 14 + 4);
+      doc.text(lines, margin + 12, y);
+      y += lines.length * 14 + 4;
+    });
+    y += 6;
+  };
+
+  // Title
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(22);
+  doc.setTextColor(30, 30, 30);
+  doc.text("🕵️  Meu Caso de Detetive", margin, y);
+  y += 28;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.setTextColor(120, 120, 120);
+  const today = new Date().toLocaleDateString("pt-BR");
+  doc.text(`Resolvido em ${today}`, margin, y);
+  y += 24;
+
+  // Divider
+  doc.setDrawColor(220, 220, 220);
+  doc.line(margin, y, pageW - margin, y);
+  y += 20;
+
+  writeBlock("Cena do crime (situação)", state.situation);
+  writeBlock("Pensamento suspeito", `"${state.thought}"`, { italic: true, color: [180, 60, 60] });
+
+  // Distorções
+  const distLabels = state.distortions
+    .map((id) => DISTORTIONS.find((d) => d.id === id))
+    .filter(Boolean)
+    .map((d) => `${d!.label}`);
+  writeBlock("Distorções identificadas", distLabels.join(", ") || "—");
+
+  // Evidências
+  writeList("✅ Evidências A FAVOR", state.evidencePro, [40, 130, 80]);
+  writeList("❌ Evidências CONTRA", state.evidenceCon, [180, 60, 60]);
+
+  writeBlock("Pensamento reescrito", `"${state.reframe}"`, { italic: true, color: [40, 100, 160] });
+
+  // Footer
+  ensureSpace(40);
+  y = Math.max(y, pageH - margin - 30);
+  doc.setDrawColor(220, 220, 220);
+  doc.line(margin, y, pageW - margin, y);
+  y += 14;
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(9);
+  doc.setTextColor(140, 140, 140);
+  doc.text("Mundo Pine · Detetive Aventura", margin, y);
+
+  doc.save(`meu-caso-detetive-${today.replace(/\//g, "-")}.pdf`);
+}
