@@ -81,8 +81,9 @@ const SCENES: { id: SceneId; title: string; emoji: string; bg: string; subtitle:
   { id: "crime", title: "Cena do Crime", emoji: "🔦", bg: cenaCrime, subtitle: "Etapa 1 · Os fatos" },
   { id: "interrogatorio", title: "Sala de Interrogatório", emoji: "💡", bg: cenaInterrogatorio, subtitle: "Etapa 2 · O pensamento suspeito" },
   { id: "laboratorio", title: "Laboratório", emoji: "🧪", bg: cenaLaboratorio, subtitle: "Etapa 3 · Distorções encontradas" },
-  { id: "arquivo", title: "Arquivo", emoji: "📜", bg: cenaArquivo, subtitle: "Etapa 4 · Reescrever o caso" },
-  { id: "veredito", title: "Veredito", emoji: "⚖️", bg: cenaVeredito, subtitle: "Etapa 5 · Caso resolvido" },
+  { id: "analise", title: "Tribunal de Evidências", emoji: "⚖️", bg: cenaTribunal, subtitle: "Etapa 4 · A favor x Contra" },
+  { id: "arquivo", title: "Arquivo", emoji: "📜", bg: cenaArquivo, subtitle: "Etapa 5 · Reescrever o caso" },
+  { id: "veredito", title: "Veredito", emoji: "⚖️", bg: cenaVeredito, subtitle: "Etapa 6 · Caso resolvido" },
 ];
 
 type State = {
