@@ -452,27 +452,50 @@ export default function DetetiveTabuleiro({ room }: Props) {
         </div>
       )}
 
-      {/* 3D Board */}
-      <div className="relative flex-1 min-h-[420px] rounded-3xl border-[6px] border-amber-900/50 overflow-hidden shadow-[0_30px_60px_-20px_rgba(0,0,0,0.45)]">
-        <img src={sceneBg} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none" />
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: "radial-gradient(ellipse at 50% 75%, rgba(254,243,199,0.55) 0%, rgba(254,215,170,0.25) 35%, rgba(0,0,0,0.35) 100%)",
-          }}
-        />
-        <div className="absolute inset-0">
-          <DetetiveBoard3D
-            locations={LOCATIONS.map((l) => ({ id: l.id, name: l.name, emoji: l.emoji, color: l.color, x: l.x, y: l.y }))}
-            currentIdx={state.currentIdx}
-            completed={state.completed}
-            onSelect={(id) => isPsi && openLocation(id as LocationId)}
-          />
+      {/* Lista de casas (sem tabuleiro 3D/2D) */}
+      <div className="relative flex-1 rounded-2xl border-2 border-amber-900/30 bg-white/85 backdrop-blur p-3 md:p-4 overflow-auto">
+        <div className="text-[10px] uppercase font-black tracking-wider text-amber-700 mb-2">
+          Roteiro do caso · clique para abrir
         </div>
-        <div className="absolute top-2 left-3 text-[10px] font-black tracking-wider bg-white/85 text-amber-900 px-2 py-0.5 rounded-full shadow border border-amber-900/30 pointer-events-none">
-          🎲 Arraste para girar · scroll para zoom
-        </div>
+        <ul className="flex flex-col gap-2">
+          {LOCATIONS.map((l, idx) => {
+            const done = state.completed.includes(l.id);
+            const current = idx === state.currentIdx;
+            const disabled = !isPsi;
+            return (
+              <li key={l.id}>
+                <button
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => isPsi && openLocation(l.id)}
+                  className={`w-full flex items-center gap-3 rounded-xl border-2 px-3 py-2 text-left transition shadow-sm ${
+                    current
+                      ? "border-amber-600 bg-amber-50 ring-2 ring-amber-400"
+                      : done
+                      ? "border-emerald-400 bg-emerald-50"
+                      : "border-amber-900/20 bg-white hover:bg-amber-50"
+                  } ${disabled ? "cursor-default" : "cursor-pointer"}`}
+                >
+                  <div className={`text-2xl w-10 h-10 rounded-lg flex items-center justify-center border-2 border-white shadow ${l.tw}`}>
+                    {l.emoji}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[10px] uppercase font-black tracking-wider text-amber-700">
+                      Casa {idx + 1}/{LOCATIONS.length} · {l.points} pts
+                    </div>
+                    <div className="font-bold text-sm text-amber-900 truncate">{l.name}</div>
+                    <div className="text-xs text-amber-900/70 truncate">{l.hint}</div>
+                  </div>
+                  <div className="text-xs font-black">
+                    {done ? "✓" : current ? "▶" : ""}
+                  </div>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
       </div>
+
 
       {/* Game master / status bar */}
       {state.caseClosed ? (
