@@ -266,6 +266,15 @@ export default function DetetiveAventura({ room }: Props) {
           <Button
             size="sm"
             variant="outline"
+            onClick={() => downloadCasePdf(state)}
+            disabled={!state.thought.trim() && !state.situation.trim()}
+            title="Baixar resumo do caso em PDF"
+          >
+            <Download className="w-4 h-4 mr-1" /> Baixar PDF
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
             onClick={() => update({ visual: isNoir ? "cartoon" : "noir" })}
             title={isNoir ? "Modo cartoon (cores)" : "Modo noir (preto e branco)"}
           >
