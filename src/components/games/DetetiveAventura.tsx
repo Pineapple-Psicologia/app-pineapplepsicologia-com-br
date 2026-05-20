@@ -2,16 +2,17 @@ import { useEffect, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
-import { Search, RotateCcw, Check, MapPin, Sparkles, Moon, Sun, BookOpen } from "lucide-react";
+import { Search, RotateCcw, Check, MapPin, Sparkles, Moon, Sun, BookOpen, Plus, X, Scale } from "lucide-react";
 import cenaCrime from "@/assets/aventura-cena-crime.jpg";
 import cenaInterrogatorio from "@/assets/aventura-interrogatorio.jpg";
 import cenaLaboratorio from "@/assets/aventura-laboratorio.jpg";
+import cenaTribunal from "@/assets/aventura-tribunal.jpg";
 import cenaArquivo from "@/assets/aventura-arquivo.jpg";
 import cenaVeredito from "@/assets/aventura-veredito.jpg";
 
 type Props = { room: ReturnType<typeof useRoom> };
 
-type SceneId = "crime" | "interrogatorio" | "laboratorio" | "arquivo" | "veredito";
+type SceneId = "crime" | "interrogatorio" | "laboratorio" | "analise" | "arquivo" | "veredito";
 type Visual = "cartoon" | "noir";
 
 const DISTORTIONS = [
@@ -59,6 +60,11 @@ const HOTSPOTS: Record<SceneId, Hotspot[]> = {
     { id: "potes", x: 18, y: 30, label: "Reagentes", emoji: "🧪", hint: "Misture as evidências: o pensamento é mesmo verdade 100% das vezes?" },
     { id: "lupa-lab", x: 75, y: 75, label: "Lupa do laboratório", emoji: "🔬", hint: "Olhe de perto: que prova existe contra esse pensamento?" },
   ],
+  analise: [
+    { id: "balanca-an", x: 50, y: 48, label: "Balança", emoji: "⚖️", hint: "Pese os dois lados: o que apoia o pensamento e o que o contradiz?" },
+    { id: "provas-pro", x: 18, y: 65, label: "Provas a favor", emoji: "📂", hint: "Que fatos REAIS sustentam esse pensamento? Só fatos, sem 'eu acho'." },
+    { id: "provas-contra", x: 82, y: 65, label: "Provas contra", emoji: "📜", hint: "Que fatos REAIS contradizem esse pensamento? Exceções, evidências do contrário." },
+  ],
   arquivo: [
     { id: "maquina", x: 50, y: 55, label: "Máquina de escrever", emoji: "📜", hint: "Hora de reescrever. Uma versão mais justa, equilibrada e verdadeira." },
     { id: "livros", x: 12, y: 40, label: "Arquivos antigos", emoji: "📚", hint: "Casos parecidos do passado: como você se saiu antes? O que aprendeu?" },
@@ -75,8 +81,9 @@ const SCENES: { id: SceneId; title: string; emoji: string; bg: string; subtitle:
   { id: "crime", title: "Cena do Crime", emoji: "🔦", bg: cenaCrime, subtitle: "Etapa 1 · Os fatos" },
   { id: "interrogatorio", title: "Sala de Interrogatório", emoji: "💡", bg: cenaInterrogatorio, subtitle: "Etapa 2 · O pensamento suspeito" },
   { id: "laboratorio", title: "Laboratório", emoji: "🧪", bg: cenaLaboratorio, subtitle: "Etapa 3 · Distorções encontradas" },
-  { id: "arquivo", title: "Arquivo", emoji: "📜", bg: cenaArquivo, subtitle: "Etapa 4 · Reescrever o caso" },
-  { id: "veredito", title: "Veredito", emoji: "⚖️", bg: cenaVeredito, subtitle: "Etapa 5 · Caso resolvido" },
+  { id: "analise", title: "Tribunal de Evidências", emoji: "⚖️", bg: cenaTribunal, subtitle: "Etapa 4 · A favor x Contra" },
+  { id: "arquivo", title: "Arquivo", emoji: "📜", bg: cenaArquivo, subtitle: "Etapa 5 · Reescrever o caso" },
+  { id: "veredito", title: "Veredito", emoji: "⚖️", bg: cenaVeredito, subtitle: "Etapa 6 · Caso resolvido" },
 ];
 
 type State = {
@@ -85,6 +92,8 @@ type State = {
   situation: string;
   thought: string;
   distortions: string[];
+  evidencePro: string[];
+  evidenceCon: string[];
   reframe: string;
   clues: string[]; // collected hotspot ids globally
   activeHint: { sceneId: SceneId; hotspotId: string } | null;
@@ -96,6 +105,8 @@ const INITIAL: State = {
   situation: "",
   thought: "",
   distortions: [],
+  evidencePro: [],
+  evidenceCon: [],
   reframe: "",
   clues: [],
   activeHint: null,
@@ -194,28 +205,31 @@ export default function DetetiveAventura({ room }: Props) {
                 </section>
 
                 <section>
-                  <h3 className="font-bold text-base mb-1">🗺️ As 5 cenas</h3>
+                  <h3 className="font-bold text-base mb-1">🗺️ As 6 cenas</h3>
                   <ol className="list-decimal pl-5 space-y-2 text-muted-foreground">
                     <li>
                       <b>🔦 Cena do Crime — Os fatos.</b> Escreva a <i>situação</i> de forma objetiva,
-                      sem interpretação. Clique nos pontos da cena (lupa, pegadas, fita) para
-                      pistas de como descrever só os fatos.
+                      sem interpretação.
                     </li>
                     <li>
                       <b>💡 Interrogatório — O pensamento suspeito.</b> Identifique o pensamento
-                      automático que surgiu. Os hotspots ajudam a acessar a voz interna.
+                      automático que surgiu.
                     </li>
                     <li>
-                      <b>🧪 Laboratório — Distorções.</b> Marque na lista quais "armadilhas
-                      cognitivas" combinam com o pensamento (catastrofização, leitura mental, etc).
+                      <b>🧪 Laboratório — Distorções.</b> Marque quais "armadilhas cognitivas"
+                      combinam com o pensamento.
                     </li>
                     <li>
-                      <b>📜 Arquivo — Reescrever.</b> Construa uma versão mais equilibrada e
-                      verdadeira do pensamento.
+                      <b>⚖️ Tribunal de Evidências — A favor x Contra.</b> Liste fatos REAIS que
+                      sustentam o pensamento e fatos que o contradizem. Este é o coração da
+                      reestruturação: analisar evidências em vez de presumir.
+                    </li>
+                    <li>
+                      <b>📜 Arquivo — Reescrever.</b> Construa uma versão mais equilibrada do
+                      pensamento, com base nas evidências levantadas.
                     </li>
                     <li>
                       <b>⚖️ Veredito — Caso resolvido.</b> Comparem o pensamento antigo x o novo.
-                      Encerra o ciclo de investigação.
                     </li>
                   </ol>
                 </section>
@@ -448,10 +462,14 @@ export default function DetetiveAventura({ room }: Props) {
                 );
               })}
             </div>
-            <Button size="sm" disabled={state.distortions.length === 0} onClick={() => update({ scene: "arquivo", activeHint: null })} className="self-end">
-              Próxima cena → Arquivo
+            <Button size="sm" disabled={state.distortions.length === 0} onClick={() => update({ scene: "analise", activeHint: null })} className="self-end">
+              Próxima cena → Tribunal
             </Button>
           </div>
+        )}
+
+        {state.scene === "analise" && (
+          <AnalisePanel state={state} update={update} />
         )}
 
         {state.scene === "arquivo" && (
@@ -475,6 +493,22 @@ export default function DetetiveAventura({ room }: Props) {
                         </span>
                       );
                     })}
+                  </div>
+                </div>
+              )}
+              {(state.evidencePro.length > 0 || state.evidenceCon.length > 0) && (
+                <div className="rounded-lg p-2 bg-muted/40 sm:col-span-2 grid grid-cols-2 gap-2">
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 mb-1">✅ A favor ({state.evidencePro.length})</div>
+                    <ul className="text-[11px] space-y-0.5 list-disc pl-4">
+                      {state.evidencePro.map((e, i) => <li key={i}>{e}</li>)}
+                    </ul>
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-destructive mb-1">❌ Contra ({state.evidenceCon.length})</div>
+                    <ul className="text-[11px] space-y-0.5 list-disc pl-4">
+                      {state.evidenceCon.map((e, i) => <li key={i}>{e}</li>)}
+                    </ul>
                   </div>
                 </div>
               )}
@@ -518,6 +552,127 @@ export default function DetetiveAventura({ room }: Props) {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function AnalisePanel({ state, update }: { state: State; update: (p: Partial<State>) => void }) {
+  const [pro, setPro] = useState("");
+  const [con, setCon] = useState("");
+
+  const addPro = () => {
+    if (!pro.trim()) return;
+    update({ evidencePro: [...state.evidencePro, pro.trim()] });
+    setPro("");
+  };
+  const addCon = () => {
+    if (!con.trim()) return;
+    update({ evidenceCon: [...state.evidenceCon, con.trim()] });
+    setCon("");
+  };
+  const removePro = (i: number) => update({ evidencePro: state.evidencePro.filter((_, idx) => idx !== i) });
+  const removeCon = (i: number) => update({ evidenceCon: state.evidenceCon.filter((_, idx) => idx !== i) });
+
+  return (
+    <div className="flex flex-col gap-2">
+      {state.thought && (
+        <div className="rounded-lg p-2 bg-primary/10 border-l-4 border-primary">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Pensamento em julgamento</div>
+          <div className="text-sm font-semibold italic">"{state.thought}"</div>
+        </div>
+      )}
+      <h3 className="font-bold flex items-center gap-1.5">
+        <Scale className="w-4 h-4 text-primary" /> Análise: a favor x contra
+      </h3>
+      <p className="text-xs text-muted-foreground">
+        Liste fatos REAIS — coisas que aconteceram, não opiniões. Quanto mais concreto, melhor.
+      </p>
+
+      <div className="grid sm:grid-cols-2 gap-2">
+        {/* A favor */}
+        <div className="rounded-lg border-2 border-emerald-500/40 bg-emerald-50/60 dark:bg-emerald-950/20 p-2 flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <div className="font-bold text-sm text-emerald-700 dark:text-emerald-400">✅ Evidências A FAVOR</div>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-200 text-emerald-800 font-bold">
+              {state.evidencePro.length}
+            </span>
+          </div>
+          <div className="flex gap-1">
+            <input
+              value={pro}
+              onChange={(e) => setPro(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addPro()}
+              placeholder="Ex: Ele realmente disse que..."
+              className="flex-1 px-2 py-1.5 rounded-md border bg-background text-xs focus:outline-none focus:border-emerald-500"
+            />
+            <Button size="sm" onClick={addPro} variant="outline" className="border-emerald-500 h-8">
+              <Plus className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+          <ul className="flex flex-col gap-1 max-h-40 overflow-auto">
+            {state.evidencePro.length === 0 && (
+              <li className="text-[11px] text-muted-foreground italic">Nenhuma evidência ainda.</li>
+            )}
+            {state.evidencePro.map((e, i) => (
+              <li key={i} className="flex items-start gap-1.5 bg-background/80 rounded px-2 py-1 text-xs border border-emerald-200">
+                <span className="flex-1">{e}</span>
+                <button onClick={() => removePro(i)} className="text-muted-foreground hover:text-destructive shrink-0">
+                  <X className="w-3 h-3" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Contra */}
+        <div className="rounded-lg border-2 border-destructive/40 bg-destructive/5 p-2 flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <div className="font-bold text-sm text-destructive">❌ Evidências CONTRA</div>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-destructive/20 text-destructive font-bold">
+              {state.evidenceCon.length}
+            </span>
+          </div>
+          <div className="flex gap-1">
+            <input
+              value={con}
+              onChange={(e) => setCon(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addCon()}
+              placeholder="Ex: Outras vezes ele respondeu rápido..."
+              className="flex-1 px-2 py-1.5 rounded-md border bg-background text-xs focus:outline-none focus:border-destructive"
+            />
+            <Button size="sm" onClick={addCon} variant="outline" className="border-destructive h-8">
+              <Plus className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+          <ul className="flex flex-col gap-1 max-h-40 overflow-auto">
+            {state.evidenceCon.length === 0 && (
+              <li className="text-[11px] text-muted-foreground italic">Nenhuma evidência ainda.</li>
+            )}
+            {state.evidenceCon.map((e, i) => (
+              <li key={i} className="flex items-start gap-1.5 bg-background/80 rounded px-2 py-1 text-xs border border-destructive/30">
+                <span className="flex-1">{e}</span>
+                <button onClick={() => removeCon(i)} className="text-muted-foreground hover:text-destructive shrink-0">
+                  <X className="w-3 h-3" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <div className="rounded-md bg-muted/50 p-2 text-[11px] text-muted-foreground">
+        💡 <b>Pergunta-chave:</b> se um amigo seu vivesse essa situação e tivesse esse pensamento,
+        que evidências você apresentaria pra ele rever a ideia?
+      </div>
+
+      <Button
+        size="sm"
+        disabled={state.evidencePro.length + state.evidenceCon.length === 0}
+        onClick={() => update({ scene: "arquivo", activeHint: null })}
+        className="self-end"
+      >
+        Próxima cena → Arquivo
+      </Button>
     </div>
   );
 }
