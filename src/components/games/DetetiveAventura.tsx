@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
-import { Search, RotateCcw, Check, MapPin, Sparkles, Moon, Sun } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
+import { Search, RotateCcw, Check, MapPin, Sparkles, Moon, Sun, BookOpen } from "lucide-react";
 import cenaCrime from "@/assets/aventura-cena-crime.jpg";
 import cenaInterrogatorio from "@/assets/aventura-interrogatorio.jpg";
 import cenaLaboratorio from "@/assets/aventura-laboratorio.jpg";
