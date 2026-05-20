@@ -94,17 +94,6 @@ function SalaPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          {role === "psi" && (
-            <Button
-              size="sm"
-              onClick={shareWhatsApp}
-              className="bg-[#25D366] hover:bg-[#1ebe57] text-white font-semibold"
-            >
-              <Share2 className="w-4 h-4 mr-1.5" />
-              <span className="hidden sm:inline">Enviar no WhatsApp</span>
-              <span className="sm:hidden">WhatsApp</span>
-            </Button>
-          )}
           <div className={`flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full ${room.peers > 1 ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
             {room.peers > 1 ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}
             {room.peers > 1 ? "Conectados" : "Aguardando..."}
