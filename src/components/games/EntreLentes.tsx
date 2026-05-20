@@ -466,7 +466,89 @@ export default function EntreLentes({ room }: Props) {
       {/* ---------------- SIDEBAR ---------------- */}
       <aside className="flex flex-col gap-3 min-h-0">
         <header className="rounded-2xl bg-[#4a5a2a] text-[#f4f4d8] p-4 shadow">
-          <div className="text-[10px] uppercase tracking-widest opacity-80">Cena</div>
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-[10px] uppercase tracking-widest opacity-80">Cena</div>
+            <Sheet>
+              <SheetTrigger asChild>
+                <button className="text-[10px] uppercase tracking-widest opacity-80 hover:opacity-100 flex items-center gap-1">
+                  <BookOpen className="w-3 h-3" /> Como jogar
+                </button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[380px] sm:w-[420px] overflow-y-auto">
+                <SheetHeader>
+                  <SheetTitle className="flex items-center gap-2 text-lg">
+                    <BookOpen className="w-5 h-5 text-[#4a5a2a]" /> Como jogar — Entre Lentes
+                  </SheetTitle>
+                  <SheetDescription>
+                    Entenda como usar as lentes para explorar distorções cognitivas.
+                  </SheetDescription>
+                </SheetHeader>
+                <div className="mt-6 space-y-5 text-sm">
+                  <section>
+                    <h3 className="font-bold text-base mb-1">🎯 Objetivo</h3>
+                    <p className="text-muted-foreground">
+                      Experimentar como a mesma situação muda dependendo do "óculos" que usamos —
+                      ou seja, da distorção cognitiva que equipamos. O jogo ajuda a reconhecer
+                      pensamentos automáticos distorcidos e a reduzir sua intensidade com evidências.
+                    </p>
+                  </section>
+
+                  <section>
+                    <h3 className="font-bold text-base mb-1">👥 Quem joga</h3>
+                    <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                      <li>O jogo é compartilhado em tempo real entre você e o paciente.</li>
+                      <li>Qualquer um dos dois pode trocar lentes, investigar pistas e reiniciar.</li>
+                      <li>Recomendado para crianças e adolescentes — linguagem visual e acessível.</li>
+                    </ul>
+                  </section>
+
+                  <section>
+                    <h3 className="font-bold text-base mb-1">🔍 Como funciona</h3>
+                    <ol className="list-decimal pl-5 space-y-2 text-muted-foreground">
+                      <li>
+                        <b>Explore as lentes.</b> Clique nas lentes à direita para equipar uma.
+                        As lentes coloridas representam distorções cognitivas reais (catastrofização,
+                        personalização, leitura mental, etc.).
+                      </li>
+                      <li>
+                        <b>Observe a cena.</b> A imagem muda visualmente (cor, contraste, desfoque)
+                        conforme a intensidade da lente. Os balões de pensamento dos personagens
+                        mostram o que cada lente "inventa" sobre a mesma situação.
+                      </li>
+                      <li>
+                        <b>Investigue as pistas.</b> Clique nos botões pulsantes na cena (celular,
+                        caderno, porta, relógio) para descobrir fatos reais. Cada pista reduz a
+                        intensidade das lentes distorcidas e aumenta a <b>Clareza</b>.
+                      </li>
+                      <li>
+                        <b>Compare.</b> Alterne entre a <b>Lente Curiosa</b> (saudável) e as
+                        distorções. Veja como a mesma cena pode ser interpretada de formas completamente
+                        diferentes — e como as evidências ajudam a "limpar" o olhar.
+                      </li>
+                    </ol>
+                  </section>
+
+                  <section>
+                    <h3 className="font-bold text-base mb-1">💡 Dica de condução</h3>
+                    <p className="text-muted-foreground">
+                      Peça para o paciente narrar em voz alta o que cada lente mostra.
+                      Depois, investiguem juntos as pistas. O contraste entre o pensamento
+                      distorcido e o fato real é o núcleo terapêutico do jogo.
+                    </p>
+                  </section>
+
+                  <section className="rounded-lg border-2 border-[#4a5a2a]/30 bg-[#4a5a2a]/5 p-3">
+                    <h3 className="font-bold text-base mb-1">🧠 Sobre as distorções</h3>
+                    <p className="text-muted-foreground">
+                      Cada lente distorcida é baseada em distorções cognitivas clássicas da
+                      TCC (Terapia Cognitivo-Comportamental). O nome técnico aparece ao selecionar
+                      a lente — útil para fazer o link com o trabalho terapêutico.
+                    </p>
+                  </section>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
           <h2 className="font-bold text-lg leading-tight">Sala de aula · você acabou de entrar</h2>
           <p className="text-xs opacity-90 mt-1">Algumas pessoas riem. O mesmo momento muda dependendo da lente — da distorção cognitiva — que você equipa.</p>
         </header>
