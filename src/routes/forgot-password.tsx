@@ -11,7 +11,7 @@ import { ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/forgot-password")({
   head: () => ({
-    meta: [{ title: "Recuperar senha — Lúdico Clínico" }],
+    meta: [{ title: "Recuperar senha — Mundo Pine" }],
   }),
   component: ForgotPasswordPage,
 });

@@ -5,11 +5,11 @@ import { ArrowLeft } from "lucide-react";
 export const Route = createFileRoute("/privacidade")({
   head: () => ({
     meta: [
-      { title: "Política de Privacidade — Lúdico Clínico" },
+      { title: "Política de Privacidade — Mundo Pine" },
       {
         name: "description",
         content:
-          "Política de Privacidade do Lúdico Clínico em conformidade com a LGPD (Lei 13.709/2018).",
+          "Política de Privacidade do Mundo Pine em conformidade com a LGPD (Lei 13.709/2018).",
       },
     ],
   }),
@@ -36,7 +36,7 @@ function PrivacidadePage() {
 
           <section className="space-y-4 text-foreground/90 leading-relaxed">
             <p>
-              Esta Política descreve como o Lúdico Clínico ("Plataforma")
+              Esta Política descreve como o Mundo Pine ("Plataforma")
               coleta, utiliza e protege seus dados pessoais, em conformidade
               com a Lei Geral de Proteção de Dados — LGPD (Lei nº
               13.709/2018).
@@ -178,7 +178,7 @@ function PrivacidadePage() {
               11. Contato
             </h2>
             <p>
-              E-mail do responsável: <em>contato@ludicoclinico.com.br</em>{" "}
+              E-mail do responsável: <em>contato@mundo-pine.com.br</em>{" "}
               (substitua pelo seu e-mail oficial antes de publicar).
             </p>
           </section>

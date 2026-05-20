@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
-    meta: [{ title: "Nova senha — Lúdico Clínico" }],
+    meta: [{ title: "Nova senha — Mundo Pine" }],
   }),
   component: ResetPasswordPage,
 });
