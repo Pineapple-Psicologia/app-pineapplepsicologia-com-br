@@ -70,10 +70,26 @@ function Home() {
   return (
     <main className="min-h-screen px-4 py-10 md:py-14">
       <div className="max-w-6xl mx-auto">
-        <div className="flex justify-end mb-6">
-          <Button asChild variant="outline" size="sm">
-            <Link to="/auth">Área da psicóloga</Link>
-          </Button>
+        <div className="flex justify-end gap-2 mb-6">
+          {isAdmin && (
+            <Button asChild variant="outline" size="sm">
+              <Link to="/admin"><Shield className="w-4 h-4 mr-1" /> Admin</Link>
+            </Button>
+          )}
+          {loading ? null : user ? (
+            <>
+              <span className="text-sm text-muted-foreground self-center">
+                {user.email}
+              </span>
+              <Button variant="outline" size="sm" onClick={() => signOut()}>
+                <LogOut className="w-4 h-4 mr-1" /> Sair
+              </Button>
+            </>
+          ) : (
+            <Button asChild variant="outline" size="sm">
+              <Link to="/auth">Área da psicóloga</Link>
+            </Button>
+          )}
         </div>
         <header className="mb-10 text-center md:text-left">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/15 text-accent-foreground text-xs font-semibold mb-4">
@@ -88,12 +104,28 @@ function Home() {
           </p>
         </header>
 
-
-
         <section className="mb-12">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">
-            Sou psicóloga — escolher recurso
-          </h2>
+          <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+              Sou psicóloga — escolher recurso
+            </h2>
+            {!user && !loading && (
+              <Button asChild size="sm">
+                <Link to="/auth">Entrar / Cadastrar</Link>
+              </Button>
+            )}
+          </div>
+
+          {!user && !loading && (
+            <Card className="p-4 mb-4 border-2 border-dashed bg-muted/30 flex items-center gap-3">
+              <Lock className="w-5 h-5 text-muted-foreground shrink-0" />
+              <p className="text-sm text-muted-foreground">
+                É necessário <Link to="/auth" className="underline font-semibold text-foreground">criar uma conta</Link> ou
+                entrar para abrir os jogos. Pacientes não precisam de cadastro — apenas do link enviado pela psicóloga.
+              </p>
+            </Card>
+          )}
+
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {GAMES.map((g) => (
