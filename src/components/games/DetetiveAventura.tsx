@@ -205,28 +205,31 @@ export default function DetetiveAventura({ room }: Props) {
                 </section>
 
                 <section>
-                  <h3 className="font-bold text-base mb-1">🗺️ As 5 cenas</h3>
+                  <h3 className="font-bold text-base mb-1">🗺️ As 6 cenas</h3>
                   <ol className="list-decimal pl-5 space-y-2 text-muted-foreground">
                     <li>
                       <b>🔦 Cena do Crime — Os fatos.</b> Escreva a <i>situação</i> de forma objetiva,
-                      sem interpretação. Clique nos pontos da cena (lupa, pegadas, fita) para
-                      pistas de como descrever só os fatos.
+                      sem interpretação.
                     </li>
                     <li>
                       <b>💡 Interrogatório — O pensamento suspeito.</b> Identifique o pensamento
-                      automático que surgiu. Os hotspots ajudam a acessar a voz interna.
+                      automático que surgiu.
                     </li>
                     <li>
-                      <b>🧪 Laboratório — Distorções.</b> Marque na lista quais "armadilhas
-                      cognitivas" combinam com o pensamento (catastrofização, leitura mental, etc).
+                      <b>🧪 Laboratório — Distorções.</b> Marque quais "armadilhas cognitivas"
+                      combinam com o pensamento.
                     </li>
                     <li>
-                      <b>📜 Arquivo — Reescrever.</b> Construa uma versão mais equilibrada e
-                      verdadeira do pensamento.
+                      <b>⚖️ Tribunal de Evidências — A favor x Contra.</b> Liste fatos REAIS que
+                      sustentam o pensamento e fatos que o contradizem. Este é o coração da
+                      reestruturação: analisar evidências em vez de presumir.
+                    </li>
+                    <li>
+                      <b>📜 Arquivo — Reescrever.</b> Construa uma versão mais equilibrada do
+                      pensamento, com base nas evidências levantadas.
                     </li>
                     <li>
                       <b>⚖️ Veredito — Caso resolvido.</b> Comparem o pensamento antigo x o novo.
-                      Encerra o ciclo de investigação.
                     </li>
                   </ol>
                 </section>
