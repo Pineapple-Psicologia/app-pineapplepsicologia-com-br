@@ -12,7 +12,7 @@ import cenaVeredito from "@/assets/aventura-veredito.jpg";
 
 type Props = { room: ReturnType<typeof useRoom> };
 
-type SceneId = "crime" | "interrogatorio" | "laboratorio" | "arquivo" | "veredito";
+type SceneId = "crime" | "interrogatorio" | "laboratorio" | "analise" | "arquivo" | "veredito";
 type Visual = "cartoon" | "noir";
 
 const DISTORTIONS = [
