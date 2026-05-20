@@ -60,6 +60,11 @@ const HOTSPOTS: Record<SceneId, Hotspot[]> = {
     { id: "potes", x: 18, y: 30, label: "Reagentes", emoji: "🧪", hint: "Misture as evidências: o pensamento é mesmo verdade 100% das vezes?" },
     { id: "lupa-lab", x: 75, y: 75, label: "Lupa do laboratório", emoji: "🔬", hint: "Olhe de perto: que prova existe contra esse pensamento?" },
   ],
+  analise: [
+    { id: "balanca-an", x: 50, y: 48, label: "Balança", emoji: "⚖️", hint: "Pese os dois lados: o que apoia o pensamento e o que o contradiz?" },
+    { id: "provas-pro", x: 18, y: 65, label: "Provas a favor", emoji: "📂", hint: "Que fatos REAIS sustentam esse pensamento? Só fatos, sem 'eu acho'." },
+    { id: "provas-contra", x: 82, y: 65, label: "Provas contra", emoji: "📜", hint: "Que fatos REAIS contradizem esse pensamento? Exceções, evidências do contrário." },
+  ],
   arquivo: [
     { id: "maquina", x: 50, y: 55, label: "Máquina de escrever", emoji: "📜", hint: "Hora de reescrever. Uma versão mais justa, equilibrada e verdadeira." },
     { id: "livros", x: 12, y: 40, label: "Arquivos antigos", emoji: "📚", hint: "Casos parecidos do passado: como você se saiu antes? O que aprendeu?" },
