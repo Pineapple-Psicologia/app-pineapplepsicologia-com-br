@@ -29,7 +29,7 @@ const searchSchema = z.object({
 export const Route = createFileRoute("/sala/$code")({
   validateSearch: searchSchema,
   head: ({ params }) => ({
-    meta: [{ title: `Sala ${params.code} — Lúdico Clínico` }],
+    meta: [{ title: `Sala ${params.code} — Mundo Pine` }],
   }),
   component: SalaPage,
   errorComponent: ({ error }) => (

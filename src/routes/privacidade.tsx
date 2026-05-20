@@ -5,11 +5,11 @@ import { ArrowLeft } from "lucide-react";
 export const Route = createFileRoute("/privacidade")({
   head: () => ({
     meta: [
-      { title: "Política de Privacidade — Lúdico Clínico" },
+      { title: "Política de Privacidade — Mundo Pine" },
       {
         name: "description",
         content:
-          "Política de Privacidade do Lúdico Clínico em conformidade com a LGPD (Lei 13.709/2018).",
+          "Política de Privacidade do Mundo Pine em conformidade com a LGPD (Lei 13.709/2018).",
       },
     ],
   }),

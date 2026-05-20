@@ -32,7 +32,7 @@ import {
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
-    meta: [{ title: "Admin — Lúdico Clínico" }],
+    meta: [{ title: "Admin — Mundo Pine" }],
   }),
   beforeLoad: async () => {
     const { data } = await supabase.auth.getUser();

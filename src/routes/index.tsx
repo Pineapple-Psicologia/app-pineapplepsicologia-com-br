@@ -12,7 +12,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Lúdico Clínico — Ferramentas terapêuticas online" },
+      { title: "Mundo Pine — Ferramentas terapêuticas online" },
       {
         name: "description",
         content:
@@ -218,7 +218,7 @@ function Home() {
               Política de Privacidade
             </Link>
           </div>
-          <p className="mt-3">© {new Date().getFullYear()} Lúdico Clínico</p>
+          <p className="mt-3">© {new Date().getFullYear()} Mundo Pine</p>
         </footer>
       </div>
     </main>

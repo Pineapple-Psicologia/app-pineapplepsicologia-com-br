@@ -16,8 +16,8 @@ import { setSessionPolicy, type SessionDuration } from "@/lib/session-policy";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Entrar — Lúdico Clínico" },
-      { name: "description", content: "Acesso para psicólogas." },
+      { title: "Entrar — Mundo Pine" },
+      { name: "description", content: "Acesso para psicólogas e psicólogos." },
     ],
   }),
   component: AuthPage,
@@ -101,8 +101,8 @@ function AuthPage() {
     <main className="min-h-screen flex items-center justify-center px-4 py-10">
       <Card className="w-full max-w-md p-6">
         <div className="mb-6 text-center">
-          <h1 className="text-2xl font-semibold">Lúdico Clínico</h1>
-          <p className="text-sm text-muted-foreground mt-1">Acesso para psicólogas</p>
+          <h1 className="text-2xl font-semibold">Mundo Pine</h1>
+          <p className="text-sm text-muted-foreground mt-1">Acesso para psicólogas e psicólogos</p>
         </div>
 
         <Tabs defaultValue="signin">

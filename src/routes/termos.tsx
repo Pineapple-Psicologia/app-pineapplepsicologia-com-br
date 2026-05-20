@@ -5,11 +5,11 @@ import { ArrowLeft } from "lucide-react";
 export const Route = createFileRoute("/termos")({
   head: () => ({
     meta: [
-      { title: "Termos de Uso — Lúdico Clínico" },
+      { title: "Termos de Uso — Mundo Pine" },
       {
         name: "description",
         content:
-          "Termos de Uso do Lúdico Clínico, plataforma de jogos terapêuticos colaborativos para psicólogas infantojuvenis.",
+          "Termos de Uso do Mundo Pine, plataforma de jogos terapêuticos colaborativos para psicólogas infantojuvenis.",
       },
     ],
   }),
