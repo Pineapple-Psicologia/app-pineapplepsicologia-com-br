@@ -92,6 +92,8 @@ type State = {
   situation: string;
   thought: string;
   distortions: string[];
+  evidencePro: string[];
+  evidenceCon: string[];
   reframe: string;
   clues: string[]; // collected hotspot ids globally
   activeHint: { sceneId: SceneId; hotspotId: string } | null;
@@ -103,6 +105,8 @@ const INITIAL: State = {
   situation: "",
   thought: "",
   distortions: [],
+  evidencePro: [],
+  evidenceCon: [],
   reframe: "",
   clues: [],
   activeHint: null,
