@@ -262,6 +262,7 @@ const CLUES: Clue[] = [
 
 // ---------- Estado sincronizado ----------
 type State = {
+  started: boolean;
   lens: LensId;
   intensity: Record<LensId, number>;
   clarity: number;
@@ -276,6 +277,7 @@ const emptyIntensity = (): Record<LensId, number> =>
   }, {} as Record<LensId, number>);
 
 const initialState: State = {
+  started: false,
   lens: "neutra",
   intensity: emptyIntensity(),
   clarity: 0,
@@ -328,10 +330,137 @@ export default function EntreLentes({ room }: Props) {
   };
 
   const reset = () => update(() => initialState);
+  const startGame = () => update({ started: true });
 
   const lens = lensById(state.lens);
   const intensity = state.intensity[state.lens];
   const isDistorting = DISTORTING_LENSES.includes(state.lens);
+
+  // ===== INTRO SCREEN =====
+  if (!state.started) {
+    const introLenses = LENSES.filter((l) => l.id !== "neutra" && l.id !== "curiosa");
+    const goodLenses = LENSES.filter((l) => l.id === "neutra" || l.id === "curiosa");
+    return (
+      <div className="h-full w-full flex flex-col gap-4 text-stone-800 overflow-y-auto">
+        {/* Hero */}
+        <div className="relative rounded-2xl overflow-hidden border-4 border-[#4a5a2a]/30 shadow-[0_20px_50px_-15px_rgba(40,50,20,0.45)] bg-gradient-to-br from-[#4a5a2a] to-[#2a3a1a] p-8 text-[#f4f4d8] text-center">
+          <div className="text-6xl mb-4">👓</div>
+          <h1 className="text-3xl font-bold mb-3">Entre Lentes</h1>
+          <p className="text-lg opacity-90 max-w-2xl mx-auto leading-relaxed">
+            Cada pessoa usa um tipo diferente de "óculos" para ver o mundo.
+            <br />
+            Alguns deixam tudo mais claro. Outros... distorcem tudo.
+          </p>
+          <p className="text-base opacity-80 mt-2 max-w-xl mx-auto">
+            Neste jogo, você vai descobrir que a mesma cena pode parecer completamente diferente
+            dependendo da lente que você escolhe usar.
+          </p>
+          <Button
+            onClick={startGame}
+            className="mt-6 bg-[#f4f4d8] text-[#4a5a2a] hover:bg-white font-bold text-lg px-8 py-3 h-auto rounded-full shadow-lg"
+          >
+            <Sparkles className="w-5 h-5 mr-2" /> Começar a explorar
+          </Button>
+        </div>
+
+        {/* Why it matters */}
+        <div className="rounded-2xl border border-[#4a5a2a]/20 bg-[#fafaef] p-6">
+          <h2 className="text-xl font-bold text-[#4a5a2a] mb-4 flex items-center gap-2">
+            <Eye className="w-5 h-5" /> Por que isso importa?
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="rounded-xl bg-white border border-[#4a5a2a]/10 p-4">
+              <div className="text-3xl mb-2">🧠</div>
+              <h3 className="font-bold text-[#4a5a2a] mb-1">Nosso cérebro cria histórias</h3>
+              <p className="text-sm text-stone-600">
+                Quando algo acontece, nossa cabeça não apenas "registra" — ela <b>interpreta</b>.
+                E às vezes essa interpretação distorce a realidade sem que a gente perceba.
+              </p>
+            </div>
+            <div className="rounded-xl bg-white border border-[#4a5a2a]/10 p-4">
+              <div className="text-3xl mb-2">😰</div>
+              <h3 className="font-bold text-[#4a5a2a] mb-1">Distorções causam sofrimento</h3>
+              <p className="text-sm text-stone-600">
+                Quando usamos uma "lente" que tudo escurece, tudo parece pior do que é.
+                Isso gera ansiedade, tristeza e a sensação de que nunca vamos dar conta.
+              </p>
+            </div>
+            <div className="rounded-xl bg-white border border-[#4a5a2a]/10 p-4">
+              <div className="text-3xl mb-2">🔍</div>
+              <h3 className="font-bold text-[#4a5a2a] mb-1">Conhecer é o primeiro passo</h3>
+              <p className="text-sm text-stone-600">
+                Quando aprendemos a reconhecer nossas lentes, ganhamos o poder de
+                <b> trocá-las</b> por um olhar mais justo e gentil com a gente mesmo.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* The lenses preview */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Healthy lenses */}
+          <div className="rounded-2xl border border-[#7a8a3a]/30 bg-[#f4f4d8] p-5">
+            <h3 className="text-lg font-bold text-[#4a5a2a] mb-3 flex items-center gap-2">
+              <span className="text-xl">✨</span> Lentes que ajudam
+            </h3>
+            <div className="space-y-3">
+              {goodLenses.map((l) => (
+                <div
+                  key={l.id}
+                  className="rounded-xl p-3 border-2 flex items-start gap-3"
+                  style={{ borderColor: l.ring, background: l.color }}
+                >
+                  <span className="text-2xl">{l.emoji}</span>
+                  <div>
+                    <div className="font-bold text-[#3a3a2a]">{l.label}</div>
+                    <div className="text-sm text-stone-700">{l.description}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Distorting lenses */}
+          <div className="rounded-2xl border border-[#7a3a2a]/30 bg-[#faf5f0] p-5">
+            <h3 className="text-lg font-bold text-[#7a3a2a] mb-3 flex items-center gap-2">
+              <span className="text-xl">🌫️</span> Lentes que distorcem
+            </h3>
+            <div className="grid grid-cols-2 gap-2">
+              {introLenses.map((l) => (
+                <div
+                  key={l.id}
+                  className="rounded-xl p-2.5 border-2 text-left"
+                  style={{ borderColor: l.ring, background: l.color + "22" }}
+                >
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span>{l.emoji}</span>
+                    <span className="font-bold text-[#3a3a2a] text-xs">{l.label}</span>
+                  </div>
+                  <div className="text-[10px] text-stone-600 leading-tight">{l.short}</div>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-stone-500 mt-3">
+              Cada uma dessas lentes é uma distorção cognitiva real.
+              No jogo, você vai experimentar como elas mudam a mesma cena.
+            </p>
+          </div>
+        </div>
+
+        {/* Bottom CTA */}
+        <div className="text-center py-4">
+          <Button
+            onClick={startGame}
+            className="bg-[#4a5a2a] text-[#f4f4d8] hover:bg-[#3a4a1a] font-bold text-lg px-10 py-3 h-auto rounded-full shadow-lg"
+          >
+            <Sparkles className="w-5 h-5 mr-2" /> Vamos lá!
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // ===== MAIN GAME =====
 
   // Visual envelope per lens
   const sceneStyle = useMemo<React.CSSProperties>(() => {
