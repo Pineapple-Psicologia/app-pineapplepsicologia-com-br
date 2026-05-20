@@ -552,3 +552,124 @@ export default function DetetiveAventura({ room }: Props) {
     </div>
   );
 }
+
+function AnalisePanel({ state, update }: { state: State; update: (p: Partial<State>) => void }) {
+  const [pro, setPro] = useState("");
+  const [con, setCon] = useState("");
+
+  const addPro = () => {
+    if (!pro.trim()) return;
+    update({ evidencePro: [...state.evidencePro, pro.trim()] });
+    setPro("");
+  };
+  const addCon = () => {
+    if (!con.trim()) return;
+    update({ evidenceCon: [...state.evidenceCon, con.trim()] });
+    setCon("");
+  };
+  const removePro = (i: number) => update({ evidencePro: state.evidencePro.filter((_, idx) => idx !== i) });
+  const removeCon = (i: number) => update({ evidenceCon: state.evidenceCon.filter((_, idx) => idx !== i) });
+
+  return (
+    <div className="flex flex-col gap-2">
+      {state.thought && (
+        <div className="rounded-lg p-2 bg-primary/10 border-l-4 border-primary">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Pensamento em julgamento</div>
+          <div className="text-sm font-semibold italic">"{state.thought}"</div>
+        </div>
+      )}
+      <h3 className="font-bold flex items-center gap-1.5">
+        <Scale className="w-4 h-4 text-primary" /> Análise: a favor x contra
+      </h3>
+      <p className="text-xs text-muted-foreground">
+        Liste fatos REAIS — coisas que aconteceram, não opiniões. Quanto mais concreto, melhor.
+      </p>
+
+      <div className="grid sm:grid-cols-2 gap-2">
+        {/* A favor */}
+        <div className="rounded-lg border-2 border-emerald-500/40 bg-emerald-50/60 dark:bg-emerald-950/20 p-2 flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <div className="font-bold text-sm text-emerald-700 dark:text-emerald-400">✅ Evidências A FAVOR</div>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-200 text-emerald-800 font-bold">
+              {state.evidencePro.length}
+            </span>
+          </div>
+          <div className="flex gap-1">
+            <input
+              value={pro}
+              onChange={(e) => setPro(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addPro()}
+              placeholder="Ex: Ele realmente disse que..."
+              className="flex-1 px-2 py-1.5 rounded-md border bg-background text-xs focus:outline-none focus:border-emerald-500"
+            />
+            <Button size="sm" onClick={addPro} variant="outline" className="border-emerald-500 h-8">
+              <Plus className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+          <ul className="flex flex-col gap-1 max-h-40 overflow-auto">
+            {state.evidencePro.length === 0 && (
+              <li className="text-[11px] text-muted-foreground italic">Nenhuma evidência ainda.</li>
+            )}
+            {state.evidencePro.map((e, i) => (
+              <li key={i} className="flex items-start gap-1.5 bg-background/80 rounded px-2 py-1 text-xs border border-emerald-200">
+                <span className="flex-1">{e}</span>
+                <button onClick={() => removePro(i)} className="text-muted-foreground hover:text-destructive shrink-0">
+                  <X className="w-3 h-3" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Contra */}
+        <div className="rounded-lg border-2 border-destructive/40 bg-destructive/5 p-2 flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <div className="font-bold text-sm text-destructive">❌ Evidências CONTRA</div>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-destructive/20 text-destructive font-bold">
+              {state.evidenceCon.length}
+            </span>
+          </div>
+          <div className="flex gap-1">
+            <input
+              value={con}
+              onChange={(e) => setCon(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addCon()}
+              placeholder="Ex: Outras vezes ele respondeu rápido..."
+              className="flex-1 px-2 py-1.5 rounded-md border bg-background text-xs focus:outline-none focus:border-destructive"
+            />
+            <Button size="sm" onClick={addCon} variant="outline" className="border-destructive h-8">
+              <Plus className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+          <ul className="flex flex-col gap-1 max-h-40 overflow-auto">
+            {state.evidenceCon.length === 0 && (
+              <li className="text-[11px] text-muted-foreground italic">Nenhuma evidência ainda.</li>
+            )}
+            {state.evidenceCon.map((e, i) => (
+              <li key={i} className="flex items-start gap-1.5 bg-background/80 rounded px-2 py-1 text-xs border border-destructive/30">
+                <span className="flex-1">{e}</span>
+                <button onClick={() => removeCon(i)} className="text-muted-foreground hover:text-destructive shrink-0">
+                  <X className="w-3 h-3" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <div className="rounded-md bg-muted/50 p-2 text-[11px] text-muted-foreground">
+        💡 <b>Pergunta-chave:</b> se um amigo seu vivesse essa situação e tivesse esse pensamento,
+        que evidências você apresentaria pra ele rever a ideia?
+      </div>
+
+      <Button
+        size="sm"
+        disabled={state.evidencePro.length + state.evidenceCon.length === 0}
+        onClick={() => update({ scene: "arquivo", activeHint: null })}
+        className="self-end"
+      >
+        Próxima cena → Arquivo
+      </Button>
+    </div>
+  );
+}
