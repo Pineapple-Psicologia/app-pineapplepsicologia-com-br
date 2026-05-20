@@ -493,6 +493,22 @@ export default function DetetiveAventura({ room }: Props) {
                   </div>
                 </div>
               )}
+              {(state.evidencePro.length > 0 || state.evidenceCon.length > 0) && (
+                <div className="rounded-lg p-2 bg-muted/40 sm:col-span-2 grid grid-cols-2 gap-2">
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 mb-1">✅ A favor ({state.evidencePro.length})</div>
+                    <ul className="text-[11px] space-y-0.5 list-disc pl-4">
+                      {state.evidencePro.map((e, i) => <li key={i}>{e}</li>)}
+                    </ul>
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-destructive mb-1">❌ Contra ({state.evidenceCon.length})</div>
+                    <ul className="text-[11px] space-y-0.5 list-disc pl-4">
+                      {state.evidenceCon.map((e, i) => <li key={i}>{e}</li>)}
+                    </ul>
+                  </div>
+                </div>
+              )}
             </div>
             <h3 className="font-bold">📜 Reescreva o caso</h3>
             <p className="text-xs text-muted-foreground">Olhando as evidências reais, qual versão é mais justa e equilibrada?</p>
