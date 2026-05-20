@@ -546,9 +546,14 @@ export default function DetetiveAventura({ room }: Props) {
             <div className="text-xs text-muted-foreground">
               Pistas coletadas: <strong>{state.clues.length}</strong> / {Object.values(HOTSPOTS).flat().length}
             </div>
-            <Button onClick={reset}>
-              <RotateCcw className="w-4 h-4 mr-2" /> Novo caso
-            </Button>
+            <div className="flex gap-2 flex-wrap justify-center">
+              <Button onClick={() => downloadCasePdf(state)} variant="outline">
+                <Download className="w-4 h-4 mr-2" /> Baixar PDF
+              </Button>
+              <Button onClick={reset}>
+                <RotateCcw className="w-4 h-4 mr-2" /> Novo caso
+              </Button>
+            </div>
           </div>
         )}
       </div>
