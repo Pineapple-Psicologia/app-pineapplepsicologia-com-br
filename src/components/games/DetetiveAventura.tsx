@@ -156,7 +156,99 @@ export default function DetetiveAventura({ room }: Props) {
           <Search className="w-5 h-5 text-primary shrink-0" />
           <h2 className="text-lg md:text-xl font-bold truncate">Detetive: Aventura 🕵️</h2>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button size="sm" variant="outline">
+                <BookOpen className="w-4 h-4 mr-1" /> Como jogar
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+              <SheetHeader>
+                <SheetTitle className="flex items-center gap-2">
+                  <Search className="w-5 h-5 text-primary" /> Guia da Detetive
+                </SheetTitle>
+                <SheetDescription>
+                  Manual rápido para conduzir o jogo com seu paciente.
+                </SheetDescription>
+              </SheetHeader>
+
+              <div className="mt-4 space-y-5 text-sm leading-relaxed">
+                <section>
+                  <h3 className="font-bold text-base mb-1">🎯 Objetivo terapêutico</h3>
+                  <p className="text-muted-foreground">
+                    Um jogo de <b>reestruturação cognitiva</b> em formato <i>point &amp; click</i>.
+                    O paciente investiga um pensamento como se fosse um suspeito: coleta fatos,
+                    identifica distorções e reescreve uma versão mais justa.
+                  </p>
+                </section>
+
+                <section>
+                  <h3 className="font-bold text-base mb-1">👥 Como funciona em sessão</h3>
+                  <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                    <li>O jogo é compartilhado em tempo real entre você e o paciente.</li>
+                    <li>Qualquer um dos dois pode clicar, escrever e avançar etapas.</li>
+                    <li>Use <b>Noir</b> (preto e branco) para um clima mais sério, ou <b>Cartoon</b> para crianças/adolescentes.</li>
+                    <li><b>Recomeçar</b> limpa tudo para um novo caso.</li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h3 className="font-bold text-base mb-1">🗺️ As 5 cenas</h3>
+                  <ol className="list-decimal pl-5 space-y-2 text-muted-foreground">
+                    <li>
+                      <b>🔦 Cena do Crime — Os fatos.</b> Escreva a <i>situação</i> de forma objetiva,
+                      sem interpretação. Clique nos pontos da cena (lupa, pegadas, fita) para
+                      pistas de como descrever só os fatos.
+                    </li>
+                    <li>
+                      <b>💡 Interrogatório — O pensamento suspeito.</b> Identifique o pensamento
+                      automático que surgiu. Os hotspots ajudam a acessar a voz interna.
+                    </li>
+                    <li>
+                      <b>🧪 Laboratório — Distorções.</b> Marque na lista quais "armadilhas
+                      cognitivas" combinam com o pensamento (catastrofização, leitura mental, etc).
+                    </li>
+                    <li>
+                      <b>📜 Arquivo — Reescrever.</b> Construa uma versão mais equilibrada e
+                      verdadeira do pensamento.
+                    </li>
+                    <li>
+                      <b>⚖️ Veredito — Caso resolvido.</b> Comparem o pensamento antigo x o novo.
+                      Encerra o ciclo de investigação.
+                    </li>
+                  </ol>
+                </section>
+
+                <section>
+                  <h3 className="font-bold text-base mb-1">💡 Pistas (hotspots)</h3>
+                  <p className="text-muted-foreground">
+                    Cada cena tem 3 ícones clicáveis. Eles abrem dicas curtas que orientam a
+                    próxima ação. As pistas coletadas ficam marcadas — útil para revisar o
+                    raciocínio com o paciente.
+                  </p>
+                </section>
+
+                <section>
+                  <h3 className="font-bold text-base mb-1">✨ Sugestões prontas</h3>
+                  <p className="text-muted-foreground">
+                    Na cena do Crime há um botão <b>"Sugerir um caso"</b> com situações comuns
+                    (notas, relacionamentos, apresentações). Útil quando o paciente trava ou
+                    para aquecer no início.
+                  </p>
+                </section>
+
+                <section className="rounded-lg border-2 border-primary/30 bg-primary/5 p-3">
+                  <h3 className="font-bold text-base mb-1">🧭 Dica de condução</h3>
+                  <p className="text-muted-foreground">
+                    Avance uma cena por vez, em voz alta. Deixe o paciente clicar — o
+                    movimento de "investigar" externaliza o processo cognitivo e reduz
+                    a fusão com o pensamento.
+                  </p>
+                </section>
+              </div>
+            </SheetContent>
+          </Sheet>
           <Button
             size="sm"
             variant="outline"
