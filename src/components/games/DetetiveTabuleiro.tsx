@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
 import { RotateCcw, Check, ChevronRight, Dices, Sparkles, Trophy, History, Award } from "lucide-react";
-import DetetiveBoard3D from "./DetetiveBoard3D";
+
 import sceneBg from "@/assets/scene-detetive-tabuleiro.jpg";
 
 type Props = { room: ReturnType<typeof useRoom> };
