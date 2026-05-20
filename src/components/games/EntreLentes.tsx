@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
-import { Eye, RotateCcw, Search, Sparkles } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
+import { Eye, RotateCcw, Search, Sparkles, BookOpen } from "lucide-react";
 import salaImg from "@/assets/lentes-sala.jpg";
 
 type Props = { room: ReturnType<typeof useRoom> };
