@@ -336,6 +336,37 @@ export default function EntreLentes({ room }: Props) {
   const intensity = state.intensity[state.lens];
   const isDistorting = DISTORTING_LENSES.includes(state.lens);
 
+  // Hook precisa rodar em todo render — fica antes do early return da intro
+  const sceneStyle = useMemo<React.CSSProperties>(() => {
+    const t = intensity / 3;
+    const clarityT = state.clarity / CLUES.length;
+    const dampen = 1 - clarityT * 0.55;
+    if (state.lens === "neutra") return { filter: "saturate(1) contrast(1)" };
+    if (state.lens === "curiosa") return { filter: `saturate(${1 + t * 0.15}) brightness(${1 + t * 0.05})` };
+    switch (state.lens) {
+      case "personalizacao": {
+        const desat = 1 - t * 0.5 * dampen;
+        return { filter: `saturate(${desat}) blur(${t * 1.2 * dampen}px) brightness(${1 - t * 0.15 * dampen})` };
+      }
+      case "catastrofe":
+        return { filter: `contrast(${1 + t * 0.45 * dampen}) saturate(${1 - t * 0.25 * dampen}) hue-rotate(${-t * 12 * dampen}deg) brightness(${1 - t * 0.22 * dampen})` };
+      case "leituraMental":
+        return { filter: `saturate(${1 - t * 0.2 * dampen}) hue-rotate(${t * 15 * dampen}deg) blur(${t * 0.6 * dampen}px)` };
+      case "adivinhacao":
+        return { filter: `sepia(${t * 0.4 * dampen}) hue-rotate(${-t * 25 * dampen}deg) brightness(${1 - t * 0.12 * dampen})` };
+      case "generalizacao":
+        return { filter: `saturate(${1 - t * 0.45 * dampen}) brightness(${1 - t * 0.1 * dampen}) blur(${t * 0.4 * dampen}px)` };
+      case "tudoOuNada":
+        return { filter: `grayscale(${t * 0.85 * dampen}) contrast(${1 + t * 0.6 * dampen})` };
+      case "filtroMental":
+        return { filter: `brightness(${1 - t * 0.35 * dampen}) saturate(${1 - t * 0.4 * dampen})` };
+      case "rotulacao":
+        return { filter: `sepia(${t * 0.55 * dampen}) saturate(${1 - t * 0.2 * dampen}) contrast(${1 + t * 0.2 * dampen})` };
+    }
+    return {};
+  }, [state.lens, intensity, state.clarity]);
+
+
   // ===== INTRO SCREEN =====
   if (!state.started) {
     const introLenses = LENSES.filter((l) => l.id !== "neutra" && l.id !== "curiosa");
