@@ -288,15 +288,26 @@ const initialState: State = {
 export default function EntreLentes({ room }: Props) {
   const [state, setState] = useState<State>(initialState);
 
+  // Garante que intensity sempre tenha todas as lentes (mesmo vindo de uma sessão antiga via realtime)
+  const normalizeState = (s: State): State => ({
+    ...s,
+    intensity: { ...emptyIntensity(), ...(s.intensity || {}) },
+    lens: LENSES.some((l) => l.id === s.lens) ? s.lens : "neutra",
+    revealedClues: s.revealedClues ?? [],
+    log: s.log ?? [],
+    clarity: s.clarity ?? 0,
+  });
+
   useEffect(() => {
     return room.on((m) => {
-      if (m.type === "lentes:state") setState(m.payload);
+      if (m.type === "lentes:state") setState(normalizeState(m.payload));
     });
   }, [room]);
 
   const update = (patch: Partial<State> | ((s: State) => State)) => {
     setState((prev) => {
-      const next = typeof patch === "function" ? patch(prev) : { ...prev, ...patch };
+      const merged = typeof patch === "function" ? patch(prev) : { ...prev, ...patch };
+      const next = normalizeState(merged);
       room.send("lentes:state", next);
       return next;
     });
@@ -304,7 +315,8 @@ export default function EntreLentes({ room }: Props) {
 
   const equipLens = (id: LensId) => {
     update((s) => {
-      const bumped = id === "neutra" ? s.intensity[id] : Math.min(3, s.intensity[id] + 1);
+      const current = s.intensity[id] ?? 0;
+      const bumped = id === "neutra" ? current : Math.min(3, current + 1);
       return {
         ...s,
         lens: id,
@@ -319,7 +331,7 @@ export default function EntreLentes({ room }: Props) {
       if (s.revealedClues.includes(clueId)) return s;
       const revealed = [...s.revealedClues, clueId];
       const intensity = { ...s.intensity };
-      for (const k of DISTORTING_LENSES) intensity[k] = Math.max(0, intensity[k] - 1);
+      for (const k of DISTORTING_LENSES) intensity[k] = Math.max(0, (intensity[k] ?? 0) - 1);
       return {
         ...s,
         revealedClues: revealed,
@@ -332,8 +344,8 @@ export default function EntreLentes({ room }: Props) {
   const reset = () => update(() => initialState);
   const startGame = () => update({ started: true });
 
-  const lens = lensById(state.lens);
-  const intensity = state.intensity[state.lens];
+  const lens = lensById(state.lens) ?? LENSES[0];
+  const intensity = state.intensity[state.lens] ?? 0;
   const isDistorting = DISTORTING_LENSES.includes(state.lens);
 
   // Hook precisa rodar em todo render — fica antes do early return da intro
