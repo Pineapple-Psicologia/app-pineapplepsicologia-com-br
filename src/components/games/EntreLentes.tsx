@@ -600,8 +600,8 @@ export default function EntreLentes({ room }: Props) {
               </SheetContent>
             </Sheet>
           </div>
-          <h2 className="font-bold text-lg leading-tight">Sala de aula · você acabou de entrar</h2>
-          <p className="text-xs opacity-90 mt-1">Algumas pessoas riem. O mesmo momento muda dependendo da lente — da distorção cognitiva — que você equipa.</p>
+          <h2 className="font-bold text-lg leading-tight">Diante da paisagem · troque as lentes</h2>
+          <p className="text-xs opacity-90 mt-1">A mesma paisagem muda completamente dependendo da lente — da distorção cognitiva — que você coloca nos óculos.</p>
         </header>
 
         <section className="rounded-2xl bg-white border border-[#4a5a2a]/20 p-3 shadow-sm overflow-y-auto">
