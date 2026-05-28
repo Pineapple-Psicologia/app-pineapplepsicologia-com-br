@@ -54,18 +54,19 @@ function SalaPage() {
 
   const buildPatientUrl = () => {
     const origin = window.location.origin;
-    // No editor/preview do Lovable, força usar o site publicado (público),
-    // para que o paciente não caia numa tela de login do Lovable.
+    // Domínio público publicado. Sempre usamos ele quando o psi está em
+    // qualquer ambiente Lovable (editor, preview, lovableproject.com,
+    // localhost) — assim o paciente nunca cai na tela de login do Lovable.
+    const PUBLIC_ORIGIN = "https://app-pineapplepsicologia-com-br.lovable.app";
     const isInternal =
       origin.includes("lovableproject.com") ||
-      origin.includes("id-preview--") ||
+      origin.includes("lovable.app") ||
       origin.includes("lovable.dev") ||
       origin.includes("localhost");
-    const publicOrigin = isInternal
-      ? "https://app-pineapplepsicologia-com-br.lovable.app"
-      : origin;
+    const publicOrigin = isInternal ? PUBLIC_ORIGIN : origin;
     return `${publicOrigin}/sala/${code}?role=paciente&game=${game}`;
   };
+
 
   const copyCode = async () => {
     const url = buildPatientUrl();
