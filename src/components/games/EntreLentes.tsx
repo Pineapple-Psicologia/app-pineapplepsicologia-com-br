@@ -75,6 +75,71 @@ const QUIZZES: Record<LensId, Quiz | null> = {
   rotulacao: { question: "Rotulação é diferente de descrever porque…", options: [{ text: "Cola uma identidade permanente: ‘sou um estranho’", correct: true }, { text: "Diz só o que aconteceu" }, { text: "Foca no comportamento, não na pessoa" }], explain: "‘Errei na conversa’ descreve. ‘Sou estranho’ rotula." },
 };
 
+// ---------- Frases flutuantes ao redor da cena (mudam por lente) ----------
+type FloatingPhrase = { text: string; top: string; left: string };
+const PHRASES: Record<LensId, FloatingPhrase[]> = {
+  neutra: [
+    { text: "Tem um grupo ali.", top: "12%", left: "8%" },
+    { text: "Estou observando.", top: "22%", left: "72%" },
+    { text: "Nada de mais acontecendo.", top: "70%", left: "10%" },
+    { text: "Posso só ficar aqui.", top: "78%", left: "70%" },
+  ],
+  curiosa: [
+    { text: "Será que posso chegar perto?", top: "10%", left: "10%" },
+    { text: "Do que será que falam?", top: "20%", left: "68%" },
+    { text: "Pareço bem-vindo?", top: "72%", left: "8%" },
+    { text: "Talvez dê pra perguntar.", top: "78%", left: "66%" },
+  ],
+  catastrofe: [
+    { text: "Vai dar tudo errado.", top: "10%", left: "8%" },
+    { text: "Vão rir de mim.", top: "18%", left: "68%" },
+    { text: "Esse vai ser meu pior dia.", top: "70%", left: "6%" },
+    { text: "E se eu travar?", top: "78%", left: "66%" },
+  ],
+  personalizacao: [
+    { text: "Estão olhando pra mim.", top: "10%", left: "10%" },
+    { text: "É por minha causa.", top: "20%", left: "68%" },
+    { text: "Algo que eu fiz…", top: "72%", left: "8%" },
+    { text: "Eu sou o motivo.", top: "78%", left: "68%" },
+  ],
+  leituraMental: [
+    { text: "Estão me achando estranho.", top: "10%", left: "8%" },
+    { text: "Sei o que pensam.", top: "20%", left: "68%" },
+    { text: "‘Que esquisito(a)’.", top: "70%", left: "8%" },
+    { text: "Não precisam falar — eu sinto.", top: "78%", left: "62%" },
+  ],
+  adivinhacao: [
+    { text: "Já sei como termina.", top: "10%", left: "10%" },
+    { text: "Vou ficar sozinho(a).", top: "20%", left: "68%" },
+    { text: "Ninguém vai me chamar.", top: "72%", left: "8%" },
+    { text: "Sempre acaba assim.", top: "78%", left: "66%" },
+  ],
+  generalizacao: [
+    { text: "Sempre acontece comigo.", top: "10%", left: "8%" },
+    { text: "Em todo lugar.", top: "20%", left: "70%" },
+    { text: "Com todo mundo.", top: "72%", left: "8%" },
+    { text: "Nunca muda.", top: "78%", left: "70%" },
+  ],
+  tudoOuNada: [
+    { text: "Ou me chamam, ou me odeiam.", top: "10%", left: "6%" },
+    { text: "Sem meio-termo.", top: "20%", left: "68%" },
+    { text: "Perfeito ou péssimo.", top: "72%", left: "8%" },
+    { text: "Tudo ou nada.", top: "78%", left: "70%" },
+  ],
+  filtroMental: [
+    { text: "Aquele de costas me ignorou.", top: "10%", left: "6%" },
+    { text: "Só vejo o que dá errado.", top: "20%", left: "66%" },
+    { text: "O resto não importa.", top: "72%", left: "8%" },
+    { text: "Foi um dia ruim.", top: "78%", left: "70%" },
+  ],
+  rotulacao: [
+    { text: "Sou um(a) estranho(a).", top: "10%", left: "10%" },
+    { text: "Não sirvo pra isso.", top: "20%", left: "68%" },
+    { text: "Sou o esquisito do grupo.", top: "72%", left: "8%" },
+    { text: "É quem eu sou.", top: "78%", left: "70%" },
+  ],
+};
+
 // ---------- Conquistas ----------
 type BadgeDef = { id: string; label: string; emoji: string; hint: string; check: (s: State) => boolean };
 const BADGES: BadgeDef[] = [
