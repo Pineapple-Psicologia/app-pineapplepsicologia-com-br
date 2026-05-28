@@ -48,23 +48,26 @@ function PrivacidadePage() {
             <ul className="list-disc pl-6 space-y-1">
               <li>
                 <strong>Dados de cadastro</strong> da(o) psicóloga(o): nome,
-                e-mail e senha (armazenada de forma criptografada).
+                e-mail e senha (armazenada apenas em forma de hash
+                criptográfico — nunca em texto claro).
               </li>
               <li>
-                <strong>Dados de uso</strong>: registros de acesso, sessões
-                criadas, jogos utilizados e timestamps.
-              </li>
-              <li>
-                <strong>Conteúdo das sessões</strong>: notas, desenhos,
-                transcrições e prontuários inseridos voluntariamente
-                pela(o) psicóloga(o).
-              </li>
-              <li>
-                <strong>Dados dos pacientes</strong>: apenas as informações
-                que a(o) psicóloga(o) optar por registrar (recomendamos
-                identificadores não sensíveis, como iniciais ou apelidos).
+                <strong>Dados técnicos de uso</strong>: registros de
+                autenticação, timestamps e logs mínimos necessários à
+                segurança da Plataforma.
               </li>
             </ul>
+            <p className="mt-3">
+              <strong>Princípio da minimização (art. 6º, III da LGPD):</strong>{" "}
+              a Plataforma <strong>não armazena</strong> prontuários,
+              transcrições de sessão, anotações clínicas, nomes, idades ou
+              quaisquer outros dados identificáveis de pacientes —
+              especialmente de crianças e adolescentes. Todo o conteúdo
+              gerado durante o uso dos jogos terapêuticos é efêmero e
+              permanece restrito à sessão ao vivo entre profissional e
+              paciente.
+            </p>
+
 
             <h2 className="text-xl font-bold mt-6">
               2. Bases legais (art. 7º da LGPD)
@@ -91,13 +94,11 @@ function PrivacidadePage() {
             </h2>
             <ul className="list-disc pl-6 space-y-1">
               <li>Permitir o uso dos jogos e recursos terapêuticos;</li>
-              <li>
-                Armazenar prontuários e notas para acesso futuro da(o)
-                profissional;
-              </li>
+              <li>Autenticar a(o) profissional e proteger o acesso;</li>
               <li>Garantir segurança e prevenir fraudes;</li>
-              <li>Melhorar a Plataforma com base em métricas agregadas.</li>
+              <li>Melhorar a Plataforma com base em métricas agregadas e anonimizadas.</li>
             </ul>
+
 
             <h2 className="text-xl font-bold mt-6">
               4. Compartilhamento
@@ -128,12 +129,13 @@ function PrivacidadePage() {
               6. Retenção
             </h2>
             <p>
-              Mantemos os dados enquanto a conta estiver ativa ou pelo
-              período necessário para cumprir obrigações legais
-              (especialmente o prazo mínimo de guarda de prontuário
-              psicológico previsto pelo CFP). Após a exclusão da conta, os
-              dados são anonimizados ou eliminados em prazo razoável.
+              Mantemos os dados de cadastro enquanto a conta estiver ativa.
+              A(o) titular pode excluir a própria conta a qualquer momento
+              em <Link to="/conta" className="text-primary underline">Minha conta</Link>;
+              a exclusão é imediata e elimina perfil, permissões e
+              vínculos associados.
             </p>
+
 
             <h2 className="text-xl font-bold mt-6">
               7. Seus direitos (art. 18 da LGPD)

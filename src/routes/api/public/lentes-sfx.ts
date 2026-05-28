@@ -75,10 +75,12 @@ export const Route = createFileRoute("/api/public/lentes-sfx")({
           return new Response("Invalid lens", { status: 400 });
         }
 
-        const ip =
-          request.headers.get("cf-connecting-ip") ||
-          request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-          "unknown";
+        // Confiamos apenas em cf-connecting-ip (definido pelo edge de
+        // Cloudflare e não pode ser forjado por clientes que passam pela
+        // borda). x-forwarded-for é livremente forjável e foi removido
+        // para impedir bypass do rate limit por rotação de IP falso.
+        const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
+
 
         if (rateLimited(ip)) {
           return new Response("Too many requests", {

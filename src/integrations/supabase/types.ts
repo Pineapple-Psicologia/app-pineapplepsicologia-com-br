@@ -14,33 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      patients: {
-        Row: {
-          age: number | null
-          created_at: string
-          id: string
-          name: string
-          psychologist_id: string
-          updated_at: string
-        }
-        Insert: {
-          age?: number | null
-          created_at?: string
-          id?: string
-          name: string
-          psychologist_id: string
-          updated_at?: string
-        }
-        Update: {
-          age?: number | null
-          created_at?: string
-          id?: string
-          name?: string
-          psychologist_id?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           created_at: string
@@ -64,50 +37,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
-      }
-      sessions: {
-        Row: {
-          created_at: string
-          id: string
-          patient_id: string
-          prontuario: string | null
-          psychologist_id: string
-          session_date: string
-          status: string
-          transcript: string | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          patient_id: string
-          prontuario?: string | null
-          psychologist_id: string
-          session_date?: string
-          status?: string
-          transcript?: string | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          patient_id?: string
-          prontuario?: string | null
-          psychologist_id?: string
-          session_date?: string
-          status?: string
-          transcript?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "sessions_patient_id_fkey"
-            columns: ["patient_id"]
-            isOneToOne: false
-            referencedRelation: "patients"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       user_roles: {
         Row: {
