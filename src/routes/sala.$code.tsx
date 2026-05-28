@@ -28,8 +28,9 @@ const searchSchema = z.object({
   game: z.enum(GAMES).catch("whiteboard").default("whiteboard"),
 });
 
-
+export const Route = createFileRoute("/sala/$code")({
   validateSearch: searchSchema,
+
   head: ({ params }) => ({
     meta: [{ title: `Sala ${params.code} — Mundo Pine` }],
   }),
