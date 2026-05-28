@@ -3,7 +3,7 @@ import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
 import { Eye, RotateCcw, Search, Sparkles, BookOpen } from "lucide-react";
-import salaImg from "@/assets/lentes-sala.jpg";
+import salaImg from "@/assets/lentes-paisagem.jpg";
 
 type Props = { room: ReturnType<typeof useRoom> };
 
@@ -144,120 +144,23 @@ const DISTORTING_LENSES: LensId[] = [
   "rotulacao",
 ];
 
-// ---------- Cena: sala de aula. 4 NPCs + protagonista entrando pela porta. ----------
-type NpcId = "ana" | "bruno" | "clara" | "diego";
-
-type NpcView = {
-  expression: string;
-  thoughtPerLens: Record<LensId, string>;
-  truth: string;
-};
-
-const NPCS: Record<NpcId, { name: string; x: number; y: number; color: string; view: NpcView }> = {
-  ana: {
-    name: "Ana",
-    x: 20,
-    y: 62,
-    color: "#c98a5b",
-    view: {
-      expression: "😂",
-      thoughtPerLens: {
-        neutra: "Ana está rindo olhando pro celular.",
-        curiosa: "Ana segura o celular. Será que viu algo engraçado?",
-        catastrofe: "Se ela está rindo, fez piada com você. Amanhã a turma toda vai saber.",
-        personalizacao: "Ana riu assim que você entrou. É de você.",
-        leituraMental: "Dá pra ver no rosto da Ana: ela está pensando ‘que ridículo’.",
-        adivinhacao: "Já sei: ela vai contar pra todo mundo no recreio.",
-        generalizacao: "Sempre que entro num lugar a Ana ri assim. Sempre.",
-        tudoOuNada: "Ou ela é minha amiga, ou ela me odeia. E claramente me odeia.",
-        filtroMental: "Nem vi se ela acenou. Só vi o sorriso debochado.",
-        rotulacao: "Ana é uma pessoa cruel. Ponto.",
-      },
-      truth: "Está vendo um vídeo de gato no celular há 10 minutos.",
-    },
-  },
-  bruno: {
-    name: "Bruno",
-    x: 40,
-    y: 55,
-    color: "#5b8ac9",
-    view: {
-      expression: "😄",
-      thoughtPerLens: {
-        neutra: "Bruno ri junto da Ana, olhando a mesma tela.",
-        curiosa: "Bruno também está olhando o celular da Ana. Riram da mesma coisa.",
-        catastrofe: "Os dois estão combinando alguma humilhação pública.",
-        personalizacao: "Bruno olhou pra você e depois riu. Foi de você.",
-        leituraMental: "Bruno está pensando ‘olha esse aí entrando’.",
-        adivinhacao: "Ele vai te zoar na frente da turma hoje.",
-        generalizacao: "Bruno nunca te trata bem. Nunca.",
-        tudoOuNada: "Se ele ri com a Ana e não comigo, ele está contra mim.",
-        filtroMental: "Ignora que ele te cumprimentou ontem. Hoje ele riu.",
-        rotulacao: "Bruno é um falso.",
-      },
-      truth: "Está vendo o mesmo vídeo da Ana, debruçado na carteira dela.",
-    },
-  },
-  clara: {
-    name: "Clara",
-    x: 60,
-    y: 55,
-    color: "#9b6bb5",
-    view: {
-      expression: "🙂",
-      thoughtPerLens: {
-        neutra: "Clara está organizando o caderno.",
-        curiosa: "Clara parece concentrada. Talvez nem tenha notado a porta abrir.",
-        catastrofe: "Ela vai contar pra todo mundo que você chegou esquisito.",
-        personalizacao: "Clara fingiu não ver você entrar. Te ignorou de propósito.",
-        leituraMental: "Clara está pensando ‘nem vou cumprimentar, não vale a pena’.",
-        adivinhacao: "Ela vai parar de falar com você essa semana.",
-        generalizacao: "Todo mundo me ignora quando entro na sala.",
-        tudoOuNada: "Ou ela me cumprimenta, ou nossa amizade acabou.",
-        filtroMental: "Esquece que ela te chamou ontem. Hoje não olhou.",
-        rotulacao: "Clara é uma pessoa fria.",
-      },
-      truth: "Está copiando a matéria que perdeu ontem, totalmente focada.",
-    },
-  },
-  diego: {
-    name: "Marina",
-    x: 82,
-    y: 62,
-    color: "#4a8a6b",
-    view: {
-      expression: "😐",
-      thoughtPerLens: {
-        neutra: "Marina olhou pra porta quando você entrou.",
-        curiosa: "Marina olhou pra porta como qualquer pessoa olha quando ouve barulho.",
-        catastrofe: "Aquele olhar foi de quem viu algo muito errado em você.",
-        personalizacao: "Marina encarou você. Reparou em tudo.",
-        leituraMental: "Marina está pensando ‘credo, olha como ele entrou’.",
-        adivinhacao: "Ela vai comentar com a turma toda no intervalo.",
-        generalizacao: "Todo mundo sempre repara em mim quando entro.",
-        tudoOuNada: "Ou ela sorri, ou ela está me julgando. Não sorriu.",
-        filtroMental: "Nem vi se ela voltou pro caderno. Só registrei o olhar.",
-        rotulacao: "Marina é mala.",
-      },
-      truth: "Estava esperando a professora, achou que você fosse ela.",
-    },
-  },
-};
+// ---------- Cena: pessoa de costas olhando uma paisagem ----------
+// As "pistas" são elementos da paisagem que o jogador investiga para ganhar clareza.
 
 const CLUE_POSITIONS = {
-  celular: { x: 32, y: 78 },
-  caderno: { x: 80, y: 82 },
-  porta: { x: 6, y: 50 },
-  relogio: { x: 57, y: 18 },
+  sol: { x: 50, y: 30 },
+  rio: { x: 42, y: 78 },
+  arvore: { x: 15, y: 72 },
+  nuvem: { x: 82, y: 22 },
 } as const;
 
 type Clue = { id: string; label: string; x: number; y: number; reveals: string };
 
 const CLUES: Clue[] = [
-  { id: "celular", label: "Celular da Ana", x: CLUE_POSITIONS.celular.x, y: CLUE_POSITIONS.celular.y, reveals: "É um vídeo de gato caindo da estante. Ana mostrou pro Bruno antes de você entrar." },
-  { id: "caderno", label: "Caderno da Clara", x: CLUE_POSITIONS.caderno.x, y: CLUE_POSITIONS.caderno.y, reveals: "‘Matéria de ontem — copiar antes da prof chegar’. Ela está atrasada com a matéria, não com você." },
-  { id: "porta", label: "Barulho da porta", x: CLUE_POSITIONS.porta.x, y: CLUE_POSITIONS.porta.y, reveals: "A porta range alto. Quase todo mundo olha quando alguém entra — é reflexo, não julgamento." },
-  { id: "relogio", label: "Relógio da sala", x: CLUE_POSITIONS.relogio.x, y: CLUE_POSITIONS.relogio.y, reveals: "Faltam 2 minutos pra aula. A turma está dispersa, cada um no seu canto." },
+  { id: "sol", label: "O pôr do sol", x: CLUE_POSITIONS.sol.x, y: CLUE_POSITIONS.sol.y, reveals: "A luz dourada acontece todo dia, independente do que você esteja sentindo. Há beleza no momento — mesmo quando a cabeça insiste em escurecê-la." },
+  { id: "rio", label: "O rio", x: CLUE_POSITIONS.rio.x, y: CLUE_POSITIONS.rio.y, reveals: "O rio segue seu curso sem pressa. Pensamentos também passam — eles não são você, são só água correndo." },
+  { id: "arvore", label: "As árvores", x: CLUE_POSITIONS.arvore.x, y: CLUE_POSITIONS.arvore.y, reveals: "Cada árvore tem seu tamanho, sua forma. Comparar-se com elas não muda o que você é. A paisagem comporta todas." },
+  { id: "nuvem", label: "As nuvens", x: CLUE_POSITIONS.nuvem.x, y: CLUE_POSITIONS.nuvem.y, reveals: "As nuvens mudam de forma o tempo todo. O que parece ameaçador agora pode dissolver em minutos. Nem toda nuvem vira tempestade." },
 ];
 
 // ---------- Estado sincronizado ----------
@@ -521,7 +424,7 @@ export default function EntreLentes({ room }: Props) {
         <div className="absolute inset-0 transition-[filter] duration-700" style={sceneStyle}>
           <img
             src={salaImg}
-            alt="Sala de aula em estilo Pixar com colegas rindo, escrevendo e olhando para a porta"
+            alt="Pessoa de costas em estilo Pixar olhando uma paisagem com colinas, rio e pôr do sol"
             className="w-full h-full object-cover select-none pointer-events-none"
             draggable={false}
           />
@@ -553,41 +456,48 @@ export default function EntreLentes({ room }: Props) {
           );
         })}
 
-        {/* NPC thoughts overlay */}
-        {(() => {
-          const layout: Record<NpcId, { dx: number; dy: number; align: "center" | "left" | "right" }> = {
-            ana:   { dx: -6, dy: -62,  align: "center" },
-            bruno: { dx: 0,  dy: -70,  align: "center" },
-            clara: { dx: 0,  dy: -70,  align: "center" },
-            diego: { dx: 0,  dy: 0,    align: "center" },
-          };
-          return (Object.keys(NPCS) as NpcId[]).map((id) => {
-            const npc = NPCS[id];
-            const cfg = layout[id];
-            const text = state.revealedClues.length >= 2 && !isDistorting
-              ? npc.view.truth
-              : npc.view.thoughtPerLens[state.lens];
-            const translateX = cfg.align === "center" ? "-50%" : cfg.align === "left" ? "0%" : "-100%";
-            const tailPos = cfg.align === "center" ? "mx-auto" : cfg.align === "left" ? "ml-3" : "mr-3 ml-auto";
-            return (
-              <div
-                key={id}
-                className="absolute w-[140px]"
-                style={{
-                  left: `calc(${npc.x}% + ${cfg.dx}px)`,
-                  top: `${npc.y - 10}%`,
-                  transform: `translate(${translateX}, calc(-100% + ${cfg.dy}px))`,
-                }}
-              >
-                <div className="rounded-2xl bg-white/95 border border-[#4a5a2a]/25 px-2.5 py-1.5 text-[10.5px] leading-tight shadow-md">
-                  <div className="font-bold text-[#4a5a2a] text-[11px]">{npc.name}</div>
-                  <div className="text-stone-700">{text}</div>
-                </div>
-                <div className={`w-2 h-2 bg-white/95 rotate-45 -mt-1 border-r border-b border-[#4a5a2a]/25 ${tailPos}`} />
-              </div>
-            );
-          });
-        })()}
+        {/* Óculos sobre o rosto do personagem — mudam de cor conforme a lente */}
+        <svg
+          viewBox="0 0 200 80"
+          className="absolute pointer-events-none transition-all duration-500"
+          style={{
+            left: "50%",
+            top: "58%",
+            transform: "translate(-50%, -50%)",
+            width: "16%",
+            filter: `drop-shadow(0 2px 4px rgba(0,0,0,0.35))`,
+          }}
+          aria-hidden
+        >
+          {/* armação */}
+          <g fill="none" stroke="#1a1a1a" strokeWidth="4" strokeLinecap="round">
+            <circle cx="55" cy="40" r="28" />
+            <circle cx="145" cy="40" r="28" />
+            <path d="M83 40 Q100 30 117 40" />
+            <path d="M27 36 L8 28" />
+            <path d="M173 36 L192 28" />
+          </g>
+          {/* lentes coloridas */}
+          <circle
+            cx="55"
+            cy="40"
+            r="25"
+            fill={lens.color}
+            fillOpacity={state.lens === "neutra" ? 0.15 : 0.55 + (intensity / 3) * 0.3}
+            style={{ transition: "fill 0.5s, fill-opacity 0.5s" }}
+          />
+          <circle
+            cx="145"
+            cy="40"
+            r="25"
+            fill={lens.color}
+            fillOpacity={state.lens === "neutra" ? 0.15 : 0.55 + (intensity / 3) * 0.3}
+            style={{ transition: "fill 0.5s, fill-opacity 0.5s" }}
+          />
+          {/* reflexo */}
+          <ellipse cx="48" cy="32" rx="6" ry="3" fill="white" opacity="0.6" />
+          <ellipse cx="138" cy="32" rx="6" ry="3" fill="white" opacity="0.6" />
+        </svg>
 
         {/* Internal protagonist thought */}
         <div className="absolute left-1/2 bottom-4 -translate-x-1/2 max-w-[80%] text-center">
@@ -690,8 +600,8 @@ export default function EntreLentes({ room }: Props) {
               </SheetContent>
             </Sheet>
           </div>
-          <h2 className="font-bold text-lg leading-tight">Sala de aula · você acabou de entrar</h2>
-          <p className="text-xs opacity-90 mt-1">Algumas pessoas riem. O mesmo momento muda dependendo da lente — da distorção cognitiva — que você equipa.</p>
+          <h2 className="font-bold text-lg leading-tight">Diante da paisagem · troque as lentes</h2>
+          <p className="text-xs opacity-90 mt-1">A mesma paisagem muda completamente dependendo da lente — da distorção cognitiva — que você coloca nos óculos.</p>
         </header>
 
         <section className="rounded-2xl bg-white border border-[#4a5a2a]/20 p-3 shadow-sm overflow-y-auto">
@@ -770,42 +680,42 @@ function hexToRgb(hex: string): string {
 }
 
 function protagonistThought(lens: LensId, intensity: number, clarity: number): string {
-  if (lens === "neutra") return "Entrei na sala. Algumas pessoas riram em algum momento.";
+  if (lens === "neutra") return "Olho a paisagem. Hills, um rio, nuvens. Só isso.";
   if (lens === "curiosa") {
-    if (clarity >= 2) return "Faz sentido. Cada um tava no seu mundo. A risada não era sobre mim.";
-    return "Hum, será que riram de algo no celular? Vou olhar antes de concluir.";
+    if (clarity >= 2) return "Quanta coisa pra notar… cada detalhe tem seu lugar aqui.";
+    return "Que cores são essas no céu? Será que sempre foi assim?";
   }
   if (lens === "personalizacao") {
-    if (clarity >= 3) return "Ainda incomoda… mas dá pra ver que não era de mim.";
-    if (intensity >= 3) return "Tudo o que acontece aqui é por minha causa.";
-    return "Será que riram de mim?";
+    if (clarity >= 3) return "A paisagem não está aqui por mim — nem contra mim. Só está.";
+    if (intensity >= 3) return "Até o céu parece de mau humor hoje. Por minha causa.";
+    return "Esse vento frio parece de propósito.";
   }
   if (lens === "catastrofe") {
-    if (clarity >= 3) return "Ok, talvez não fosse o fim do mundo. Respira.";
-    if (intensity >= 3) return "Amanhã a escola toda vai saber. Acabou.";
-    return "E se isso ficar pra sempre?";
+    if (clarity >= 3) return "Aquela nuvem talvez só seja uma nuvem.";
+    if (intensity >= 3) return "Aquela nuvem vai virar tempestade. Vai dar tudo errado.";
+    return "E se o tempo virar agora?";
   }
   if (lens === "leituraMental") {
-    if (clarity >= 3) return "Espera — eu não sei mesmo o que eles pensam.";
-    return "Eu sei exatamente o que cada um tá pensando de mim.";
+    if (clarity >= 3) return "Não dá pra saber o que a paisagem 'pensa'. Nem se pensa.";
+    return "Sinto que até as montanhas estão me julgando.";
   }
   if (lens === "adivinhacao") {
-    if (clarity >= 3) return "Talvez eu esteja prevendo um futuro que não existe ainda.";
-    return "Já sei como esse dia vai terminar: mal.";
+    if (clarity >= 3) return "Talvez o dia ainda surpreenda. Não sei o final.";
+    return "Já sei: vai escurecer e eu vou voltar pra casa triste.";
   }
   if (lens === "generalizacao") {
-    if (clarity >= 3) return "Não é ‘sempre’. É hoje, é agora, e tem contexto.";
-    return "Sempre acontece comigo. Toda. Santa. Vez.";
+    if (clarity >= 3) return "Hoje é um dia. Nem todos foram assim, nem todos serão.";
+    return "Toda paisagem bonita sempre acaba me deixando mais sozinho. Sempre.";
   }
   if (lens === "tudoOuNada") {
-    if (clarity >= 3) return "Existe um meio-termo. Nem tudo é fracasso.";
-    return "Ou eu entro bem, ou eu fracassei totalmente.";
+    if (clarity >= 3) return "Não precisa ser o melhor pôr do sol da vida pra valer a pena.";
+    return "Ou esse pôr do sol é perfeito, ou não vale nada.";
   }
   if (lens === "filtroMental") {
-    if (clarity >= 3) return "Tinha coisas neutras e boas também — eu só não vi.";
-    return "Só vejo o que deu errado nessa entrada.";
+    if (clarity >= 3) return "Tem verde, tem rio, tem luz. Eu só estava vendo a sombra.";
+    return "Só vejo a parte escura entre as montanhas.";
   }
   // rotulacao
-  if (clarity >= 3) return "Um momento desconfortável não me define.";
-  return "Sou um desastre. Sempre fui.";
+  if (clarity >= 3) return "Um momento triste diante da paisagem não me define.";
+  return "Sou alguém que nem consegue curtir uma paisagem dessas. Patético.";
 }
