@@ -3,7 +3,7 @@ import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
 import { Eye, RotateCcw, Search, Sparkles, BookOpen } from "lucide-react";
-import salaImg from "@/assets/lentes-sala.jpg";
+import salaImg from "@/assets/lentes-paisagem.jpg";
 
 type Props = { room: ReturnType<typeof useRoom> };
 
