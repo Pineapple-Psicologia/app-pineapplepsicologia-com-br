@@ -4,12 +4,14 @@ import {
   Eraser, Trash2, Pencil, Undo2, Download, Brush, Highlighter,
   Square, Circle as CircleIcon, Minus, ArrowRight, Type, Smile,
   LayoutGrid, Sparkles, Wand2, Waves, Zap, Rainbow, SprayCan, PaintBucket, Plus, Move,
-  Lock, Unlock,
+  Lock, Unlock, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { useRoom, RoomMessage } from "@/lib/useRoom";
 import { TEMPLATES, buildTemplate, type TemplateId } from "@/lib/whiteboardTemplates";
 import whiteboardBg from "@/assets/scene-whiteboard.jpg";
+
 
 type BrushTool = "pen" | "marker" | "brush" | "neon" | "rainbow" | "spray";
 type Tool = BrushTool | "rect" | "circle" | "line" | "arrow" | "text" | "sticker" | "eraser" | "fill";
