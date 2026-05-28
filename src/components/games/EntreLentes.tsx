@@ -456,41 +456,48 @@ export default function EntreLentes({ room }: Props) {
           );
         })}
 
-        {/* NPC thoughts overlay */}
-        {(() => {
-          const layout: Record<NpcId, { dx: number; dy: number; align: "center" | "left" | "right" }> = {
-            ana:   { dx: -6, dy: -62,  align: "center" },
-            bruno: { dx: 0,  dy: -70,  align: "center" },
-            clara: { dx: 0,  dy: -70,  align: "center" },
-            diego: { dx: 0,  dy: 0,    align: "center" },
-          };
-          return (Object.keys(NPCS) as NpcId[]).map((id) => {
-            const npc = NPCS[id];
-            const cfg = layout[id];
-            const text = state.revealedClues.length >= 2 && !isDistorting
-              ? npc.view.truth
-              : npc.view.thoughtPerLens[state.lens];
-            const translateX = cfg.align === "center" ? "-50%" : cfg.align === "left" ? "0%" : "-100%";
-            const tailPos = cfg.align === "center" ? "mx-auto" : cfg.align === "left" ? "ml-3" : "mr-3 ml-auto";
-            return (
-              <div
-                key={id}
-                className="absolute w-[140px]"
-                style={{
-                  left: `calc(${npc.x}% + ${cfg.dx}px)`,
-                  top: `${npc.y - 10}%`,
-                  transform: `translate(${translateX}, calc(-100% + ${cfg.dy}px))`,
-                }}
-              >
-                <div className="rounded-2xl bg-white/95 border border-[#4a5a2a]/25 px-2.5 py-1.5 text-[10.5px] leading-tight shadow-md">
-                  <div className="font-bold text-[#4a5a2a] text-[11px]">{npc.name}</div>
-                  <div className="text-stone-700">{text}</div>
-                </div>
-                <div className={`w-2 h-2 bg-white/95 rotate-45 -mt-1 border-r border-b border-[#4a5a2a]/25 ${tailPos}`} />
-              </div>
-            );
-          });
-        })()}
+        {/* Óculos sobre o rosto do personagem — mudam de cor conforme a lente */}
+        <svg
+          viewBox="0 0 200 80"
+          className="absolute pointer-events-none transition-all duration-500"
+          style={{
+            left: "50%",
+            top: "58%",
+            transform: "translate(-50%, -50%)",
+            width: "16%",
+            filter: `drop-shadow(0 2px 4px rgba(0,0,0,0.35))`,
+          }}
+          aria-hidden
+        >
+          {/* armação */}
+          <g fill="none" stroke="#1a1a1a" strokeWidth="4" strokeLinecap="round">
+            <circle cx="55" cy="40" r="28" />
+            <circle cx="145" cy="40" r="28" />
+            <path d="M83 40 Q100 30 117 40" />
+            <path d="M27 36 L8 28" />
+            <path d="M173 36 L192 28" />
+          </g>
+          {/* lentes coloridas */}
+          <circle
+            cx="55"
+            cy="40"
+            r="25"
+            fill={lens.color}
+            fillOpacity={state.lens === "neutra" ? 0.15 : 0.55 + (intensity / 3) * 0.3}
+            style={{ transition: "fill 0.5s, fill-opacity 0.5s" }}
+          />
+          <circle
+            cx="145"
+            cy="40"
+            r="25"
+            fill={lens.color}
+            fillOpacity={state.lens === "neutra" ? 0.15 : 0.55 + (intensity / 3) * 0.3}
+            style={{ transition: "fill 0.5s, fill-opacity 0.5s" }}
+          />
+          {/* reflexo */}
+          <ellipse cx="48" cy="32" rx="6" ry="3" fill="white" opacity="0.6" />
+          <ellipse cx="138" cy="32" rx="6" ry="3" fill="white" opacity="0.6" />
+        </svg>
 
         {/* Internal protagonist thought */}
         <div className="absolute left-1/2 bottom-4 -translate-x-1/2 max-w-[80%] text-center">
