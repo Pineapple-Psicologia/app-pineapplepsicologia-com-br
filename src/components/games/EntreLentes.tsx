@@ -424,7 +424,7 @@ export default function EntreLentes({ room }: Props) {
         <div className="absolute inset-0 transition-[filter] duration-700" style={sceneStyle}>
           <img
             src={salaImg}
-            alt="Sala de aula em estilo Pixar com colegas rindo, escrevendo e olhando para a porta"
+            alt="Pessoa de costas em estilo Pixar olhando uma paisagem com colinas, rio e pôr do sol"
             className="w-full h-full object-cover select-none pointer-events-none"
             draggable={false}
           />
