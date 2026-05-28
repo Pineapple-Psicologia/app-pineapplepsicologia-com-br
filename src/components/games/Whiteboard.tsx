@@ -717,15 +717,27 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
 
   return (
     <div
-      className="flex flex-col h-full gap-3 p-3 rounded-2xl border-4 border-amber-900/25 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.35)] relative overflow-hidden"
+      className="flex flex-col h-full gap-1.5 sm:gap-3 p-1.5 sm:p-3 rounded-2xl border-4 border-amber-900/25 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.35)] relative overflow-hidden"
       style={{
         backgroundImage: `linear-gradient(rgba(255,247,237,0.6), rgba(186,230,253,0.4)), url(${whiteboardBg})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
     >
+      {/* Mobile toolbar toggle */}
+      {isMobile && (
+        <button
+          onClick={() => setToolbarExpanded((v) => !v)}
+          className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-card rounded-xl border-2 border-border shadow-sm text-xs font-bold"
+        >
+          {toolbarExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          {toolbarExpanded ? "Esconder ferramentas" : "Ferramentas"}
+        </button>
+      )}
+
       {/* Toolbar */}
-      <div className="flex flex-wrap items-stretch gap-2 p-2.5 bg-card rounded-2xl border-2 border-border shadow-sm">
+      <div className={`${isMobile && !toolbarExpanded ? "hidden" : "flex"} flex-wrap items-stretch gap-2 p-2.5 bg-card rounded-2xl border-2 border-border shadow-sm`}>
+
         <div className="flex gap-1.5">
           <ToolBtn id="pen" label="Lápis" icon={Pencil} />
           <ToolBtn id="marker" label="Marcador" icon={Highlighter} />
