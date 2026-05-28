@@ -293,6 +293,36 @@ export default function EntreLentes({ room }: Props) {
             <h3 className="font-bold text-[#4a5a2a]">Escolha uma lente</h3>
             <p className="text-sm text-stone-600">Cada lente é um jeito de pensar — uma distorção cognitiva.</p>
           </div>
+
+          {/* Frases flutuantes ao redor da criança — mudam por lente */}
+          <div className="absolute inset-0 pointer-events-none">
+            {PHRASES[state.lens].map((p, i) => {
+              const isNeutralVibe = state.lens === "neutra" || state.lens === "curiosa";
+              // Frases distorcidas desbotam conforme as pistas são reveladas
+              const opacity = isNeutralVibe ? 0.95 : Math.max(0.25, 0.95 - clarityT * 0.6);
+              const bg = isNeutralVibe ? "rgba(255,255,255,0.92)" : `${lens.ring}EE`;
+              const color = isNeutralVibe ? "#3a3a2a" : "#fff";
+              return (
+                <div
+                  key={`${state.lens}-${i}`}
+                  className="absolute max-w-[42%] animate-fade-in"
+                  style={{
+                    top: p.top,
+                    left: p.left,
+                    animationDelay: `${i * 120}ms`,
+                    opacity,
+                  }}
+                >
+                  <div
+                    className="rounded-2xl px-2.5 py-1 text-[11px] md:text-xs italic font-medium shadow-md backdrop-blur leading-snug"
+                    style={{ background: bg, color, border: `1px solid ${lens.ring}55` }}
+                  >
+                    “{p.text}”
+                  </div>
+                </div>
+              );
+            })}
+          </div>
           <div className="rounded-2xl bg-white border border-[#4a5a2a]/20 p-4">
             <div className="text-2xl mb-1">2️⃣</div>
             <h3 className="font-bold text-[#4a5a2a]">Veja a cena mudar</h3>
