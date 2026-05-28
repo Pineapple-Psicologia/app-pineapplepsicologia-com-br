@@ -107,7 +107,8 @@ function SalaPage() {
 
 
       <div className="flex-1 flex min-h-0">
-        <main className="flex-1 overflow-auto p-4">
+        <main className="flex-1 overflow-auto p-1.5 sm:p-4">
+
           {game === "termometro" ? (
             <Termometro room={room} />
           ) : game === "detetive" ? (
