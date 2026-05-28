@@ -21,13 +21,16 @@ import { Copy, Check, ArrowLeft, Wifi, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 import { getGame } from "@/lib/games";
 
+const GAMES = ["whiteboard", "termometro", "detetive", "detetive-tabuleiro", "detetive-aventura", "mapa-corporal", "triangulo", "entre-lentes", "respiracao", "ancoragem", "folhas-no-rio", "bussola", "minha-casa"] as const;
+
 const searchSchema = z.object({
-  role: z.enum(["psi", "paciente"]).default("paciente"),
-  game: z.enum(["whiteboard", "termometro", "detetive", "detetive-tabuleiro", "detetive-aventura", "mapa-corporal", "triangulo", "entre-lentes", "respiracao", "ancoragem", "folhas-no-rio", "bussola", "minha-casa"]).default("whiteboard"),
+  role: z.enum(["psi", "paciente"]).catch("paciente").default("paciente"),
+  game: z.enum(GAMES).catch("whiteboard").default("whiteboard"),
 });
 
 export const Route = createFileRoute("/sala/$code")({
   validateSearch: searchSchema,
+
   head: ({ params }) => ({
     meta: [{ title: `Sala ${params.code} — Mundo Pine` }],
   }),
