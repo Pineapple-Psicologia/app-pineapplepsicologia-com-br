@@ -680,42 +680,42 @@ function hexToRgb(hex: string): string {
 }
 
 function protagonistThought(lens: LensId, intensity: number, clarity: number): string {
-  if (lens === "neutra") return "Entrei na sala. Algumas pessoas riram em algum momento.";
+  if (lens === "neutra") return "Olho a paisagem. Hills, um rio, nuvens. Só isso.";
   if (lens === "curiosa") {
-    if (clarity >= 2) return "Faz sentido. Cada um tava no seu mundo. A risada não era sobre mim.";
-    return "Hum, será que riram de algo no celular? Vou olhar antes de concluir.";
+    if (clarity >= 2) return "Quanta coisa pra notar… cada detalhe tem seu lugar aqui.";
+    return "Que cores são essas no céu? Será que sempre foi assim?";
   }
   if (lens === "personalizacao") {
-    if (clarity >= 3) return "Ainda incomoda… mas dá pra ver que não era de mim.";
-    if (intensity >= 3) return "Tudo o que acontece aqui é por minha causa.";
-    return "Será que riram de mim?";
+    if (clarity >= 3) return "A paisagem não está aqui por mim — nem contra mim. Só está.";
+    if (intensity >= 3) return "Até o céu parece de mau humor hoje. Por minha causa.";
+    return "Esse vento frio parece de propósito.";
   }
   if (lens === "catastrofe") {
-    if (clarity >= 3) return "Ok, talvez não fosse o fim do mundo. Respira.";
-    if (intensity >= 3) return "Amanhã a escola toda vai saber. Acabou.";
-    return "E se isso ficar pra sempre?";
+    if (clarity >= 3) return "Aquela nuvem talvez só seja uma nuvem.";
+    if (intensity >= 3) return "Aquela nuvem vai virar tempestade. Vai dar tudo errado.";
+    return "E se o tempo virar agora?";
   }
   if (lens === "leituraMental") {
-    if (clarity >= 3) return "Espera — eu não sei mesmo o que eles pensam.";
-    return "Eu sei exatamente o que cada um tá pensando de mim.";
+    if (clarity >= 3) return "Não dá pra saber o que a paisagem 'pensa'. Nem se pensa.";
+    return "Sinto que até as montanhas estão me julgando.";
   }
   if (lens === "adivinhacao") {
-    if (clarity >= 3) return "Talvez eu esteja prevendo um futuro que não existe ainda.";
-    return "Já sei como esse dia vai terminar: mal.";
+    if (clarity >= 3) return "Talvez o dia ainda surpreenda. Não sei o final.";
+    return "Já sei: vai escurecer e eu vou voltar pra casa triste.";
   }
   if (lens === "generalizacao") {
-    if (clarity >= 3) return "Não é ‘sempre’. É hoje, é agora, e tem contexto.";
-    return "Sempre acontece comigo. Toda. Santa. Vez.";
+    if (clarity >= 3) return "Hoje é um dia. Nem todos foram assim, nem todos serão.";
+    return "Toda paisagem bonita sempre acaba me deixando mais sozinho. Sempre.";
   }
   if (lens === "tudoOuNada") {
-    if (clarity >= 3) return "Existe um meio-termo. Nem tudo é fracasso.";
-    return "Ou eu entro bem, ou eu fracassei totalmente.";
+    if (clarity >= 3) return "Não precisa ser o melhor pôr do sol da vida pra valer a pena.";
+    return "Ou esse pôr do sol é perfeito, ou não vale nada.";
   }
   if (lens === "filtroMental") {
-    if (clarity >= 3) return "Tinha coisas neutras e boas também — eu só não vi.";
-    return "Só vejo o que deu errado nessa entrada.";
+    if (clarity >= 3) return "Tem verde, tem rio, tem luz. Eu só estava vendo a sombra.";
+    return "Só vejo a parte escura entre as montanhas.";
   }
   // rotulacao
-  if (clarity >= 3) return "Um momento desconfortável não me define.";
-  return "Sou um desastre. Sempre fui.";
+  if (clarity >= 3) return "Um momento triste diante da paisagem não me define.";
+  return "Sou alguém que nem consegue curtir uma paisagem dessas. Patético.";
 }
