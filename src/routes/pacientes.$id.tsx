@@ -59,13 +59,7 @@ function PatientFolderPage() {
   const open = async (f: FileRow) => {
     try {
       const url = await getSignedPatientFileUrl(f.file_path, 300);
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const blob = await res.blob();
-      const typed = new Blob([blob], { type: mimeOf(f.file_name, blob.type) });
-      const objectUrl = URL.createObjectURL(typed);
-      window.location.href = objectUrl;
-      setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+      window.location.assign(url);
     } catch (e: any) {
       toast.error("Erro ao abrir", { description: e?.message });
     }
