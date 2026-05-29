@@ -8,6 +8,21 @@ import {
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useIsMobile } from "@/hooks/use-mobile";
+
+// Considera "tela compacta" qualquer viewport até 1024px (celular + tablet).
+// Nessa faixa a barra de ferramentas vira recolhível para o quadro ocupar
+// quase toda a tela.
+function useIsCompact() {
+  const [compact, setCompact] = useState<boolean>(false);
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 1024px)");
+    const on = () => setCompact(mql.matches);
+    on();
+    mql.addEventListener("change", on);
+    return () => mql.removeEventListener("change", on);
+  }, []);
+  return compact;
+}
 import type { useRoom, RoomMessage } from "@/lib/useRoom";
 import { TEMPLATES, buildTemplate, type TemplateId } from "@/lib/whiteboardTemplates";
 import whiteboardBg from "@/assets/scene-whiteboard.jpg";
@@ -65,6 +80,7 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
   const isPsi = role === "psi";
   const canDraw = isPsi || !locked;
   const isMobile = useIsMobile();
+  const isCompact = useIsCompact();
   const [toolbarExpanded, setToolbarExpanded] = useState(false);
   const [textInput, setTextInput] = useState<{ x: number; y: number; value: string; id?: string; color?: string; size?: number } | null>(null);
 
@@ -725,7 +741,7 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
       }}
     >
       {/* Mobile toolbar toggle */}
-      {isMobile && (
+      {isCompact && (
         <button
           onClick={() => setToolbarExpanded((v) => !v)}
           className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-card rounded-xl border-2 border-border shadow-sm text-xs font-bold"
@@ -736,7 +752,8 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
       )}
 
       {/* Toolbar */}
-      <div className={`${isMobile && !toolbarExpanded ? "hidden" : "flex"} flex-wrap items-stretch gap-2 p-2.5 bg-card rounded-2xl border-2 border-border shadow-sm`}>
+      <div className={`${isCompact && !toolbarExpanded ? "hidden" : "flex"} flex-wrap items-stretch gap-2 p-2.5 bg-card rounded-2xl border-2 border-border shadow-sm`}>
+
 
         <div className="flex gap-1.5">
           <ToolBtn id="pen" label="Lápis" icon={Pencil} />
