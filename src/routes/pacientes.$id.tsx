@@ -135,7 +135,7 @@ function PatientFolderPage() {
                 {f.size_bytes ? ` · ${fmtSize(f.size_bytes)}` : ""}
               </div>
             </button>
-            <Button variant="ghost" size="icon" onClick={() => open(f)} title="Abrir / baixar">
+            <Button variant="ghost" size="icon" onClick={() => download(f)} title="Baixar">
               <Download className="w-4 h-4" />
             </Button>
             <Button variant="ghost" size="icon" onClick={() => remove(f)}>
