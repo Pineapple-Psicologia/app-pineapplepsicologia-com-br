@@ -46,35 +46,48 @@ function PatientFolderPage() {
     setFiles((data ?? []) as FileRow[]);
   };
 
+  const mimeOf = (name: string, fallback?: string) => {
+    const ext = name.split(".").pop()?.toLowerCase();
+    return ext === "pdf" ? "application/pdf"
+      : ext === "png" ? "image/png"
+      : ext === "jpg" || ext === "jpeg" ? "image/jpeg"
+      : ext === "gif" ? "image/gif"
+      : ext === "webp" ? "image/webp"
+      : fallback || "application/octet-stream";
+  };
+
   const open = async (f: FileRow) => {
     try {
       const url = await getSignedPatientFileUrl(f.file_path, 300);
       const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const blob = await res.blob();
-      const ext = f.file_name.split(".").pop()?.toLowerCase();
-      const mime =
-        ext === "pdf" ? "application/pdf"
-        : ext === "png" ? "image/png"
-        : ext === "jpg" || ext === "jpeg" ? "image/jpeg"
-        : ext === "gif" ? "image/gif"
-        : ext === "webp" ? "image/webp"
-        : blob.type || "application/octet-stream";
-      const typed = new Blob([blob], { type: mime });
+      const typed = new Blob([blob], { type: mimeOf(f.file_name, blob.type) });
       const objectUrl = URL.createObjectURL(typed);
-      const win = window.open(objectUrl, "_blank", "noopener,noreferrer");
-      if (!win) {
-        // popup blocked — força download
-        const a = document.createElement("a");
-        a.href = objectUrl;
-        a.download = f.file_name;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-      }
+      window.location.href = objectUrl;
       setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
     } catch (e: any) {
       toast.error("Erro ao abrir", { description: e?.message });
+    }
+  };
+
+  const download = async (f: FileRow) => {
+    try {
+      const url = await getSignedPatientFileUrl(f.file_path, 300);
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      const typed = new Blob([blob], { type: mimeOf(f.file_name, blob.type) });
+      const objectUrl = URL.createObjectURL(typed);
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = f.file_name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+    } catch (e: any) {
+      toast.error("Erro ao baixar", { description: e?.message });
     }
   };
 
