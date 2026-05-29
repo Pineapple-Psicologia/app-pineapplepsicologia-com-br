@@ -14,6 +14,7 @@ import {
 import { ArrowLeft, Download, FileText, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { getSignedPatientFileUrl } from "@/lib/patientFiles";
+import { PdfPreview } from "@/components/PdfPreview";
 
 export const Route = createFileRoute("/pacientes/$id")({
   head: () => ({ meta: [{ title: "Pasta do paciente — Mundo Pine" }] }),
@@ -33,6 +34,7 @@ type PreviewState = {
   name: string;
   mime: string;
   url: string;
+  blob?: Blob;
 } | null;
 
 function PatientFolderPage() {
@@ -97,7 +99,7 @@ function PatientFolderPage() {
       const objectUrl = URL.createObjectURL(new Blob([blob], { type: mime }));
       setPreview((current) => {
         if (current?.url?.startsWith("blob:")) URL.revokeObjectURL(current.url);
-        return { name: f.file_name, mime, url: objectUrl };
+        return { name: f.file_name, mime, url: objectUrl, blob };
       });
     } catch (e: any) {
       toast.error("Erro ao abrir", { description: e?.message });
@@ -201,11 +203,9 @@ function PatientFolderPage() {
 
           <div className="h-full bg-muted/20">
             {preview?.mime === "application/pdf" ? (
-              <iframe
-                src={preview.url}
-                title={preview.name}
-                className="h-full w-full border-0"
-              />
+              preview.blob ? (
+                <PdfPreview file={preview.blob} fileName={preview.name} />
+              ) : null
             ) : preview?.mime.startsWith("image/") ? (
               <div className="h-full w-full overflow-auto p-4 flex items-start justify-center">
                 <img
