@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { useRoom, type Role } from "@/lib/useRoom";
@@ -17,9 +17,11 @@ import FolhasNoRio from "@/components/games/FolhasNoRio";
 import BussolaValores from "@/components/games/BussolaValores";
 import MinhaCasa from "@/components/games/MinhaCasa";
 
-import { Copy, Check, ArrowLeft, Wifi, WifiOff } from "lucide-react";
+import { Copy, Check, ArrowLeft, Wifi, WifiOff, Save } from "lucide-react";
 import { toast } from "sonner";
 import { getGame } from "@/lib/games";
+import { SaveToPatientDialog } from "@/components/SaveToPatientDialog";
+import { useAuth } from "@/hooks/use-auth";
 
 const GAMES = ["whiteboard", "termometro", "detetive", "detetive-tabuleiro", "detetive-aventura", "mapa-corporal", "triangulo", "entre-lentes", "respiracao", "ancoragem", "folhas-no-rio", "bussola", "minha-casa"] as const;
 
@@ -52,6 +54,9 @@ function SalaPage() {
   const router = useRouter();
   const room = useRoom(code, role as Role);
   const [copied, setCopied] = useState(false);
+  const [saveOpen, setSaveOpen] = useState(false);
+  const captureRef = useRef<HTMLElement>(null);
+  const { user } = useAuth();
 
   const meta = getGame(game);
 
@@ -101,6 +106,11 @@ function SalaPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          {role === "psi" && user && (
+            <Button size="sm" variant="outline" onClick={() => setSaveOpen(true)}>
+              <Save className="w-4 h-4 mr-1" /> Salvar na pasta
+            </Button>
+          )}
           <div className={`flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full ${room.peers > 1 ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
             {room.peers > 1 ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}
             {room.peers > 1 ? "Conectados" : "Aguardando..."}
@@ -110,7 +120,7 @@ function SalaPage() {
 
 
       <div className="flex-1 flex min-h-0">
-        <main className="flex-1 overflow-auto p-1.5 sm:p-4">
+        <main ref={captureRef} className="flex-1 overflow-auto p-1.5 sm:p-4">
 
           {game === "termometro" ? (
             <Termometro room={room} />
@@ -141,6 +151,14 @@ function SalaPage() {
           )}
         </main>
       </div>
+
+      <SaveToPatientDialog
+        open={saveOpen}
+        onOpenChange={setSaveOpen}
+        targetEl={captureRef.current}
+        game={meta?.title ?? game}
+        defaultFileName={`${meta?.title ?? game}-${new Date().toISOString().slice(0, 10)}.pdf`}
+      />
     </div>
   );
 }

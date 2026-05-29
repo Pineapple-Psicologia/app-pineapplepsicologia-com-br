@@ -14,6 +14,77 @@ export type Database = {
   }
   public: {
     Tables: {
+      patient_files: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_path: string
+          game: string | null
+          id: string
+          mime_type: string
+          patient_id: string
+          size_bytes: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_path: string
+          game?: string | null
+          id?: string
+          mime_type?: string
+          patient_id: string
+          size_bytes?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          game?: string | null
+          id?: string
+          mime_type?: string
+          patient_id?: string
+          size_bytes?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_files_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patients: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
