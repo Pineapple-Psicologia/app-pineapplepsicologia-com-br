@@ -66,6 +66,10 @@ function PacientesPage() {
     refresh();
   };
 
+  const openPatientFolder = (id: string) => {
+    navigate({ to: "/pacientes/$id", params: { id } });
+  };
+
   return (
     <main className="min-h-screen px-4 py-8 max-w-3xl mx-auto">
       <div className="flex items-center gap-2 mb-6">
@@ -95,19 +99,34 @@ function PacientesPage() {
         {patients.length === 0 ? (
           <p className="text-center text-muted-foreground py-10">Nenhum paciente ainda.</p>
         ) : patients.map((p) => (
-          <Card key={p.id} className="p-3 flex items-center gap-3">
+          <Card
+            key={p.id}
+            className="p-3 flex items-center gap-3 cursor-pointer"
+            role="button"
+            tabIndex={0}
+            onClick={() => openPatientFolder(p.id)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                openPatientFolder(p.id);
+              }
+            }}
+          >
             <Folder className="w-5 h-5 text-primary shrink-0" />
-            <Link
-              to="/pacientes/$id"
-              params={{ id: p.id }}
-              className="flex-1 min-w-0 hover:underline"
-            >
+            <div className="flex-1 min-w-0">
               <div className="font-semibold truncate">{p.name}</div>
               <div className="text-xs text-muted-foreground">
                 {counts[p.id] ?? 0} arquivo(s)
               </div>
-            </Link>
-            <Button variant="ghost" size="icon" onClick={() => remove(p.id)}>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                remove(p.id);
+              }}
+            >
               <Trash2 className="w-4 h-4 text-destructive" />
             </Button>
           </Card>
