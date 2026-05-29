@@ -1,18 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
-import * as pdfjsLib from "pdfjs-dist";
 
 type PdfPreviewProps = {
   file: Blob;
   fileName: string;
 };
-
-type PdfDocumentProxy = Awaited<ReturnType<typeof pdfjsLib.getDocument>>["promise"] extends Promise<infer T>
-  ? T
-  : never;
-
-const workerSrc = new URL("pdfjs-dist/build/pdf.worker.mjs", import.meta.url).toString();
-pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
 
 export function PdfPreview({ file, fileName }: PdfPreviewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -22,7 +14,7 @@ export function PdfPreview({ file, fileName }: PdfPreviewProps) {
 
   useEffect(() => {
     let active = true;
-    let currentDoc: PdfDocumentProxy | null = null;
+    let currentDoc: { destroy?: () => Promise<void> | void } | null = null;
 
     const render = async () => {
       if (!containerRef.current) return;
@@ -33,6 +25,13 @@ export function PdfPreview({ file, fileName }: PdfPreviewProps) {
       containerRef.current.innerHTML = "";
 
       try {
+        const [{ default: workerSrc }, pdfjsLib] = await Promise.all([
+          import("pdfjs-dist/build/pdf.worker.mjs?url"),
+          import("pdfjs-dist"),
+        ]);
+
+        pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
+
         const bytes = new Uint8Array(await file.arrayBuffer());
         const task = pdfjsLib.getDocument({ data: bytes });
         const pdf = await task.promise;
