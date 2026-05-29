@@ -92,14 +92,19 @@ function PatientFolderPage() {
         ) : files.map((f) => (
           <Card key={f.id} className="p-3 flex items-center gap-3">
             <FileText className="w-5 h-5 text-primary shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="font-semibold truncate">{f.file_name}</div>
+            <button
+              type="button"
+              onClick={() => open(f)}
+              className="flex-1 min-w-0 text-left hover:opacity-80 transition-opacity"
+              title="Abrir arquivo"
+            >
+              <div className="font-semibold truncate underline-offset-4 hover:underline">{f.file_name}</div>
               <div className="text-xs text-muted-foreground">
                 {new Date(f.created_at).toLocaleString("pt-BR")}
                 {f.game ? ` · ${f.game}` : ""}
                 {f.size_bytes ? ` · ${fmtSize(f.size_bytes)}` : ""}
               </div>
-            </div>
+            </button>
             <Button variant="ghost" size="icon" onClick={() => open(f)} title="Abrir / baixar">
               <Download className="w-4 h-4" />
             </Button>
