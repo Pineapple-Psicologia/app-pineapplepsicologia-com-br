@@ -54,6 +54,9 @@ function SalaPage() {
   const router = useRouter();
   const room = useRoom(code, role as Role);
   const [copied, setCopied] = useState(false);
+  const [saveOpen, setSaveOpen] = useState(false);
+  const captureRef = useRef<HTMLElement>(null);
+  const { user } = useAuth();
 
   const meta = getGame(game);
 
