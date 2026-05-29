@@ -741,7 +741,7 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
       }}
     >
       {/* Mobile toolbar toggle */}
-      {isMobile && (
+      {isCompact && (
         <button
           onClick={() => setToolbarExpanded((v) => !v)}
           className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-card rounded-xl border-2 border-border shadow-sm text-xs font-bold"
@@ -752,7 +752,8 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
       )}
 
       {/* Toolbar */}
-      <div className={`${isMobile && !toolbarExpanded ? "hidden" : "flex"} flex-wrap items-stretch gap-2 p-2.5 bg-card rounded-2xl border-2 border-border shadow-sm`}>
+      <div className={`${isCompact && !toolbarExpanded ? "hidden" : "flex"} flex-wrap items-stretch gap-2 p-2.5 bg-card rounded-2xl border-2 border-border shadow-sm`}>
+
 
         <div className="flex gap-1.5">
           <ToolBtn id="pen" label="Lápis" icon={Pencil} />
