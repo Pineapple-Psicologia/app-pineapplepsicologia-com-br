@@ -100,114 +100,96 @@ function Home() {
             Brincar é <span className="text-primary">linguagem clínica.</span>
           </h1>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto md:mx-0">
-            Escolha um recurso, abra a sala e compartilhe o código com seu
-            paciente. Tudo ao vivo, sem download.
+            Plataforma exclusiva para psicólogas. Pacientes acessam apenas pelo
+            link enviado pela psicóloga — não precisam de cadastro.
           </p>
         </header>
 
-        <section className="mb-12">
-          <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-              Sou psicóloga — escolher recurso
-            </h2>
-            {!user && !loading && (
-              <Button asChild size="sm">
+        {!user && !loading ? (
+          <section className="max-w-md mx-auto">
+            <Card className="p-8 border-2 border-border/60 bg-card/95 backdrop-blur text-center">
+              <Lock className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+              <h2 className="text-lg font-bold mb-2">Área restrita</h2>
+              <p className="text-sm text-muted-foreground mb-5">
+                O acesso aos jogos é exclusivo para psicólogas cadastradas.
+                Entre ou crie sua conta para continuar.
+              </p>
+              <Button asChild size="lg" className="w-full">
                 <Link to="/auth">Entrar / Cadastrar</Link>
               </Button>
-            )}
-          </div>
-
-          {!user && !loading && (
-            <Card className="p-4 mb-4 border-2 border-dashed bg-muted/30 flex items-center gap-3">
-              <Lock className="w-5 h-5 text-muted-foreground shrink-0" />
-              <p className="text-sm text-muted-foreground">
-                É necessário <Link to="/auth" className="underline font-semibold text-foreground">criar uma conta</Link> ou
-                entrar para abrir os jogos. Pacientes não precisam de cadastro — apenas do link enviado pela psicóloga.
-              </p>
             </Card>
-          )}
 
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {GAMES.map((g) => (
-              <Card
-                key={g.id}
-                className={`p-5 flex flex-col gap-3 border-2 transition-all ${
-                  g.available
-                    ? "hover:border-primary hover:shadow-xl cursor-pointer hover:-translate-y-0.5"
-                    : "opacity-60"
-                }`}
-                onClick={() => g.available && openGame(g.id)}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="text-4xl">{g.emoji}</div>
-                  {!g.available && (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
-                      <Lock className="w-3 h-3" /> em breve
-                    </span>
-                  )}
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold leading-tight">{g.title}</h3>
-                  <div className="flex flex-wrap gap-1.5 mt-1.5">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                      {g.approach}
-                    </span>
-                    <span className="text-[10px] font-semibold uppercase tracking-wider bg-accent/15 text-accent-foreground px-2 py-0.5 rounded-full">
-                      {g.ageRange}
-                    </span>
-                  </div>
-                </div>
-                <p className="text-sm text-muted-foreground flex-1">
-                  {g.description}
-                </p>
-                {g.available && (
-                  <Button
-                    size="sm"
-                    className="w-full mt-1"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openGame(g.id);
-                    }}
-                  >
-                    Abrir jogo
-                  </Button>
-                )}
-              </Card>
-            ))}
-          </div>
-        </section>
-
-        <section className="max-w-md mx-auto">
-          <Card className="p-6 border-2 border-border/60 bg-card/95 backdrop-blur">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-3">
-              Sou paciente — entrar com código
-            </h2>
-            <div className="flex gap-2">
-              <Input
-                value={code}
-                onChange={(e) => setCode(e.target.value.toUpperCase())}
-                placeholder="ABCD"
-                maxLength={6}
-                className="text-center text-2xl tracking-[0.3em] font-bold h-12"
-              />
-              <Button
-                size="lg"
-                variant="secondary"
-                onClick={enterAsPaciente}
-                disabled={!code.trim()}
-              >
-                Entrar
-              </Button>
+            <div className="mt-6 flex flex-wrap gap-4 justify-center text-sm text-muted-foreground">
+              <span className="inline-flex items-center gap-2"><Heart className="w-4 h-4 text-accent" /> Vínculo</span>
+              <span className="inline-flex items-center gap-2"><Users className="w-4 h-4 text-accent" /> Ao vivo</span>
+              <span className="inline-flex items-center gap-2"><Sparkles className="w-4 h-4 text-accent" /> Sem download</span>
             </div>
-          </Card>
+          </section>
+        ) : user ? (
+          <>
+            <section className="mb-12">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">
+                Escolher recurso
+              </h2>
 
-          <div className="mt-6 flex flex-wrap gap-4 justify-center text-sm text-muted-foreground">
-            <span className="inline-flex items-center gap-2"><Heart className="w-4 h-4 text-accent" /> Vínculo</span>
-            <span className="inline-flex items-center gap-2"><Users className="w-4 h-4 text-accent" /> Ao vivo</span>
-            <span className="inline-flex items-center gap-2"><Sparkles className="w-4 h-4 text-accent" /> Sem download</span>
-          </div>
-        </section>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {GAMES.map((g) => (
+                  <Card
+                    key={g.id}
+                    className={`p-5 flex flex-col gap-3 border-2 transition-all ${
+                      g.available
+                        ? "hover:border-primary hover:shadow-xl cursor-pointer hover:-translate-y-0.5"
+                        : "opacity-60"
+                    }`}
+                    onClick={() => g.available && openGame(g.id)}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="text-4xl">{g.emoji}</div>
+                      {!g.available && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
+                          <Lock className="w-3 h-3" /> em breve
+                        </span>
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold leading-tight">{g.title}</h3>
+                      <div className="flex flex-wrap gap-1.5 mt-1.5">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                          {g.approach}
+                        </span>
+                        <span className="text-[10px] font-semibold uppercase tracking-wider bg-accent/15 text-accent-foreground px-2 py-0.5 rounded-full">
+                          {g.ageRange}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground flex-1">
+                      {g.description}
+                    </p>
+                    {g.available && (
+                      <Button
+                        size="sm"
+                        className="w-full mt-1"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openGame(g.id);
+                        }}
+                      >
+                        Abrir jogo
+                      </Button>
+                    )}
+                  </Card>
+                ))}
+              </div>
+            </section>
+
+            <div className="mt-6 flex flex-wrap gap-4 justify-center text-sm text-muted-foreground">
+              <span className="inline-flex items-center gap-2"><Heart className="w-4 h-4 text-accent" /> Vínculo</span>
+              <span className="inline-flex items-center gap-2"><Users className="w-4 h-4 text-accent" /> Ao vivo</span>
+              <span className="inline-flex items-center gap-2"><Sparkles className="w-4 h-4 text-accent" /> Sem download</span>
+            </div>
+          </>
+        ) : null}
+
 
         <footer className="mt-16 pt-6 border-t border-border/60 text-center text-xs text-muted-foreground">
           <div className="flex flex-wrap justify-center gap-4">
