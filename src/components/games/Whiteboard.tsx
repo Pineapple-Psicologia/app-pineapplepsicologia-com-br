@@ -8,6 +8,22 @@ import {
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useEffect as useEffectCompact, useState as useStateCompact } from "react";
+
+// Considera "tela compacta" qualquer viewport até 1024px (celular + tablet).
+// Nessa faixa a barra de ferramentas vira recolhível para o quadro ocupar
+// quase toda a tela.
+function useIsCompact() {
+  const [compact, setCompact] = useStateCompact<boolean>(false);
+  useEffectCompact(() => {
+    const mql = window.matchMedia("(max-width: 1024px)");
+    const on = () => setCompact(mql.matches);
+    on();
+    mql.addEventListener("change", on);
+    return () => mql.removeEventListener("change", on);
+  }, []);
+  return compact;
+}
 import type { useRoom, RoomMessage } from "@/lib/useRoom";
 import { TEMPLATES, buildTemplate, type TemplateId } from "@/lib/whiteboardTemplates";
 import whiteboardBg from "@/assets/scene-whiteboard.jpg";
