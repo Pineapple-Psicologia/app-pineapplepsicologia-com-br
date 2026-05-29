@@ -82,5 +82,16 @@ export async function getSignedPatientFileUrl(path: string, expiresIn = 60) {
     .from("patient-files")
     .createSignedUrl(path, expiresIn);
   if (error) throw error;
-  return data.signedUrl;
+
+  const signedUrl = data.signedUrl;
+  if (/^https?:\/\//i.test(signedUrl)) return signedUrl;
+
+  const supabaseUrl =
+    import.meta.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+
+  if (!supabaseUrl) {
+    throw new Error("Configuração do armazenamento indisponível.");
+  }
+
+  return new URL(`/storage/v1${signedUrl}`, supabaseUrl).toString();
 }
