@@ -30,7 +30,6 @@ function genCode() {
 function Home() {
   const navigate = useNavigate();
   const { user, loading, signOut } = useAuth();
-  const [code, setCode] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
@@ -57,15 +56,6 @@ function Home() {
     });
   };
 
-  const enterAsPaciente = () => {
-    const c = code.toUpperCase().trim();
-    if (!c) return;
-    navigate({
-      to: "/sala/$code",
-      params: { code: c },
-      search: { role: "paciente" },
-    });
-  };
 
   return (
     <main className="min-h-screen px-4 py-10 md:py-14">
