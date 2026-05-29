@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { useRoom, type Role } from "@/lib/useRoom";
@@ -17,9 +17,11 @@ import FolhasNoRio from "@/components/games/FolhasNoRio";
 import BussolaValores from "@/components/games/BussolaValores";
 import MinhaCasa from "@/components/games/MinhaCasa";
 
-import { Copy, Check, ArrowLeft, Wifi, WifiOff } from "lucide-react";
+import { Copy, Check, ArrowLeft, Wifi, WifiOff, Save } from "lucide-react";
 import { toast } from "sonner";
 import { getGame } from "@/lib/games";
+import { SaveToPatientDialog } from "@/components/SaveToPatientDialog";
+import { useAuth } from "@/hooks/use-auth";
 
 const GAMES = ["whiteboard", "termometro", "detetive", "detetive-tabuleiro", "detetive-aventura", "mapa-corporal", "triangulo", "entre-lentes", "respiracao", "ancoragem", "folhas-no-rio", "bussola", "minha-casa"] as const;
 
