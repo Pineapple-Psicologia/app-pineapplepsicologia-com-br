@@ -48,12 +48,19 @@ function PatientFolderPage() {
 
   const open = async (f: FileRow) => {
     try {
-      const url = await getSignedPatientFileUrl(f.file_path, 60);
-      window.open(url, "_blank");
+      const url = await getSignedPatientFileUrl(f.file_path, 300);
+      const a = document.createElement("a");
+      a.href = url;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
     } catch (e: any) {
       toast.error("Erro ao abrir", { description: e?.message });
     }
   };
+
 
   const remove = async (f: FileRow) => {
     if (!confirm(`Excluir "${f.file_name}"?`)) return;
