@@ -86,7 +86,7 @@ export function PdfPreview({ file, fileName }: PdfPreviewProps) {
 
     return () => {
       active = false;
-      if (currentDoc) {
+      if (currentDoc?.destroy) {
         void currentDoc.destroy();
       }
     };
