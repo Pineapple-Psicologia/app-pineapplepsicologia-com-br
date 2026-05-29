@@ -11,7 +11,27 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { elementToPdf, downloadPdfBlob } from "@/lib/patientFiles";
+import html2canvas from "html2canvas-pro";
+import jsPDF from "jspdf";
+
+async function elementToPdf(el: HTMLElement, _name: string) {
+  const canvas = await html2canvas(el, { backgroundColor: "#ffffff", scale: 2, useCORS: true });
+  const imgData = canvas.toDataURL("image/png");
+  const pdf = new jsPDF({ orientation: canvas.width > canvas.height ? "l" : "p", unit: "px", format: [canvas.width, canvas.height] });
+  pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
+  return { blob: pdf.output("blob") };
+}
+
+function downloadPdfBlob(blob: Blob, fileName: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
 import { Download } from "lucide-react";
 
 export function SaveToPatientDialog({

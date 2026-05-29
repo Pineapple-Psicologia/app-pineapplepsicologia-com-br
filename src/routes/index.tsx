@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Sparkles, Heart, Users, Lock, LogOut, Shield, Folder } from "lucide-react";
+import { Sparkles, Heart, Users, Lock, LogOut, Shield } from "lucide-react";
 import { GAMES, type GameId } from "@/lib/games";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -78,9 +78,7 @@ function Home() {
           )}
           {loading ? null : user ? (
             <>
-              <Button asChild variant="outline" size="sm">
-                <Link to="/pacientes"><Folder className="w-4 h-4 mr-1" /> Pacientes</Link>
-              </Button>
+
               <span className="text-sm text-muted-foreground self-center">
                 {user.email}
               </span>
