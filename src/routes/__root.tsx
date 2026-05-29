@@ -36,6 +36,11 @@ export const Route = createRootRoute({
       { title: "Mundo Pine" },
       { name: "description", content: "Ferramentas terapêuticas colaborativas para psicólogas infantojuvenis usarem em sessões online com crianças e adolescentes." },
       { name: "author", content: "Mundo Pine" },
+      // Impede que o Chrome (especialmente em tablets) traduza a página
+      // automaticamente. O tradutor automático muta nós de texto e quebra
+      // a reconciliação do React, gerando o erro "Failed to execute
+      // 'insertBefore' on 'Node'" quando o quadro tenta abrir.
+      { name: "google", content: "notranslate" },
       { property: "og:title", content: "Mundo Pine" },
       { property: "og:description", content: "Ferramentas terapêuticas colaborativas para psicólogas infantojuvenis usarem em sessões online com crianças e adolescentes." },
       { property: "og:type", content: "website" },
@@ -61,11 +66,11 @@ export const Route = createRootRoute({
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="pt-BR" translate="no" className="notranslate">
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body className="notranslate" translate="no">
         {children}
         <Toaster />
         <Scripts />
