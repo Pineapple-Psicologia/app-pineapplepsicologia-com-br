@@ -75,11 +75,18 @@ export function SaveToPatientDialog({
     toast.success("Paciente criado");
   };
 
+  const resolveTarget = (): HTMLElement | null => {
+    if (!targetEl) return null;
+    const inner = targetEl.querySelector<HTMLElement>("[data-capture-target]");
+    return inner ?? targetEl;
+  };
+
   const handleDownloadOnly = async () => {
-    if (!targetEl) return;
+    const el = resolveTarget();
+    if (!el) return;
     setBusy(true);
     try {
-      const { blob } = await elementToPdf(targetEl, fileName);
+      const { blob } = await elementToPdf(el, fileName);
       downloadPdfBlob(blob, ensurePdf(fileName));
     } catch (e: any) {
       toast.error("Erro ao gerar PDF", { description: e?.message });
@@ -89,14 +96,15 @@ export function SaveToPatientDialog({
   };
 
   const handleSave = async () => {
-    if (!user || !targetEl || !selectedId) {
+    const el = resolveTarget();
+    if (!user || !el || !selectedId) {
       toast.error("Selecione um paciente.");
       return;
     }
     setBusy(true);
     try {
       const finalName = ensurePdf(fileName);
-      const { blob } = await elementToPdf(targetEl, finalName);
+      const { blob } = await elementToPdf(el, finalName);
       const res = await uploadPatientPdf({
         userId: user.id,
         patientId: selectedId,
