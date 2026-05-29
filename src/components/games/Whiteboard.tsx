@@ -931,7 +931,7 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
       )}
 
       {/* Canvas */}
-      <div ref={wrapperRef} className="relative flex-1 rounded-2xl border-2 border-border bg-white overflow-hidden shadow-inner">
+      <div ref={wrapperRef} data-capture-target className="relative flex-1 rounded-2xl border-2 border-border bg-white overflow-hidden shadow-inner">
         {locked && (
           <div className={`absolute top-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold shadow-lg ${isPsi ? "bg-destructive/90 text-destructive-foreground" : "bg-destructive text-destructive-foreground"}`}>
             <Lock className="w-3.5 h-3.5" />
