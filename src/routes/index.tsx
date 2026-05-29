@@ -78,9 +78,7 @@ function Home() {
           )}
           {loading ? null : user ? (
             <>
-              <Button asChild variant="outline" size="sm">
-                <Link to="/pacientes"><Folder className="w-4 h-4 mr-1" /> Pacientes</Link>
-              </Button>
+
               <span className="text-sm text-muted-foreground self-center">
                 {user.email}
               </span>
