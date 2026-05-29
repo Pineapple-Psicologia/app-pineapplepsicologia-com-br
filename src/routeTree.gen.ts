@@ -12,14 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermosRouteImport } from './routes/termos'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
-import { Route as PacientesRouteImport } from './routes/pacientes'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as ContaRouteImport } from './routes/conta'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SalaCodeRouteImport } from './routes/sala.$code'
-import { Route as PacientesIdRouteImport } from './routes/pacientes.$id'
 import { Route as ApiPublicLentesSfxRouteImport } from './routes/api/public/lentes-sfx'
 
 const TermosRoute = TermosRouteImport.update({
@@ -35,11 +33,6 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const PrivacidadeRoute = PrivacidadeRouteImport.update({
   id: '/privacidade',
   path: '/privacidade',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PacientesRoute = PacientesRouteImport.update({
-  id: '/pacientes',
-  path: '/pacientes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
@@ -72,11 +65,6 @@ const SalaCodeRoute = SalaCodeRouteImport.update({
   path: '/sala/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PacientesIdRoute = PacientesIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => PacientesRoute,
-} as any)
 const ApiPublicLentesSfxRoute = ApiPublicLentesSfxRouteImport.update({
   id: '/api/public/lentes-sfx',
   path: '/api/public/lentes-sfx',
@@ -89,11 +77,9 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/conta': typeof ContaRoute
   '/forgot-password': typeof ForgotPasswordRoute
-  '/pacientes': typeof PacientesRouteWithChildren
   '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
   '/termos': typeof TermosRoute
-  '/pacientes/$id': typeof PacientesIdRoute
   '/sala/$code': typeof SalaCodeRoute
   '/api/public/lentes-sfx': typeof ApiPublicLentesSfxRoute
 }
@@ -103,11 +89,9 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/conta': typeof ContaRoute
   '/forgot-password': typeof ForgotPasswordRoute
-  '/pacientes': typeof PacientesRouteWithChildren
   '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
   '/termos': typeof TermosRoute
-  '/pacientes/$id': typeof PacientesIdRoute
   '/sala/$code': typeof SalaCodeRoute
   '/api/public/lentes-sfx': typeof ApiPublicLentesSfxRoute
 }
@@ -118,11 +102,9 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/conta': typeof ContaRoute
   '/forgot-password': typeof ForgotPasswordRoute
-  '/pacientes': typeof PacientesRouteWithChildren
   '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
   '/termos': typeof TermosRoute
-  '/pacientes/$id': typeof PacientesIdRoute
   '/sala/$code': typeof SalaCodeRoute
   '/api/public/lentes-sfx': typeof ApiPublicLentesSfxRoute
 }
@@ -134,11 +116,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/conta'
     | '/forgot-password'
-    | '/pacientes'
     | '/privacidade'
     | '/reset-password'
     | '/termos'
-    | '/pacientes/$id'
     | '/sala/$code'
     | '/api/public/lentes-sfx'
   fileRoutesByTo: FileRoutesByTo
@@ -148,11 +128,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/conta'
     | '/forgot-password'
-    | '/pacientes'
     | '/privacidade'
     | '/reset-password'
     | '/termos'
-    | '/pacientes/$id'
     | '/sala/$code'
     | '/api/public/lentes-sfx'
   id:
@@ -162,11 +140,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/conta'
     | '/forgot-password'
-    | '/pacientes'
     | '/privacidade'
     | '/reset-password'
     | '/termos'
-    | '/pacientes/$id'
     | '/sala/$code'
     | '/api/public/lentes-sfx'
   fileRoutesById: FileRoutesById
@@ -177,7 +153,6 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ContaRoute: typeof ContaRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
-  PacientesRoute: typeof PacientesRouteWithChildren
   PrivacidadeRoute: typeof PrivacidadeRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermosRoute: typeof TermosRoute
@@ -206,13 +181,6 @@ declare module '@tanstack/react-router' {
       path: '/privacidade'
       fullPath: '/privacidade'
       preLoaderRoute: typeof PrivacidadeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pacientes': {
-      id: '/pacientes'
-      path: '/pacientes'
-      fullPath: '/pacientes'
-      preLoaderRoute: typeof PacientesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/forgot-password': {
@@ -257,13 +225,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SalaCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/pacientes/$id': {
-      id: '/pacientes/$id'
-      path: '/$id'
-      fullPath: '/pacientes/$id'
-      preLoaderRoute: typeof PacientesIdRouteImport
-      parentRoute: typeof PacientesRoute
-    }
     '/api/public/lentes-sfx': {
       id: '/api/public/lentes-sfx'
       path: '/api/public/lentes-sfx'
@@ -274,25 +235,12 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface PacientesRouteChildren {
-  PacientesIdRoute: typeof PacientesIdRoute
-}
-
-const PacientesRouteChildren: PacientesRouteChildren = {
-  PacientesIdRoute: PacientesIdRoute,
-}
-
-const PacientesRouteWithChildren = PacientesRoute._addFileChildren(
-  PacientesRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
   ContaRoute: ContaRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
-  PacientesRoute: PacientesRouteWithChildren,
   PrivacidadeRoute: PrivacidadeRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TermosRoute: TermosRoute,
@@ -302,3 +250,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
