@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -10,10 +10,20 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/pacientes")({
   head: () => ({ meta: [{ title: "Pacientes — Mundo Pine" }] }),
-  component: PacientesPage,
+  component: PacientesRouteView,
 });
 
 type Patient = { id: string; name: string; created_at: string; notes: string | null };
+
+function PacientesRouteView() {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+
+  if (pathname !== "/pacientes") {
+    return <Outlet />;
+  }
+
+  return <PacientesPage />;
+}
 
 function PacientesPage() {
   const { user, loading } = useAuth();
