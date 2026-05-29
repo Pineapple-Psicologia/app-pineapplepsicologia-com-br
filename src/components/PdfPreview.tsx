@@ -70,6 +70,7 @@ export function PdfPreview({ file, fileName }: PdfPreviewProps) {
           containerRef.current.appendChild(wrapper);
 
           await page.render({
+            canvas,
             canvasContext: context,
             viewport,
           }).promise;
