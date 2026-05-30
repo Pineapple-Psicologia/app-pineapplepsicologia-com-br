@@ -773,15 +773,14 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
       {isCompact && (
 
         <div className={`${isLandscape ? "absolute top-1 right-1 z-20" : "flex"} flex items-center gap-1.5`}>
-          {isMobile && (
-            <button
-              onClick={() => setToolbarExpanded((v) => !v)}
-              className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-card/95 backdrop-blur rounded-xl border-2 border-border shadow-sm text-xs font-bold"
-            >
-              {toolbarExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-              {toolbarExpanded ? "Esconder ferramentas" : "Ferramentas"}
-            </button>
-          )}
+          <button
+            onClick={() => setToolbarExpanded((v) => !v)}
+            className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-card/95 backdrop-blur rounded-xl border-2 border-border shadow-sm text-xs font-bold"
+          >
+            {toolbarExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            {toolbarExpanded ? "Esconder ferramentas" : "Ferramentas"}
+          </button>
+
           <button
             onClick={() => setShowHelp((v) => !v)}
             className={`flex items-center justify-center gap-1.5 px-3 py-1.5 backdrop-blur rounded-xl border-2 shadow-sm text-xs font-bold transition-colors ${showHelp ? "bg-accent text-accent-foreground border-accent" : "bg-card/95 border-border"}`}
