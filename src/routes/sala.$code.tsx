@@ -136,7 +136,7 @@ function SalaPage() {
 
 
       <div className="flex-1 flex min-h-0">
-        <main ref={captureRef} className="flex-1 overflow-auto p-1 sm:p-3 md:p-4">
+        <main ref={captureRef} className="flex-1 overflow-auto p-0 sm:p-3 md:p-4 landscape:max-[820px]:p-0">
 
           {game === "termometro" ? (
             <Termometro room={room} />
