@@ -17,10 +17,10 @@ import FolhasNoRio from "@/components/games/FolhasNoRio";
 import BussolaValores from "@/components/games/BussolaValores";
 import MinhaCasa from "@/components/games/MinhaCasa";
 
-import { Copy, Check, ArrowLeft, Wifi, WifiOff, Save } from "lucide-react";
+import { Copy, Check, ArrowLeft, Wifi, WifiOff, Download } from "lucide-react";
 import { toast } from "sonner";
 import { getGame } from "@/lib/games";
-import { SaveToPatientDialog } from "@/components/SaveToPatientDialog";
+import { downloadElementAsPdf } from "@/lib/downloadPdf";
 import { useAuth } from "@/hooks/use-auth";
 
 const GAMES = ["whiteboard", "termometro", "detetive", "detetive-tabuleiro", "detetive-aventura", "mapa-corporal", "triangulo", "entre-lentes", "respiracao", "ancoragem", "folhas-no-rio", "bussola", "minha-casa"] as const;
