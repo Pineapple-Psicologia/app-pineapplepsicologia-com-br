@@ -1221,17 +1221,32 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
             value={textInput?.value ?? ""}
             onChange={(e) => textInput && setTextInput({ ...textInput, value: e.target.value })}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submitText(); } if (e.key === "Escape") setTextInput(null); }}
+            onMouseUp={(e) => {
+              if (!textInput || !wrapperSize.w) return;
+              const px = (e.currentTarget as HTMLTextAreaElement).offsetWidth;
+              const newW = Math.max(0.08, Math.min(0.95, px / wrapperSize.w));
+              if (Math.abs(newW - (textInput.w ?? 0.3)) > 0.005) {
+                setTextInput({ ...textInput, w: newW });
+              }
+            }}
+            wrap="soft"
             className="px-3 py-2 font-semibold outline-none leading-tight bg-transparent placeholder:text-muted-foreground/50"
             style={{
               color: textInput?.color ?? color,
               fontSize: ((textInput?.size ?? size)) * 4,
-              minWidth: 180,
+              width: wrapperSize.w ? (textInput?.w ?? 0.3) * wrapperSize.w : undefined,
+              minWidth: 120,
+              maxWidth: wrapperSize.w ? wrapperSize.w * 0.95 : undefined,
               minHeight: ((textInput?.size ?? size)) * 4 * 1.6,
-              resize: "both",
+              resize: "horizontal",
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-word",
+              overflowWrap: "break-word",
             }}
             placeholder="Digite seu texto..."
             rows={2}
           />
+
         </div>
       </div>
     </div>
