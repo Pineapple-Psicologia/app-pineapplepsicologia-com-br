@@ -29,7 +29,7 @@ function useIsCompact() {
 function useIsLandscape() {
   const [landscape, setLandscape] = useState<boolean>(false);
   useEffect(() => {
-    const mql = window.matchMedia("(orientation: landscape) and (max-height: 600px)");
+    const mql = window.matchMedia("(orientation: landscape) and (max-height: 820px)");
     const on = () => setLandscape(mql.matches);
     on();
     mql.addEventListener("change", on);
