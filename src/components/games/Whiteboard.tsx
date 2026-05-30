@@ -758,10 +758,9 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
         backgroundPosition: "center",
       }}
     >
-      {/* Mobile toolbar toggle */}
-      {isCompact && (
       {/* Toolbar toggle (all viewports) */}
       {isCompact && (
+
         <button
           onClick={() => setToolbarExpanded((v) => !v)}
           className={`${isLandscape ? "absolute top-1 right-1 z-20" : "flex"} flex items-center justify-center gap-1.5 px-3 py-1.5 bg-card/95 backdrop-blur rounded-xl border-2 border-border shadow-sm text-xs font-bold`}
