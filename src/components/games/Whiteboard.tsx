@@ -101,7 +101,8 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
     return !window.matchMedia("(max-width: 1024px)").matches;
   });
   const [showHelp, setShowHelp] = useState(false);
-  const [textInput, setTextInput] = useState<{ x: number; y: number; value: string; id?: string; color?: string; size?: number } | null>(null);
+  const [textInput, setTextInput] = useState<{ x: number; y: number; value: string; id?: string; color?: string; size?: number; w?: number } | null>(null);
+  const [wrapperSize, setWrapperSize] = useState({ w: 0, h: 0 });
   const trayOpen = showStickers || showTemplates;
   const useOverlayToolbar = isLandscape && toolbarExpanded && !trayOpen;
   const useInlineTray = isCompact && isLandscape;
