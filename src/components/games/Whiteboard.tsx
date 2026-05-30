@@ -364,6 +364,7 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
         el.width = rect.width * dpr;
         el.height = rect.height * dpr;
       });
+      setWrapperSize({ w: rect.width, h: rect.height });
       redraw();
     };
     resize();
