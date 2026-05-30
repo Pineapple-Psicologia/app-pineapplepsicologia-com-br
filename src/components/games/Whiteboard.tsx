@@ -106,6 +106,13 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
   const useOverlayToolbar = isLandscape && toolbarExpanded && !trayOpen;
   const useInlineTray = isCompact && isLandscape;
 
+  // Tablets (>768px && <=1024px) sempre mantêm a barra expandida
+  useEffect(() => {
+    if (isCompact && !isMobile) {
+      setToolbarExpanded(true);
+    }
+  }, [isCompact, isMobile]);
+
 
   const objectsRef = useRef<Obj[]>([]);
   const draftRef = useRef<Obj | null>(null);
