@@ -930,7 +930,7 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
             <Sparkles className="w-4 h-4 mr-1" />Modelos
           </Button>
           <Button size="sm" variant="outline" onClick={undo}><Undo2 className="w-4 h-4 mr-1" />Desfazer</Button>
-          <Button size="sm" variant="outline" onClick={download}><Download className="w-4 h-4 mr-1" />Salvar</Button>
+          
           <Button size="sm" variant="outline" onClick={clearAll}><Trash2 className="w-4 h-4 mr-1" />Limpar</Button>
           {isPsi && (
             <Button
