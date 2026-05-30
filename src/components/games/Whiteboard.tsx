@@ -105,7 +105,7 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
   const [wrapperSize, setWrapperSize] = useState({ w: 0, h: 0 });
   const trayOpen = showStickers || showTemplates;
   const useOverlayToolbar = isLandscape && toolbarExpanded && !trayOpen;
-  const useInlineTray = isCompact && isLandscape;
+  const useInlineTray = isCompact;
 
 
 
