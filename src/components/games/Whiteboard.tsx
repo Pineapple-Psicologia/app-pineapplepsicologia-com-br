@@ -102,6 +102,9 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
   });
   const [showHelp, setShowHelp] = useState(false);
   const [textInput, setTextInput] = useState<{ x: number; y: number; value: string; id?: string; color?: string; size?: number } | null>(null);
+  const trayOpen = showStickers || showTemplates;
+  const useOverlayToolbar = isLandscape && toolbarExpanded && !trayOpen;
+  const useInlineTray = isCompact && isLandscape;
 
 
   const objectsRef = useRef<Obj[]>([]);
@@ -739,7 +742,11 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
   // ---------- UI ----------
   const ToolBtn = ({ id, label, icon: Icon }: { id: Tool; label: string; icon: any }) => (
     <button
-      onClick={() => { setTool(id); setShowStickers(id === "sticker"); }}
+      onClick={() => {
+        setTool(id);
+        setShowStickers(id === "sticker");
+        if (id === "sticker") setShowTemplates(false);
+      }}
       title={label}
       className={`flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-lg border-2 transition ${
         tool === id ? "bg-primary text-primary-foreground border-primary shadow" : "bg-card border-border hover:border-primary/50"
@@ -801,7 +808,7 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
       )}
 
       {/* Toolbar */}
-      <div className={`${!toolbarExpanded ? "hidden" : "flex"} ${isLandscape && toolbarExpanded ? `absolute top-10 left-1 right-1 z-10 ${(showStickers || showTemplates) ? "max-h-[55%]" : "max-h-[calc(100%-3rem)]"} overflow-auto` : ""} flex-wrap items-stretch gap-2 p-2.5 bg-card/95 backdrop-blur rounded-2xl border-2 border-border shadow-sm`}>
+      <div className={`${!toolbarExpanded ? "hidden" : "flex"} ${useOverlayToolbar ? "absolute top-10 left-1 right-1 z-10 max-h-[calc(100%-3rem)] overflow-auto" : "relative z-20"} flex-wrap items-stretch gap-2 p-2.5 bg-card/95 backdrop-blur rounded-2xl border-2 border-border shadow-sm`}>
 
 
 
@@ -925,7 +932,10 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
           <Button
             size="sm"
             variant={showTemplates ? "default" : "outline"}
-            onClick={() => setShowTemplates((v) => !v)}
+            onClick={() => {
+              setShowStickers(false);
+              setShowTemplates((v) => !v);
+            }}
           >
             <Sparkles className="w-4 h-4 mr-1" />Modelos
           </Button>
@@ -1021,7 +1031,7 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
 
       {/* Templates tray — floating overlay so the toolbar never covers it */}
       {showTemplates && (
-        <div className="absolute left-2 right-2 bottom-2 z-30 flex flex-wrap gap-2 p-2.5 bg-card rounded-xl border-2 border-accent/40 shadow-2xl max-h-[45%] overflow-auto">
+        <div className={`${useInlineTray ? "relative z-20" : "absolute left-2 right-2 bottom-2 z-30"} flex flex-wrap gap-2 p-2.5 bg-card rounded-xl border-2 border-accent/40 shadow-2xl max-h-[45%] overflow-auto`}>
           <button
             onClick={() => setShowTemplates(false)}
             className="absolute top-1 right-1 p-1 rounded-md hover:bg-muted text-muted-foreground"
@@ -1045,7 +1055,7 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
 
       {/* Sticker tray — floating overlay so the toolbar never covers it */}
       {showStickers && (
-        <div className="absolute left-2 right-2 bottom-2 z-30 flex flex-wrap gap-1.5 p-2 pr-7 bg-card rounded-xl border-2 border-border shadow-2xl max-h-[45%] overflow-auto">
+        <div className={`${useInlineTray ? "relative z-20" : "absolute left-2 right-2 bottom-2 z-30"} flex flex-wrap gap-1.5 p-2 pr-7 bg-card rounded-xl border-2 border-border shadow-2xl max-h-[45%] overflow-auto`}>
           <button
             onClick={() => setShowStickers(false)}
             className="absolute top-1 right-1 p-1 rounded-md hover:bg-muted text-muted-foreground"
