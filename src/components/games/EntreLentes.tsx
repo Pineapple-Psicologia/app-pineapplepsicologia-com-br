@@ -346,7 +346,7 @@ export default function EntreLentes({ room }: Props) {
   }
 
   return (
-    <div className="h-full w-full grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-4 text-stone-800">
+    <div className="h-full w-full grid grid-cols-1 md:grid-cols-[1fr_280px] lg:grid-cols-[1fr_360px] gap-4 text-stone-800">
       {/* ---------------- SCENE ---------------- */}
       <div className="flex flex-col gap-3 min-h-0">
         {/* Onboarding strip */}
@@ -356,7 +356,7 @@ export default function EntreLentes({ room }: Props) {
           <span><b>3.</b> Investigue as pistas abaixo</span>
         </div>
 
-        <div className="relative rounded-2xl overflow-hidden border-4 border-[#4a5a2a]/30 shadow-[0_20px_50px_-15px_rgba(40,50,20,0.45)] bg-[#e9ead4] aspect-[3/2] min-h-[300px]">
+        <div className="relative rounded-2xl overflow-hidden border-4 border-[#4a5a2a]/30 shadow-[0_20px_50px_-15px_rgba(40,50,20,0.45)] bg-[#e9ead4] aspect-[3/2] min-h-[200px] sm:min-h-[280px]">
           {/* Camada base sempre presente (neutra) — aparece sob a cena distorcida conforme clareza aumenta */}
           <img
             src={cenaNeutra}

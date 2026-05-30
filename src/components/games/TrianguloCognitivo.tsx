@@ -347,7 +347,7 @@ function CicloView({
   const focused = NODES[activeId];
 
   return (
-    <div className="flex-1 grid lg:grid-cols-[1fr_320px] gap-3 min-h-0">
+    <div className="flex-1 grid md:grid-cols-[1fr_260px] lg:grid-cols-[1fr_320px] gap-3 min-h-0">
       <div className="relative bg-gradient-to-br from-amber-50 via-white to-emerald-50 border-2 rounded-2xl shadow-inner p-3 flex items-center justify-center overflow-hidden">
         <svg viewBox="0 0 480 480" className="w-full h-full max-h-[60vh]">
           <defs>

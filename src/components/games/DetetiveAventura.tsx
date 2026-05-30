@@ -313,7 +313,7 @@ export default function DetetiveAventura({ room }: Props) {
       </nav>
 
       {/* Scene viewport with hotspots */}
-      <div className="relative flex-1 min-h-[320px] rounded-2xl overflow-hidden border-4 border-amber-900/25 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.35)]">
+      <div className="relative flex-1 min-h-[220px] sm:min-h-[320px] rounded-2xl overflow-hidden border-4 border-amber-900/25 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.35)]">
         <img
           src={scene.bg}
           alt={scene.title}

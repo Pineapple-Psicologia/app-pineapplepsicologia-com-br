@@ -381,7 +381,7 @@ function StepPlace({
   const center = SIZE / 2;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-4 items-start">
+    <div className="grid grid-cols-1 md:grid-cols-[1fr_240px] lg:grid-cols-[1fr_280px] gap-4 items-start">
       {/* Compass */}
       <div className="flex justify-center">
         <div className="relative bg-white/95 backdrop-blur rounded-full border-4 border-amber-700 shadow-2xl" style={{ width: SIZE, height: SIZE }}>

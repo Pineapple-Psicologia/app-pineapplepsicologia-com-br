@@ -210,7 +210,7 @@ export default function MapaCorporal({ room }: Props) {
       </div>
 
       {/* Body + legend */}
-      <div className="flex-1 grid lg:grid-cols-[1fr_300px] gap-3 min-h-0">
+      <div className="flex-1 grid md:grid-cols-[1fr_240px] lg:grid-cols-[1fr_300px] gap-3 min-h-0">
         {/* Pixar character with hit zones */}
         <div
           className="relative bg-gradient-to-b from-sky-50 via-white to-violet-50 border-2 rounded-2xl shadow-inner flex items-center justify-center overflow-hidden p-3"

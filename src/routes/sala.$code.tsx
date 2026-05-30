@@ -102,39 +102,41 @@ function SalaPage() {
 
 
   return (
-    <div className="h-screen flex flex-col">
-      <header className="flex items-center justify-between gap-3 px-4 py-3 border-b bg-card/80 backdrop-blur">
-        <div className="flex items-center gap-3 min-w-0">
-          <Button size="sm" variant="ghost" onClick={() => router.navigate({ to: "/" })}>
+    <div className="h-[100dvh] flex flex-col overflow-hidden">
+      <header className="flex items-center justify-between gap-2 px-2 sm:px-4 py-1.5 sm:py-3 border-b bg-card/80 backdrop-blur shrink-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 sm:h-9 sm:w-9" onClick={() => router.navigate({ to: "/" })}>
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div className="min-w-0">
-            <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold truncate">
+            <div className="hidden sm:block text-[10px] uppercase tracking-wider text-muted-foreground font-bold truncate">
               {role === "psi" ? "Psicóloga" : "Paciente"} · {meta?.emoji} {meta?.title ?? "Sala"}
             </div>
-            <button onClick={copyCode} className="flex items-center gap-2 font-display text-2xl font-bold tracking-widest hover:text-primary">
+            <button onClick={copyCode} className="flex items-center gap-1.5 font-display text-base sm:text-2xl font-bold tracking-widest hover:text-primary truncate">
+              <span className="sm:hidden">{meta?.emoji}</span>
               {code}
-              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4 opacity-50" />}
+              {copied ? <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-50" />}
             </button>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {role === "psi" && user && (
-            <Button size="sm" variant="outline" onClick={handleDownloadPdf} disabled={downloading}>
-              <Download className="w-4 h-4 mr-1" /> {downloading ? "Gerando..." : "Baixar PDF"}
+            <Button size="sm" variant="outline" className="h-8 px-2 sm:h-9 sm:px-3" onClick={handleDownloadPdf} disabled={downloading}>
+              <Download className="w-4 h-4 sm:mr-1" />
+              <span className="hidden sm:inline">{downloading ? "Gerando..." : "Baixar PDF"}</span>
             </Button>
           )}
-          <div className={`flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full ${room.peers > 1 ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
-            {room.peers > 1 ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}
-            {room.peers > 1 ? "Conectados" : "Aguardando..."}
+          <div className={`flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold px-2 sm:px-3 py-1 sm:py-1.5 rounded-full ${room.peers > 1 ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
+            {room.peers > 1 ? <Wifi className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> : <WifiOff className="w-3 h-3 sm:w-3.5 sm:h-3.5" />}
+            <span className="hidden sm:inline">{room.peers > 1 ? "Conectados" : "Aguardando..."}</span>
           </div>
         </div>
       </header>
 
 
       <div className="flex-1 flex min-h-0">
-        <main ref={captureRef} className="flex-1 overflow-auto p-1.5 sm:p-4">
+        <main ref={captureRef} className="flex-1 overflow-auto p-1 sm:p-3 md:p-4">
 
           {game === "termometro" ? (
             <Termometro room={room} />
