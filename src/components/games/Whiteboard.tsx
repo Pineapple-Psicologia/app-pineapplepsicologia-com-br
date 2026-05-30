@@ -1129,125 +1129,177 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
           }}
         />
         <canvas ref={overlayRef} className="absolute inset-0 w-full h-full pointer-events-none" />
+        {(() => {
+          const accent = textInput?.color ?? color;
+          const fSize = (textInput?.size ?? size);
+          const startResize = (e: React.PointerEvent) => {
+            if (!textInput || !wrapperRef.current) return;
+            e.preventDefault();
+            e.stopPropagation();
+            const wrap = wrapperRef.current.getBoundingClientRect();
+            const startW = (textInput.w ?? 0.3) * wrap.width;
+            const startX = e.clientX;
+            const target = e.currentTarget as HTMLElement;
+            target.setPointerCapture(e.pointerId);
+            const move = (ev: PointerEvent) => {
+              const newPx = Math.max(120, startW + (ev.clientX - startX));
+              const newW = Math.max(0.08, Math.min(0.95, newPx / wrap.width));
+              setTextInput((cur) => cur ? { ...cur, w: newW } : cur);
+            };
+            const up = (ev: PointerEvent) => {
+              target.releasePointerCapture?.(ev.pointerId);
+              window.removeEventListener("pointermove", move);
+              window.removeEventListener("pointerup", up);
+              textareaRef.current?.focus();
+            };
+            window.addEventListener("pointermove", move);
+            window.addEventListener("pointerup", up);
+          };
+          const startDrag = (e: React.PointerEvent) => {
+            if (!textInput || !wrapperRef.current) return;
+            e.preventDefault();
+            e.stopPropagation();
+            const wrap = wrapperRef.current.getBoundingClientRect();
+            const startPx = { x: textInput.x * wrap.width, y: textInput.y * wrap.height };
+            const startMouse = { x: e.clientX, y: e.clientY };
+            const target = e.currentTarget as HTMLElement;
+            target.setPointerCapture(e.pointerId);
+            const move = (ev: PointerEvent) => {
+              const nx = Math.max(0, Math.min(wrap.width - 20, startPx.x + (ev.clientX - startMouse.x)));
+              const ny = Math.max(0, Math.min(wrap.height - 20, startPx.y + (ev.clientY - startMouse.y)));
+              setTextInput((cur) => cur ? { ...cur, x: nx / wrap.width, y: ny / wrap.height } : cur);
+            };
+            const up = (ev: PointerEvent) => {
+              target.releasePointerCapture?.(ev.pointerId);
+              window.removeEventListener("pointermove", move);
+              window.removeEventListener("pointerup", up);
+              textareaRef.current?.focus();
+            };
+            window.addEventListener("pointermove", move);
+            window.addEventListener("pointerup", up);
+          };
+          return (
         <div
-          className="absolute z-10 flex flex-col rounded-xl shadow-2xl bg-white/95 backdrop-blur-sm overflow-hidden ring-1 ring-black/5"
+          className="absolute z-10 flex flex-col rounded-2xl shadow-2xl bg-white/98 backdrop-blur-md overflow-visible"
           style={{
             left: `${(textInput?.x ?? 0) * 100}%`,
             top: `${(textInput?.y ?? 0) * 100}%`,
             visibility: textInput ? "visible" : "hidden",
             pointerEvents: textInput ? "auto" : "none",
-            border: `2px solid ${textInput?.color ?? color}`,
+            boxShadow: `0 20px 60px -10px ${accent}55, 0 0 0 2px ${accent}, 0 0 0 6px ${accent}22`,
           }}
         >
           <div
-            className="flex items-center justify-between gap-2 px-2 py-1 text-white text-[11px] font-bold cursor-move select-none"
-            style={{ background: `linear-gradient(90deg, ${textInput?.color ?? color}, ${textInput?.color ?? color}cc)` }}
+            className="flex items-center justify-between gap-2 px-3 py-1.5 text-white text-[11px] font-bold cursor-move select-none rounded-t-2xl"
+            style={{ background: `linear-gradient(135deg, ${accent}, ${accent}dd 60%, ${accent}aa)` }}
             onMouseDown={(e) => e.preventDefault()}
-            onPointerDown={(e) => {
-              if (!textInput || !wrapperRef.current) return;
-              e.preventDefault();
-              e.stopPropagation();
-              const wrap = wrapperRef.current.getBoundingClientRect();
-              const startPx = { x: textInput.x * wrap.width, y: textInput.y * wrap.height };
-              const startMouse = { x: e.clientX, y: e.clientY };
-              const target = e.currentTarget;
-              target.setPointerCapture(e.pointerId);
-              const move = (ev: PointerEvent) => {
-                const nx = Math.max(0, Math.min(wrap.width - 20, startPx.x + (ev.clientX - startMouse.x)));
-                const ny = Math.max(0, Math.min(wrap.height - 20, startPx.y + (ev.clientY - startMouse.y)));
-                setTextInput((cur) => cur ? { ...cur, x: nx / wrap.width, y: ny / wrap.height } : cur);
-              };
-              const up = (ev: PointerEvent) => {
-                target.releasePointerCapture?.(ev.pointerId);
-                window.removeEventListener("pointermove", move);
-                window.removeEventListener("pointerup", up);
-                textareaRef.current?.focus();
-              };
-              window.addEventListener("pointermove", move);
-              window.addEventListener("pointerup", up);
-            }}
+            onPointerDown={startDrag}
           >
             <span className="flex items-center gap-1.5">
-              <Move className="w-3 h-3" />
-              <span className="opacity-90">arrastar</span>
+              <Move className="w-3.5 h-3.5" />
+              <span className="opacity-95 tracking-wide">mover</span>
             </span>
-            <div className="flex items-center gap-1" onPointerDown={(e) => e.stopPropagation()}>
-              <button
-                type="button"
-                title="Diminuir fonte"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => textInput && setTextInput({ ...textInput, size: Math.max(2, (textInput.size ?? size) - 1) })}
-                className="w-5 h-5 flex items-center justify-center rounded bg-white/25 hover:bg-white/40 text-xs leading-none"
-              >−</button>
-              <span className="px-1 tabular-nums">{textInput?.size ?? size}</span>
-              <button
-                type="button"
-                title="Aumentar fonte"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => textInput && setTextInput({ ...textInput, size: Math.min(40, (textInput.size ?? size) + 1) })}
-                className="w-5 h-5 flex items-center justify-center rounded bg-white/25 hover:bg-white/40 text-xs leading-none"
-              >+</button>
-              <div className="w-px h-4 bg-white/30 mx-1" />
-              {COLORS.slice(0, 6).map((c) => (
+            <div className="flex items-center gap-1.5" onPointerDown={(e) => e.stopPropagation()}>
+              <div className="flex items-center bg-white/15 rounded-full px-1">
                 <button
-                  key={c}
                   type="button"
-                  title={c}
+                  title="Diminuir fonte"
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => textInput && setTextInput({ ...textInput, color: c })}
-                  className={`w-4 h-4 rounded-full border ${ (textInput?.color ?? color) === c ? "border-white ring-1 ring-white" : "border-white/40"}`}
-                  style={{ background: c }}
-                />
-              ))}
-              <div className="w-px h-4 bg-white/30 mx-1" />
+                  onClick={() => textInput && setTextInput({ ...textInput, size: Math.max(2, fSize - 1) })}
+                  className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-white/25 text-sm leading-none"
+                >−</button>
+                <span className="px-1.5 tabular-nums text-[10px]">{fSize}</span>
+                <button
+                  type="button"
+                  title="Aumentar fonte"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => textInput && setTextInput({ ...textInput, size: Math.min(60, fSize + 1) })}
+                  className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-white/25 text-sm leading-none"
+                >+</button>
+              </div>
+              <div className="flex items-center gap-0.5 bg-white/15 rounded-full px-1 py-0.5">
+                {COLORS.slice(0, 6).map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    title={c}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => textInput && setTextInput({ ...textInput, color: c })}
+                    className={`w-3.5 h-3.5 rounded-full transition-transform ${ (textInput?.color ?? color) === c ? "ring-2 ring-white scale-110" : "hover:scale-110"}`}
+                    style={{ background: c }}
+                  />
+                ))}
+              </div>
               <button
                 type="button"
                 title="Confirmar (Enter)"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => submitText()}
-                className="px-2 py-0.5 rounded bg-white/25 hover:bg-white/40 font-bold"
+                className="px-2 py-0.5 rounded-full bg-white text-black/80 font-bold hover:bg-white/90 shadow-sm"
               >✓</button>
               <button
                 type="button"
                 title="Cancelar (Esc)"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => setTextInput(null)}
-                className="px-2 py-0.5 rounded bg-white/25 hover:bg-white/40 font-bold"
+                className="px-2 py-0.5 rounded-full bg-white/20 hover:bg-white/30 font-bold"
               >✕</button>
             </div>
           </div>
-          <textarea
-            ref={textareaRef}
-            value={textInput?.value ?? ""}
-            onChange={(e) => textInput && setTextInput({ ...textInput, value: e.target.value })}
-            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submitText(); } if (e.key === "Escape") setTextInput(null); }}
-            onMouseUp={(e) => {
-              if (!textInput || !wrapperSize.w) return;
-              const px = (e.currentTarget as HTMLTextAreaElement).offsetWidth;
-              const newW = Math.max(0.08, Math.min(0.95, px / wrapperSize.w));
-              if (Math.abs(newW - (textInput.w ?? 0.3)) > 0.005) {
-                setTextInput({ ...textInput, w: newW });
-              }
-            }}
-            wrap="soft"
-            className="px-3 py-2 font-semibold outline-none leading-tight bg-transparent placeholder:text-muted-foreground/50"
-            style={{
-              color: textInput?.color ?? color,
-              fontSize: ((textInput?.size ?? size)) * 4,
-              width: wrapperSize.w ? (textInput?.w ?? 0.3) * wrapperSize.w : undefined,
-              minWidth: 120,
-              maxWidth: wrapperSize.w ? wrapperSize.w * 0.95 : undefined,
-              minHeight: ((textInput?.size ?? size)) * 4 * 1.6,
-              resize: "horizontal",
-              whiteSpace: "pre-wrap",
-              wordBreak: "break-word",
-              overflowWrap: "break-word",
-            }}
-            placeholder="Digite seu texto..."
-            rows={2}
-          />
-
+          <div className="relative">
+            <textarea
+              ref={textareaRef}
+              value={textInput?.value ?? ""}
+              onChange={(e) => textInput && setTextInput({ ...textInput, value: e.target.value })}
+              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submitText(); } if (e.key === "Escape") setTextInput(null); }}
+              wrap="soft"
+              className="block px-3 py-2 font-semibold outline-none leading-tight bg-transparent placeholder:text-black/30"
+              style={{
+                color: accent,
+                fontSize: fSize * 4,
+                width: wrapperSize.w ? (textInput?.w ?? 0.3) * wrapperSize.w : undefined,
+                minWidth: 120,
+                maxWidth: wrapperSize.w ? wrapperSize.w * 0.95 : undefined,
+                minHeight: fSize * 4 * 1.6,
+                resize: "none",
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word",
+                overflowWrap: "break-word",
+              }}
+              placeholder="Digite seu texto..."
+              rows={2}
+            />
+            {/* Right edge resize handle */}
+            <div
+              onPointerDown={startResize}
+              title="Arraste para redimensionar"
+              className="absolute top-0 -right-1 h-full w-2 cursor-ew-resize flex items-center justify-center group"
+            >
+              <div
+                className="h-10 w-1 rounded-full opacity-60 group-hover:opacity-100 transition-opacity"
+                style={{ background: accent }}
+              />
+            </div>
+            {/* Bottom-right corner grip */}
+            <div
+              onPointerDown={startResize}
+              title="Arraste para redimensionar"
+              className="absolute -bottom-1 -right-1 w-4 h-4 cursor-ew-resize flex items-end justify-end"
+            >
+              <div
+                className="w-3 h-3 rounded-tl-md rounded-br-2xl shadow-md"
+                style={{ background: accent }}
+              />
+            </div>
+          </div>
+          {/* Hint footer */}
+          <div className="px-3 py-1 text-[10px] text-black/40 border-t border-black/5 flex items-center justify-between gap-2 select-none">
+            <span>Enter para confirmar • Shift+Enter quebra linha</span>
+            <span className="opacity-70">Clique no texto pronto para mover</span>
+          </div>
         </div>
+          );
+        })()}
       </div>
     </div>
   );
