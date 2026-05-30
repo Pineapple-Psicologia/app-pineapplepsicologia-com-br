@@ -47,7 +47,7 @@ type Tool = BrushTool | "rect" | "circle" | "line" | "arrow" | "text" | "sticker
 
 type Path = { type: "path"; tool: BrushTool; color: string; size: number; points: { x: number; y: number; w?: number }[] };
 type Shape = { type: "rect" | "circle" | "line" | "arrow"; color: string; size: number; x1: number; y1: number; x2: number; y2: number };
-type TextObj = { type: "text"; color: string; size: number; x: number; y: number; text: string };
+type TextObj = { type: "text"; color: string; size: number; x: number; y: number; text: string; w?: number };
 type Sticker = { type: "sticker"; emoji: string; x: number; y: number; size: number };
 type Fill = { type: "fill"; color: string; x: number; y: number };
 type Obj = (Path | Shape | TextObj | Sticker | Fill) & { id: string };
@@ -101,7 +101,8 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
     return !window.matchMedia("(max-width: 1024px)").matches;
   });
   const [showHelp, setShowHelp] = useState(false);
-  const [textInput, setTextInput] = useState<{ x: number; y: number; value: string; id?: string; color?: string; size?: number } | null>(null);
+  const [textInput, setTextInput] = useState<{ x: number; y: number; value: string; id?: string; color?: string; size?: number; w?: number } | null>(null);
+  const [wrapperSize, setWrapperSize] = useState({ w: 0, h: 0 });
   const trayOpen = showStickers || showTemplates;
   const useOverlayToolbar = isLandscape && toolbarExpanded && !trayOpen;
   const useInlineTray = isCompact && isLandscape;
@@ -316,7 +317,25 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
       ctx.fillStyle = o.color;
       ctx.font = `600 ${o.size * 4}px "Nunito", system-ui`;
       ctx.textBaseline = "top";
-      o.text.split("\n").forEach((line, i) => ctx.fillText(line, o.x * w, o.y * h + i * o.size * 4.6));
+      const maxW = (o.w ?? 1) * w;
+      const lineH = o.size * 4.6;
+      const wrapped: string[] = [];
+      for (const para of o.text.split("\n")) {
+        if (!para) { wrapped.push(""); continue; }
+        const words = para.split(/(\s+)/);
+        let cur = "";
+        for (const word of words) {
+          const test = cur + word;
+          if (ctx.measureText(test).width > maxW && cur.trim().length > 0) {
+            wrapped.push(cur);
+            cur = word.replace(/^\s+/, "");
+          } else {
+            cur = test;
+          }
+        }
+        if (cur.length) wrapped.push(cur);
+      }
+      wrapped.forEach((line, i) => ctx.fillText(line, o.x * w, o.y * h + i * lineH));
     } else if (o.type === "sticker") {
       ctx.font = `${o.size * 6}px serif`;
       ctx.textAlign = "center";
@@ -363,6 +382,7 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
         el.width = rect.width * dpr;
         el.height = rect.height * dpr;
       });
+      setWrapperSize({ w: rect.width, h: rect.height });
       redraw();
     };
     resize();
@@ -668,7 +688,7 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
           // Click without drag → open editor pre-filled with the text content
           objectsRef.current = objectsRef.current.filter((o) => o.id !== obj.id);
           room.send("wb:undo", { id: obj.id });
-          setTextInput({ x: obj.x, y: obj.y, value: obj.text, color: obj.color, size: obj.size });
+          setTextInput({ x: obj.x, y: obj.y, value: obj.text, color: obj.color, size: obj.size, id: obj.id, w: obj.w ?? 0.3 });
           const ta = textareaRef.current;
           if (ta) { ta.value = obj.text; ta.focus(); }
           redraw();
@@ -737,7 +757,8 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
     if (t) {
       const useColor = textInput.color ?? color;
       const useSize = textInput.size ?? size;
-      commit({ id: textInput.id ?? uid(), type: "text", color: useColor, size: useSize, x: textInput.x, y: textInput.y, text: t });
+      const useW = textInput.w ?? 0.3;
+      commit({ id: textInput.id ?? uid(), type: "text", color: useColor, size: useSize, x: textInput.x, y: textInput.y, text: t, w: useW });
     }
     setTextInput(null);
   };
@@ -1200,17 +1221,32 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
             value={textInput?.value ?? ""}
             onChange={(e) => textInput && setTextInput({ ...textInput, value: e.target.value })}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submitText(); } if (e.key === "Escape") setTextInput(null); }}
+            onMouseUp={(e) => {
+              if (!textInput || !wrapperSize.w) return;
+              const px = (e.currentTarget as HTMLTextAreaElement).offsetWidth;
+              const newW = Math.max(0.08, Math.min(0.95, px / wrapperSize.w));
+              if (Math.abs(newW - (textInput.w ?? 0.3)) > 0.005) {
+                setTextInput({ ...textInput, w: newW });
+              }
+            }}
+            wrap="soft"
             className="px-3 py-2 font-semibold outline-none leading-tight bg-transparent placeholder:text-muted-foreground/50"
             style={{
               color: textInput?.color ?? color,
               fontSize: ((textInput?.size ?? size)) * 4,
-              minWidth: 180,
+              width: wrapperSize.w ? (textInput?.w ?? 0.3) * wrapperSize.w : undefined,
+              minWidth: 120,
+              maxWidth: wrapperSize.w ? wrapperSize.w * 0.95 : undefined,
               minHeight: ((textInput?.size ?? size)) * 4 * 1.6,
-              resize: "both",
+              resize: "horizontal",
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-word",
+              overflowWrap: "break-word",
             }}
             placeholder="Digite seu texto..."
             rows={2}
           />
+
         </div>
       </div>
     </div>
@@ -1289,15 +1325,19 @@ function recognizeShape(d: Path): Shape | null {
 }
 
 // Pixel-accurate hit-test for text objects (matches drawObj font metrics).
-function hitText(o: { x: number; y: number; size: number; text: string }, p: { x: number; y: number }, w: number, h: number): boolean {
+function hitText(o: { x: number; y: number; size: number; text: string; w?: number }, p: { x: number; y: number }, w: number, h: number): boolean {
   const fontPx = o.size * 4;
   const lineH = o.size * 4.6;
-  const lines = o.text.split("\n");
+  const boxW = (o.w ?? 0.3) * w;
+  // approx wrapped line count
+  const avgChar = fontPx * 0.55;
+  const charsPerLine = Math.max(1, Math.floor(boxW / avgChar));
+  let lineCount = 0;
+  for (const para of o.text.split("\n")) {
+    lineCount += Math.max(1, Math.ceil(para.length / charsPerLine));
+  }
   const x0 = o.x * w, y0 = o.y * h;
   const px = p.x * w, py = p.y * h;
-  if (py < y0 - 4 || py > y0 + lines.length * lineH + 4) return false;
-  // Approximate width: 0.6 * fontPx per char on widest line
-  const maxChars = Math.max(...lines.map((l) => l.length));
-  const width = Math.max(20, maxChars * fontPx * 0.6);
-  return px >= x0 - 4 && px <= x0 + width + 4;
+  if (py < y0 - 4 || py > y0 + lineCount * lineH + 4) return false;
+  return px >= x0 - 4 && px <= x0 + boxW + 4;
 }
