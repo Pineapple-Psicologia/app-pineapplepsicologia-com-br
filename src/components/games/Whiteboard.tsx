@@ -47,7 +47,7 @@ type Tool = BrushTool | "rect" | "circle" | "line" | "arrow" | "text" | "sticker
 
 type Path = { type: "path"; tool: BrushTool; color: string; size: number; points: { x: number; y: number; w?: number }[] };
 type Shape = { type: "rect" | "circle" | "line" | "arrow"; color: string; size: number; x1: number; y1: number; x2: number; y2: number };
-type TextObj = { type: "text"; color: string; size: number; x: number; y: number; text: string };
+type TextObj = { type: "text"; color: string; size: number; x: number; y: number; text: string; w?: number };
 type Sticker = { type: "sticker"; emoji: string; x: number; y: number; size: number };
 type Fill = { type: "fill"; color: string; x: number; y: number };
 type Obj = (Path | Shape | TextObj | Sticker | Fill) & { id: string };
