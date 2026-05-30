@@ -1002,7 +1002,6 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
               <h4 className="font-bold text-foreground mb-1.5 flex items-center gap-1.5"><Undo2 className="w-4 h-4" />Controles gerais</h4>
               <ul className="space-y-1 text-muted-foreground list-disc pl-4">
                 <li><b>Desfazer</b>: remove o último item.</li>
-                <li><b>Salvar</b>: baixa o quadro como imagem PNG.</li>
                 <li><b>Limpar</b>: apaga tudo (cuidado!).</li>
               </ul>
             </section>
