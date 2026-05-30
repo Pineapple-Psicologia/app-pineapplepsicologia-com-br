@@ -166,13 +166,6 @@ function SalaPage() {
         </main>
       </div>
 
-      <SaveToPatientDialog
-        open={saveOpen}
-        onOpenChange={setSaveOpen}
-        targetEl={captureRef.current}
-        game={meta?.title ?? game}
-        defaultFileName={`${meta?.title ?? game}-${new Date().toISOString().slice(0, 10)}.pdf`}
-      />
     </div>
   );
 }
