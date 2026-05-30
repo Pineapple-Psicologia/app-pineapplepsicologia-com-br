@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  Eraser, Trash2, Pencil, Undo2, Download, Brush, Highlighter,
+  Eraser, Trash2, Pencil, Undo2, Brush, Highlighter,
   Square, Circle as CircleIcon, Minus, ArrowRight, Type, Smile,
   LayoutGrid, Sparkles, Wand2, Waves, Zap, Rainbow, SprayCan, PaintBucket, Plus, Move,
   Lock, Unlock, ChevronDown, ChevronUp, HelpCircle, X,
@@ -930,7 +930,7 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
             <Sparkles className="w-4 h-4 mr-1" />Modelos
           </Button>
           <Button size="sm" variant="outline" onClick={undo}><Undo2 className="w-4 h-4 mr-1" />Desfazer</Button>
-          <Button size="sm" variant="outline" onClick={download}><Download className="w-4 h-4 mr-1" />Salvar</Button>
+          
           <Button size="sm" variant="outline" onClick={clearAll}><Trash2 className="w-4 h-4 mr-1" />Limpar</Button>
           {isPsi && (
             <Button
@@ -1002,7 +1002,6 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
               <h4 className="font-bold text-foreground mb-1.5 flex items-center gap-1.5"><Undo2 className="w-4 h-4" />Controles gerais</h4>
               <ul className="space-y-1 text-muted-foreground list-disc pl-4">
                 <li><b>Desfazer</b>: remove o último item.</li>
-                <li><b>Salvar</b>: baixa o quadro como imagem PNG.</li>
                 <li><b>Limpar</b>: apaga tudo (cuidado!).</li>
               </ul>
             </section>
