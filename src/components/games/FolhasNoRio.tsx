@@ -232,7 +232,7 @@ export default function FolhasNoRio({ room }: Props) {
       </header>
 
       {/* river */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-3 min-h-0">
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_260px] lg:grid-cols-[1fr_320px] gap-3 min-h-0">
         <River
           state={state}
           now={now}

@@ -346,7 +346,7 @@ export default function EntreLentes({ room }: Props) {
   }
 
   return (
-    <div className="h-full w-full grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-4 text-stone-800">
+    <div className="h-full w-full grid grid-cols-1 md:grid-cols-[1fr_280px] lg:grid-cols-[1fr_360px] gap-4 text-stone-800">
       {/* ---------------- SCENE ---------------- */}
       <div className="flex flex-col gap-3 min-h-0">
         {/* Onboarding strip */}
