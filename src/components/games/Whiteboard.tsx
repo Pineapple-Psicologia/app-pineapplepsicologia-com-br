@@ -100,6 +100,7 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
     if (typeof window === "undefined") return true;
     return !window.matchMedia("(max-width: 1024px)").matches;
   });
+  const [showHelp, setShowHelp] = useState(false);
   const [textInput, setTextInput] = useState<{ x: number; y: number; value: string; id?: string; color?: string; size?: number } | null>(null);
 
 
