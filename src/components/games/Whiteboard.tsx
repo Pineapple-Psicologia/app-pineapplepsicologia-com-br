@@ -757,7 +757,8 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
     if (t) {
       const useColor = textInput.color ?? color;
       const useSize = textInput.size ?? size;
-      commit({ id: textInput.id ?? uid(), type: "text", color: useColor, size: useSize, x: textInput.x, y: textInput.y, text: t });
+      const useW = textInput.w ?? 0.3;
+      commit({ id: textInput.id ?? uid(), type: "text", color: useColor, size: useSize, x: textInput.x, y: textInput.y, text: t, w: useW });
     }
     setTextInput(null);
   };
