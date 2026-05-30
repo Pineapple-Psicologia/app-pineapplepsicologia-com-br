@@ -17,10 +17,10 @@ import FolhasNoRio from "@/components/games/FolhasNoRio";
 import BussolaValores from "@/components/games/BussolaValores";
 import MinhaCasa from "@/components/games/MinhaCasa";
 
-import { Copy, Check, ArrowLeft, Wifi, WifiOff, Save } from "lucide-react";
+import { Copy, Check, ArrowLeft, Wifi, WifiOff, Download } from "lucide-react";
 import { toast } from "sonner";
 import { getGame } from "@/lib/games";
-import { SaveToPatientDialog } from "@/components/SaveToPatientDialog";
+import { downloadElementAsPdf } from "@/lib/downloadPdf";
 import { useAuth } from "@/hooks/use-auth";
 
 const GAMES = ["whiteboard", "termometro", "detetive", "detetive-tabuleiro", "detetive-aventura", "mapa-corporal", "triangulo", "entre-lentes", "respiracao", "ancoragem", "folhas-no-rio", "bussola", "minha-casa"] as const;
@@ -54,9 +54,23 @@ function SalaPage() {
   const router = useRouter();
   const room = useRoom(code, role as Role);
   const [copied, setCopied] = useState(false);
-  const [saveOpen, setSaveOpen] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const captureRef = useRef<HTMLElement>(null);
   const { user } = useAuth();
+
+  const handleDownloadPdf = async () => {
+    if (!captureRef.current) return;
+    setDownloading(true);
+    try {
+      const name = `${meta?.title ?? game}-${new Date().toISOString().slice(0, 10)}.pdf`;
+      await downloadElementAsPdf(captureRef.current, name);
+      toast.success("PDF baixado");
+    } catch (e: any) {
+      toast.error("Erro ao gerar PDF", { description: e?.message });
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   const meta = getGame(game);
 
@@ -107,8 +121,8 @@ function SalaPage() {
 
         <div className="flex items-center gap-2">
           {role === "psi" && user && (
-            <Button size="sm" variant="outline" onClick={() => setSaveOpen(true)}>
-              <Save className="w-4 h-4 mr-1" /> Salvar na pasta
+            <Button size="sm" variant="outline" onClick={handleDownloadPdf} disabled={downloading}>
+              <Download className="w-4 h-4 mr-1" /> {downloading ? "Gerando..." : "Baixar PDF"}
             </Button>
           )}
           <div className={`flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full ${room.peers > 1 ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
@@ -152,13 +166,6 @@ function SalaPage() {
         </main>
       </div>
 
-      <SaveToPatientDialog
-        open={saveOpen}
-        onOpenChange={setSaveOpen}
-        targetEl={captureRef.current}
-        game={meta?.title ?? game}
-        defaultFileName={`${meta?.title ?? game}-${new Date().toISOString().slice(0, 10)}.pdf`}
-      />
     </div>
   );
 }
