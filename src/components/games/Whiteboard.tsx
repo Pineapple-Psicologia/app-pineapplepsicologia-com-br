@@ -96,7 +96,10 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
   const isMobile = useIsMobile();
   const isCompact = useIsCompact();
   const isLandscape = useIsLandscape();
-  const [toolbarExpanded, setToolbarExpanded] = useState(false);
+  const [toolbarExpanded, setToolbarExpanded] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return !window.matchMedia("(max-width: 1024px)").matches;
+  });
   const [textInput, setTextInput] = useState<{ x: number; y: number; value: string; id?: string; color?: string; size?: number } | null>(null);
 
 
