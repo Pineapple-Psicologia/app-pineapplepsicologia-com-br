@@ -23,6 +23,20 @@ function useIsCompact() {
   }, []);
   return compact;
 }
+
+// Detecta orientação horizontal (paisagem) em viewports pequenos: o
+// quadro precisa de espaço vertical maior, então a barra vira overlay.
+function useIsLandscape() {
+  const [landscape, setLandscape] = useState<boolean>(false);
+  useEffect(() => {
+    const mql = window.matchMedia("(orientation: landscape) and (max-height: 600px)");
+    const on = () => setLandscape(mql.matches);
+    on();
+    mql.addEventListener("change", on);
+    return () => mql.removeEventListener("change", on);
+  }, []);
+  return landscape;
+}
 import type { useRoom, RoomMessage } from "@/lib/useRoom";
 import { TEMPLATES, buildTemplate, type TemplateId } from "@/lib/whiteboardTemplates";
 import whiteboardBg from "@/assets/scene-whiteboard.jpg";
@@ -81,6 +95,7 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
   const canDraw = isPsi || !locked;
   const isMobile = useIsMobile();
   const isCompact = useIsCompact();
+  const isLandscape = useIsLandscape();
   const [toolbarExpanded, setToolbarExpanded] = useState(false);
   const [textInput, setTextInput] = useState<{ x: number; y: number; value: string; id?: string; color?: string; size?: number } | null>(null);
 
@@ -733,7 +748,7 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
 
   return (
     <div
-      className="flex flex-col h-full gap-1.5 sm:gap-3 p-1.5 sm:p-3 rounded-2xl border-4 border-amber-900/25 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.35)] relative overflow-hidden"
+      className={`flex flex-col h-full gap-1.5 sm:gap-3 ${isLandscape ? "p-1" : "p-1.5 sm:p-3"} rounded-2xl border-4 border-amber-900/25 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.35)] relative overflow-hidden`}
       style={{
         backgroundImage: `linear-gradient(rgba(255,247,237,0.6), rgba(186,230,253,0.4)), url(${whiteboardBg})`,
         backgroundSize: "cover",
@@ -744,7 +759,7 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
       {isCompact && (
         <button
           onClick={() => setToolbarExpanded((v) => !v)}
-          className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-card rounded-xl border-2 border-border shadow-sm text-xs font-bold"
+          className={`${isLandscape ? "absolute top-2 right-2 z-20" : "flex"} flex items-center justify-center gap-1.5 px-3 py-1.5 bg-card/95 backdrop-blur rounded-xl border-2 border-border shadow-sm text-xs font-bold`}
         >
           {toolbarExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           {toolbarExpanded ? "Esconder ferramentas" : "Ferramentas"}
@@ -752,7 +767,8 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
       )}
 
       {/* Toolbar */}
-      <div className={`${isCompact && !toolbarExpanded ? "hidden" : "flex"} flex-wrap items-stretch gap-2 p-2.5 bg-card rounded-2xl border-2 border-border shadow-sm`}>
+      <div className={`${isCompact && !toolbarExpanded ? "hidden" : "flex"} ${isLandscape && toolbarExpanded ? "absolute top-12 left-2 right-2 z-10 max-h-[calc(100%-3.5rem)] overflow-auto" : ""} flex-wrap items-stretch gap-2 p-2.5 bg-card/95 backdrop-blur rounded-2xl border-2 border-border shadow-sm`}>
+
 
 
         <div className="flex gap-1.5">
