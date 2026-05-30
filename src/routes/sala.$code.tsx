@@ -54,9 +54,23 @@ function SalaPage() {
   const router = useRouter();
   const room = useRoom(code, role as Role);
   const [copied, setCopied] = useState(false);
-  const [saveOpen, setSaveOpen] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const captureRef = useRef<HTMLElement>(null);
   const { user } = useAuth();
+
+  const handleDownloadPdf = async () => {
+    if (!captureRef.current) return;
+    setDownloading(true);
+    try {
+      const name = `${meta?.title ?? game}-${new Date().toISOString().slice(0, 10)}.pdf`;
+      await downloadElementAsPdf(captureRef.current, name);
+      toast.success("PDF baixado");
+    } catch (e: any) {
+      toast.error("Erro ao gerar PDF", { description: e?.message });
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   const meta = getGame(game);
 
