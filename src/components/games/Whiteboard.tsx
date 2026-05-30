@@ -96,7 +96,10 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
   const isMobile = useIsMobile();
   const isCompact = useIsCompact();
   const isLandscape = useIsLandscape();
-  const [toolbarExpanded, setToolbarExpanded] = useState(false);
+  const [toolbarExpanded, setToolbarExpanded] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return !window.matchMedia("(max-width: 1024px)").matches;
+  });
   const [textInput, setTextInput] = useState<{ x: number; y: number; value: string; id?: string; color?: string; size?: number } | null>(null);
 
 
@@ -755,8 +758,9 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
         backgroundPosition: "center",
       }}
     >
-      {/* Mobile toolbar toggle */}
+      {/* Toolbar toggle (all viewports) */}
       {isCompact && (
+
         <button
           onClick={() => setToolbarExpanded((v) => !v)}
           className={`${isLandscape ? "absolute top-1 right-1 z-20" : "flex"} flex items-center justify-center gap-1.5 px-3 py-1.5 bg-card/95 backdrop-blur rounded-xl border-2 border-border shadow-sm text-xs font-bold`}
@@ -765,9 +769,19 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
           {toolbarExpanded ? "Esconder ferramentas" : "Ferramentas"}
         </button>
       )}
+      {!isCompact && (
+        <button
+          onClick={() => setToolbarExpanded((v) => !v)}
+          className="self-start flex items-center justify-center gap-1.5 px-3 py-1.5 bg-card/95 backdrop-blur rounded-xl border-2 border-border shadow-sm text-xs font-bold hover:bg-card transition-colors"
+        >
+          {toolbarExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          {toolbarExpanded ? "Esconder ferramentas" : "Mostrar ferramentas"}
+        </button>
+      )}
 
       {/* Toolbar */}
-      <div className={`${isCompact && !toolbarExpanded ? "hidden" : "flex"} ${isLandscape && toolbarExpanded ? "absolute top-10 left-1 right-1 z-10 max-h-[calc(100%-3rem)] overflow-auto" : ""} flex-wrap items-stretch gap-2 p-2.5 bg-card/95 backdrop-blur rounded-2xl border-2 border-border shadow-sm`}>
+      <div className={`${!toolbarExpanded ? "hidden" : "flex"} ${isLandscape && toolbarExpanded ? "absolute top-10 left-1 right-1 z-10 max-h-[calc(100%-3rem)] overflow-auto" : ""} flex-wrap items-stretch gap-2 p-2.5 bg-card/95 backdrop-blur rounded-2xl border-2 border-border shadow-sm`}>
+
 
 
 
