@@ -688,7 +688,7 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
           // Click without drag → open editor pre-filled with the text content
           objectsRef.current = objectsRef.current.filter((o) => o.id !== obj.id);
           room.send("wb:undo", { id: obj.id });
-          setTextInput({ x: obj.x, y: obj.y, value: obj.text, color: obj.color, size: obj.size });
+          setTextInput({ x: obj.x, y: obj.y, value: obj.text, color: obj.color, size: obj.size, id: obj.id, w: obj.w ?? 0.3 });
           const ta = textareaRef.current;
           if (ta) { ta.value = obj.text; ta.focus(); }
           redraw();
