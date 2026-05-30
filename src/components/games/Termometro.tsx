@@ -222,11 +222,11 @@ export default function Termometro({ room }: Props) {
           </div>
         )}
 
-        <div className="flex-1 grid grid-cols-1 md:grid-cols-[auto_1fr] gap-6 items-stretch min-h-[400px]">
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-[auto_1fr] gap-4 sm:gap-6 items-stretch min-h-0">
           {/* Thermometer (active emotion) */}
           <div className="flex items-center justify-center">
             <div className="flex items-end gap-3 select-none">
-              <div className="flex flex-col justify-between h-[360px] text-xs font-bold text-muted-foreground py-1">
+              <div className="flex flex-col justify-between h-[min(360px,55vh)] text-xs font-bold text-muted-foreground py-1">
                 {[10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0].map((n) => (
                   <span key={n}>{n}</span>
                 ))}
@@ -239,7 +239,7 @@ export default function Termometro({ room }: Props) {
                   onPointerMove={onPointerMove}
                   onPointerUp={onPointerUp}
                   onPointerCancel={onPointerUp}
-                  className="relative w-16 h-[360px] rounded-full bg-muted border-4 border-foreground/80 cursor-pointer overflow-hidden touch-none"
+                  className="relative w-12 sm:w-16 h-[min(360px,55vh)] rounded-full bg-muted border-4 border-foreground/80 cursor-pointer overflow-hidden touch-none"
                   style={{ boxShadow: "inset 0 0 0 2px rgba(255,255,255,0.4)" }}
                 >
                   <div
