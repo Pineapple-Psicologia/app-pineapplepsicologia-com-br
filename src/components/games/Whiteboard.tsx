@@ -951,6 +951,75 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
         </div>
       </div>
 
+      {/* Help / How to use panel */}
+      {showHelp && (
+        <div className="relative p-4 sm:p-5 bg-card/95 backdrop-blur rounded-2xl border-2 border-accent/40 shadow-sm max-h-[60vh] overflow-auto">
+          <button
+            onClick={() => setShowHelp(false)}
+            className="absolute top-2 right-2 p-1.5 rounded-lg hover:bg-muted text-muted-foreground"
+            title="Fechar"
+          >
+            <X className="w-4 h-4" />
+          </button>
+          <div className="flex items-center gap-2 mb-3">
+            <HelpCircle className="w-5 h-5 text-accent" />
+            <h3 className="font-display text-lg font-bold">Como usar o Quadro Branco</h3>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
+            <section>
+              <h4 className="font-bold text-foreground mb-1.5 flex items-center gap-1.5"><Pencil className="w-4 h-4" />Desenhar e pintar</h4>
+              <ul className="space-y-1 text-muted-foreground list-disc pl-4">
+                <li><b>Lápis, Marcador, Pincel</b>: traços livres com diferentes texturas.</li>
+                <li><b>Neon, Arco-íris, Spray</b>: efeitos especiais para deixar criativo.</li>
+                <li><b>Balde</b>: clica em uma área para preenchê-la com a cor.</li>
+                <li><b>Borracha</b>: apaga partes do desenho.</li>
+              </ul>
+            </section>
+            <section>
+              <h4 className="font-bold text-foreground mb-1.5 flex items-center gap-1.5"><Square className="w-4 h-4" />Formas e texto</h4>
+              <ul className="space-y-1 text-muted-foreground list-disc pl-4">
+                <li><b>Linha, Seta, Quadrado, Círculo</b>: clica e arrasta para criar.</li>
+                <li><b>Texto</b>: clica no quadro e digita. Dá para arrastar depois.</li>
+                <li><b>Adesivo</b>: escolhe um emoji e clica para colar.</li>
+              </ul>
+            </section>
+            <section>
+              <h4 className="font-bold text-foreground mb-1.5 flex items-center gap-1.5"><Wand2 className="w-4 h-4" />Ajudas inteligentes</h4>
+              <ul className="space-y-1 text-muted-foreground list-disc pl-4">
+                <li><b>Firme</b>: suaviza o traço, sem tremidas.</li>
+                <li><b>Forma Mágica</b>: endireita círculos, quadrados e linhas feitos à mão.</li>
+                <li><b>TAM</b>: ajusta a espessura do traço ou tamanho do adesivo.</li>
+              </ul>
+            </section>
+            <section>
+              <h4 className="font-bold text-foreground mb-1.5 flex items-center gap-1.5"><LayoutGrid className="w-4 h-4" />Fundo e modelos</h4>
+              <ul className="space-y-1 text-muted-foreground list-disc pl-4">
+                <li><b>Liso, Grade, Pontos, Pautado</b>: muda o fundo do quadro.</li>
+                <li><b>Modelos</b>: insere bases prontas (tabelas, listas, diagramas).</li>
+              </ul>
+            </section>
+            <section>
+              <h4 className="font-bold text-foreground mb-1.5 flex items-center gap-1.5"><Undo2 className="w-4 h-4" />Controles gerais</h4>
+              <ul className="space-y-1 text-muted-foreground list-disc pl-4">
+                <li><b>Desfazer</b>: remove o último item.</li>
+                <li><b>Salvar</b>: baixa o quadro como imagem PNG.</li>
+                <li><b>Limpar</b>: apaga tudo (cuidado!).</li>
+              </ul>
+            </section>
+            {isPsi && (
+              <section>
+                <h4 className="font-bold text-foreground mb-1.5 flex items-center gap-1.5"><Lock className="w-4 h-4" />Só para a psicóloga</h4>
+                <ul className="space-y-1 text-muted-foreground list-disc pl-4">
+                  <li><b>Bloquear</b>: impede o paciente de desenhar enquanto você explica.</li>
+                  <li>O quadro é em tempo real — tudo que vocês desenham aparece para os dois.</li>
+                  <li>Use <b>Baixar PDF</b> no topo para salvar a sessão.</li>
+                </ul>
+              </section>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Templates tray */}
       {showTemplates && (
         <div className="flex flex-wrap gap-2 p-2.5 bg-card rounded-xl border-2 border-accent/40">
