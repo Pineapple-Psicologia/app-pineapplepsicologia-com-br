@@ -1325,15 +1325,19 @@ function recognizeShape(d: Path): Shape | null {
 }
 
 // Pixel-accurate hit-test for text objects (matches drawObj font metrics).
-function hitText(o: { x: number; y: number; size: number; text: string }, p: { x: number; y: number }, w: number, h: number): boolean {
+function hitText(o: { x: number; y: number; size: number; text: string; w?: number }, p: { x: number; y: number }, w: number, h: number): boolean {
   const fontPx = o.size * 4;
   const lineH = o.size * 4.6;
-  const lines = o.text.split("\n");
+  const boxW = (o.w ?? 0.3) * w;
+  // approx wrapped line count
+  const avgChar = fontPx * 0.55;
+  const charsPerLine = Math.max(1, Math.floor(boxW / avgChar));
+  let lineCount = 0;
+  for (const para of o.text.split("\n")) {
+    lineCount += Math.max(1, Math.ceil(para.length / charsPerLine));
+  }
   const x0 = o.x * w, y0 = o.y * h;
   const px = p.x * w, py = p.y * h;
-  if (py < y0 - 4 || py > y0 + lines.length * lineH + 4) return false;
-  // Approximate width: 0.6 * fontPx per char on widest line
-  const maxChars = Math.max(...lines.map((l) => l.length));
-  const width = Math.max(20, maxChars * fontPx * 0.6);
-  return px >= x0 - 4 && px <= x0 + width + 4;
+  if (py < y0 - 4 || py > y0 + lineCount * lineH + 4) return false;
+  return px >= x0 - 4 && px <= x0 + boxW + 4;
 }
