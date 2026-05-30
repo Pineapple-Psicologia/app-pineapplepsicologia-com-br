@@ -4,7 +4,7 @@ import {
   Eraser, Trash2, Pencil, Undo2, Download, Brush, Highlighter,
   Square, Circle as CircleIcon, Minus, ArrowRight, Type, Smile,
   LayoutGrid, Sparkles, Wand2, Waves, Zap, Rainbow, SprayCan, PaintBucket, Plus, Move,
-  Lock, Unlock, ChevronDown, ChevronUp,
+  Lock, Unlock, ChevronDown, ChevronUp, HelpCircle, X,
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -100,6 +100,7 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
     if (typeof window === "undefined") return true;
     return !window.matchMedia("(max-width: 1024px)").matches;
   });
+  const [showHelp, setShowHelp] = useState(false);
   const [textInput, setTextInput] = useState<{ x: number; y: number; value: string; id?: string; color?: string; size?: number } | null>(null);
 
 
@@ -761,22 +762,42 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
       {/* Toolbar toggle (all viewports) */}
       {isCompact && (
 
-        <button
-          onClick={() => setToolbarExpanded((v) => !v)}
-          className={`${isLandscape ? "absolute top-1 right-1 z-20" : "flex"} flex items-center justify-center gap-1.5 px-3 py-1.5 bg-card/95 backdrop-blur rounded-xl border-2 border-border shadow-sm text-xs font-bold`}
-        >
-          {toolbarExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-          {toolbarExpanded ? "Esconder ferramentas" : "Ferramentas"}
-        </button>
+        <div className={`${isLandscape ? "absolute top-1 right-1 z-20" : "flex"} flex items-center gap-1.5`}>
+          <button
+            onClick={() => setToolbarExpanded((v) => !v)}
+            className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-card/95 backdrop-blur rounded-xl border-2 border-border shadow-sm text-xs font-bold"
+          >
+            {toolbarExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            {toolbarExpanded ? "Esconder ferramentas" : "Ferramentas"}
+          </button>
+          <button
+            onClick={() => setShowHelp((v) => !v)}
+            className={`flex items-center justify-center gap-1.5 px-3 py-1.5 backdrop-blur rounded-xl border-2 shadow-sm text-xs font-bold transition-colors ${showHelp ? "bg-accent text-accent-foreground border-accent" : "bg-card/95 border-border"}`}
+            title="Como usar o quadro branco"
+          >
+            <HelpCircle className="w-3.5 h-3.5" />
+            Como usar
+          </button>
+        </div>
       )}
       {!isCompact && (
-        <button
-          onClick={() => setToolbarExpanded((v) => !v)}
-          className="self-start flex items-center justify-center gap-1.5 px-3 py-1.5 bg-card/95 backdrop-blur rounded-xl border-2 border-border shadow-sm text-xs font-bold hover:bg-card transition-colors"
-        >
-          {toolbarExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-          {toolbarExpanded ? "Esconder ferramentas" : "Mostrar ferramentas"}
-        </button>
+        <div className="self-start flex items-center gap-1.5">
+          <button
+            onClick={() => setToolbarExpanded((v) => !v)}
+            className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-card/95 backdrop-blur rounded-xl border-2 border-border shadow-sm text-xs font-bold hover:bg-card transition-colors"
+          >
+            {toolbarExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            {toolbarExpanded ? "Esconder ferramentas" : "Mostrar ferramentas"}
+          </button>
+          <button
+            onClick={() => setShowHelp((v) => !v)}
+            className={`flex items-center justify-center gap-1.5 px-3 py-1.5 backdrop-blur rounded-xl border-2 shadow-sm text-xs font-bold transition-colors ${showHelp ? "bg-accent text-accent-foreground border-accent" : "bg-card/95 border-border hover:bg-card"}`}
+            title="Como usar o quadro branco"
+          >
+            <HelpCircle className="w-3.5 h-3.5" />
+            Como usar
+          </button>
+        </div>
       )}
 
       {/* Toolbar */}
@@ -929,6 +950,75 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
           )}
         </div>
       </div>
+
+      {/* Help / How to use panel */}
+      {showHelp && (
+        <div className="relative p-4 sm:p-5 bg-card/95 backdrop-blur rounded-2xl border-2 border-accent/40 shadow-sm max-h-[60vh] overflow-auto">
+          <button
+            onClick={() => setShowHelp(false)}
+            className="absolute top-2 right-2 p-1.5 rounded-lg hover:bg-muted text-muted-foreground"
+            title="Fechar"
+          >
+            <X className="w-4 h-4" />
+          </button>
+          <div className="flex items-center gap-2 mb-3">
+            <HelpCircle className="w-5 h-5 text-accent" />
+            <h3 className="font-display text-lg font-bold">Como usar o Quadro Branco</h3>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
+            <section>
+              <h4 className="font-bold text-foreground mb-1.5 flex items-center gap-1.5"><Pencil className="w-4 h-4" />Desenhar e pintar</h4>
+              <ul className="space-y-1 text-muted-foreground list-disc pl-4">
+                <li><b>Lápis, Marcador, Pincel</b>: traços livres com diferentes texturas.</li>
+                <li><b>Neon, Arco-íris, Spray</b>: efeitos especiais para deixar criativo.</li>
+                <li><b>Balde</b>: clica em uma área para preenchê-la com a cor.</li>
+                <li><b>Borracha</b>: apaga partes do desenho.</li>
+              </ul>
+            </section>
+            <section>
+              <h4 className="font-bold text-foreground mb-1.5 flex items-center gap-1.5"><Square className="w-4 h-4" />Formas e texto</h4>
+              <ul className="space-y-1 text-muted-foreground list-disc pl-4">
+                <li><b>Linha, Seta, Quadrado, Círculo</b>: clica e arrasta para criar.</li>
+                <li><b>Texto</b>: clica no quadro e digita. Dá para arrastar depois.</li>
+                <li><b>Adesivo</b>: escolhe um emoji e clica para colar.</li>
+              </ul>
+            </section>
+            <section>
+              <h4 className="font-bold text-foreground mb-1.5 flex items-center gap-1.5"><Wand2 className="w-4 h-4" />Ajudas inteligentes</h4>
+              <ul className="space-y-1 text-muted-foreground list-disc pl-4">
+                <li><b>Firme</b>: suaviza o traço, sem tremidas.</li>
+                <li><b>Forma Mágica</b>: endireita círculos, quadrados e linhas feitos à mão.</li>
+                <li><b>TAM</b>: ajusta a espessura do traço ou tamanho do adesivo.</li>
+              </ul>
+            </section>
+            <section>
+              <h4 className="font-bold text-foreground mb-1.5 flex items-center gap-1.5"><LayoutGrid className="w-4 h-4" />Fundo e modelos</h4>
+              <ul className="space-y-1 text-muted-foreground list-disc pl-4">
+                <li><b>Liso, Grade, Pontos, Pautado</b>: muda o fundo do quadro.</li>
+                <li><b>Modelos</b>: insere bases prontas (tabelas, listas, diagramas).</li>
+              </ul>
+            </section>
+            <section>
+              <h4 className="font-bold text-foreground mb-1.5 flex items-center gap-1.5"><Undo2 className="w-4 h-4" />Controles gerais</h4>
+              <ul className="space-y-1 text-muted-foreground list-disc pl-4">
+                <li><b>Desfazer</b>: remove o último item.</li>
+                <li><b>Salvar</b>: baixa o quadro como imagem PNG.</li>
+                <li><b>Limpar</b>: apaga tudo (cuidado!).</li>
+              </ul>
+            </section>
+            {isPsi && (
+              <section>
+                <h4 className="font-bold text-foreground mb-1.5 flex items-center gap-1.5"><Lock className="w-4 h-4" />Só para a psicóloga</h4>
+                <ul className="space-y-1 text-muted-foreground list-disc pl-4">
+                  <li><b>Bloquear</b>: impede o paciente de desenhar enquanto você explica.</li>
+                  <li>O quadro é em tempo real — tudo que vocês desenham aparece para os dois.</li>
+                  <li>Use <b>Baixar PDF</b> no topo para salvar a sessão.</li>
+                </ul>
+              </section>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Templates tray */}
       {showTemplates && (
