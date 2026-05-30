@@ -317,7 +317,25 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
       ctx.fillStyle = o.color;
       ctx.font = `600 ${o.size * 4}px "Nunito", system-ui`;
       ctx.textBaseline = "top";
-      o.text.split("\n").forEach((line, i) => ctx.fillText(line, o.x * w, o.y * h + i * o.size * 4.6));
+      const maxW = (o.w ?? 1) * w;
+      const lineH = o.size * 4.6;
+      const wrapped: string[] = [];
+      for (const para of o.text.split("\n")) {
+        if (!para) { wrapped.push(""); continue; }
+        const words = para.split(/(\s+)/);
+        let cur = "";
+        for (const word of words) {
+          const test = cur + word;
+          if (ctx.measureText(test).width > maxW && cur.trim().length > 0) {
+            wrapped.push(cur);
+            cur = word.replace(/^\s+/, "");
+          } else {
+            cur = test;
+          }
+        }
+        if (cur.length) wrapped.push(cur);
+      }
+      wrapped.forEach((line, i) => ctx.fillText(line, o.x * w, o.y * h + i * lineH));
     } else if (o.type === "sticker") {
       ctx.font = `${o.size * 6}px serif`;
       ctx.textAlign = "center";
