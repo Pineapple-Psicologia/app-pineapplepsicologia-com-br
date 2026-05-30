@@ -95,6 +95,7 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
   const canDraw = isPsi || !locked;
   const isMobile = useIsMobile();
   const isCompact = useIsCompact();
+  const isLandscape = useIsLandscape();
   const [toolbarExpanded, setToolbarExpanded] = useState(false);
   const [textInput, setTextInput] = useState<{ x: number; y: number; value: string; id?: string; color?: string; size?: number } | null>(null);
 
