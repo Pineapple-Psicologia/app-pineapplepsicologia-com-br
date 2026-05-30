@@ -121,8 +121,8 @@ function SalaPage() {
 
         <div className="flex items-center gap-2">
           {role === "psi" && user && (
-            <Button size="sm" variant="outline" onClick={() => setSaveOpen(true)}>
-              <Save className="w-4 h-4 mr-1" /> Salvar na pasta
+            <Button size="sm" variant="outline" onClick={handleDownloadPdf} disabled={downloading}>
+              <Download className="w-4 h-4 mr-1" /> {downloading ? "Gerando..." : "Baixar PDF"}
             </Button>
           )}
           <div className={`flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full ${room.peers > 1 ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
