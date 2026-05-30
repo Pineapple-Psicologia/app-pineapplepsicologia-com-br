@@ -1021,7 +1021,7 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
 
       {/* Templates tray */}
       {showTemplates && (
-        <div className="flex flex-wrap gap-2 p-2.5 bg-card rounded-xl border-2 border-accent/40">
+        <div className={`flex flex-wrap gap-2 p-2.5 bg-card rounded-xl border-2 border-accent/40 shadow-lg ${isLandscape && toolbarExpanded ? "absolute left-1 right-1 bottom-1 z-20 max-h-[40%] overflow-auto" : ""}`}>
           {TEMPLATES.map((t) => (
             <button
               key={t.id}
@@ -1038,7 +1038,7 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
 
       {/* Sticker tray */}
       {showStickers && (
-        <div className="flex flex-wrap gap-1.5 p-2 bg-card rounded-xl border-2 border-border">
+        <div className={`flex flex-wrap gap-1.5 p-2 bg-card rounded-xl border-2 border-border shadow-lg ${isLandscape && toolbarExpanded ? "absolute left-1 right-1 bottom-1 z-20 max-h-[40%] overflow-auto" : ""}`}>
           {STICKERS.map((s) => (
             <button
               key={s}
