@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  Eraser, Trash2, Pencil, Undo2, Download, Brush, Highlighter,
+  Eraser, Trash2, Pencil, Undo2, Brush, Highlighter,
   Square, Circle as CircleIcon, Minus, ArrowRight, Type, Smile,
   LayoutGrid, Sparkles, Wand2, Waves, Zap, Rainbow, SprayCan, PaintBucket, Plus, Move,
   Lock, Unlock, ChevronDown, ChevronUp, HelpCircle, X,
