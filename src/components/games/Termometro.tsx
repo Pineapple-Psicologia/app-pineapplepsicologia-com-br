@@ -238,20 +238,28 @@ export default function Termometro({ room }: Props) {
         </div>
 
         {/* Thermometers — one per selected emotion */}
-        <div className="flex gap-4 overflow-x-auto pb-2 pt-1 px-1 -mx-1">
-          {selected.map((s) => {
-            const em = EMOTIONS.find((e) => e.id === s.id);
-            if (!em) return null;
-            return (
-              <ThermoColumn
-                key={s.id}
-                emotion={em}
-                level={s.level}
-                onChange={(v) => updateLevel(s.id, v)}
-                onRemove={() => toggleEmotion(s.id)}
-              />
-            );
-          })}
+        <div className="flex gap-4 overflow-x-auto pb-2 pt-1 px-1 -mx-1 min-h-[200px] items-center">
+          {selected.length === 0 ? (
+            <div className="w-full flex flex-col items-center justify-center text-muted-foreground py-8">
+              <span className="text-4xl mb-2">🤔</span>
+              <p className="text-sm font-semibold">Nenhuma emoção escolhida ainda</p>
+              <p className="text-xs">Toque nas emoções acima para começar!</p>
+            </div>
+          ) : (
+            selected.map((s) => {
+              const em = EMOTIONS.find((e) => e.id === s.id);
+              if (!em) return null;
+              return (
+                <ThermoColumn
+                  key={s.id}
+                  emotion={em}
+                  level={s.level}
+                  onChange={(v) => updateLevel(s.id, v)}
+                  onRemove={() => toggleEmotion(s.id)}
+                />
+              );
+            })
+          )}
         </div>
 
         {/* Note */}
