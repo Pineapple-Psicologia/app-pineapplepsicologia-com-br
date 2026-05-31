@@ -179,7 +179,6 @@ export default function Termometro({ room }: Props) {
     let next: Selected[];
     if (exists) {
       next = selected.filter((s) => s.id !== id);
-      if (next.length === 0) next = [{ id, level: 0 }];
     } else {
       next = [...selected, { id, level: 0 }];
     }
