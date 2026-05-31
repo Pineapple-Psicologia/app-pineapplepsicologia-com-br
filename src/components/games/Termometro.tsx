@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
-import { Thermometer, RotateCcw, X } from "lucide-react";
+import { Thermometer, RotateCcw, X, ChevronDown, ChevronUp, Eye, EyeOff } from "lucide-react";
 import SceneBackdrop from "./SceneBackdrop";
 import sceneBg from "@/assets/scene-termometro.jpg";
 
