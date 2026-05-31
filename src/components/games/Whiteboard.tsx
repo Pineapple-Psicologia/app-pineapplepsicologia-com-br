@@ -833,7 +833,7 @@ export default function Whiteboard({ room, role = "paciente" }: { room: ReturnTy
       )}
 
       {/* Toolbar */}
-      <div className={`${!toolbarExpanded ? "hidden" : "flex"} ${useOverlayToolbar ? "absolute top-10 left-1 right-1 z-10 max-h-[calc(100%-3rem)] overflow-auto" : "relative z-20"} flex-wrap items-stretch gap-2 p-2.5 bg-card/95 backdrop-blur rounded-2xl border-2 border-border shadow-sm`}>
+      <div className={`${!toolbarExpanded ? "hidden" : "flex"} ${useOverlayToolbar ? "absolute top-10 left-1 right-1 z-10 max-h-[calc(100%-3rem)] overflow-auto" : isCompact ? "relative z-20 max-h-[55vh] overflow-y-auto" : "relative z-20"} flex-wrap items-stretch gap-2 p-2.5 bg-card/95 backdrop-blur rounded-2xl border-2 border-border shadow-sm`}>
 
 
 
