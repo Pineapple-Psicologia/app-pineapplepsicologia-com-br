@@ -144,7 +144,7 @@ function ThermoColumn({
 }
 
 export default function Termometro({ room }: Props) {
-  const [selected, setSelected] = useState<Selected[]>([{ id: "alegria", level: 0 }]);
+  const [selected, setSelected] = useState<Selected[]>([]);
   const [note, setNote] = useState("");
 
   useEffect(() => {
