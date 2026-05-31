@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
-import { Thermometer, RotateCcw, X } from "lucide-react";
+import { Thermometer, RotateCcw, X, ChevronDown, ChevronUp, Eye, EyeOff } from "lucide-react";
 import SceneBackdrop from "./SceneBackdrop";
 import sceneBg from "@/assets/scene-termometro.jpg";
 
@@ -146,6 +146,8 @@ function ThermoColumn({
 export default function Termometro({ room }: Props) {
   const [selected, setSelected] = useState<Selected[]>([]);
   const [note, setNote] = useState("");
+  const [showEmotions, setShowEmotions] = useState(true);
+  const [showTools, setShowTools] = useState(true);
 
   useEffect(() => {
     const off = room.on((m) => {
@@ -201,44 +203,71 @@ export default function Termometro({ room }: Props) {
 
   return (
     <SceneBackdrop src={sceneBg} vignette={0.35} tint="rgba(186,230,253,0.45)">
-      <div className="h-full w-full p-4 md:p-6 flex flex-col gap-4 overflow-auto">
-        <header className="flex items-center justify-between flex-wrap gap-3 bg-white/85 backdrop-blur rounded-2xl border-2 border-white shadow-lg px-4 py-2">
-          <div className="flex items-center gap-2">
-            <Thermometer className="w-5 h-5 text-primary" />
-            <h2 className="text-xl font-bold">Termômetro das Emoções</h2>
+      <div className="h-full w-full p-2 sm:p-4 md:p-6 flex flex-col gap-2 sm:gap-4 overflow-auto">
+        <header className="flex items-center justify-between gap-2 bg-white/85 backdrop-blur rounded-2xl border-2 border-white shadow-lg px-3 py-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <Thermometer className="w-5 h-5 text-primary shrink-0" />
+            <h2 className="text-base sm:text-xl font-bold truncate">Termômetro das Emoções</h2>
           </div>
-          <Button size="sm" variant="outline" onClick={resetAll}>
-            <RotateCcw className="w-4 h-4 mr-1" /> Zerar
-          </Button>
+          <div className="flex items-center gap-1 shrink-0">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 px-2"
+              onClick={() => setShowEmotions((v) => !v)}
+              title={showEmotions ? "Esconder emoções" : "Mostrar emoções"}
+            >
+              {showEmotions ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              <span className="hidden sm:inline ml-1 text-xs">Emoções</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 px-2"
+              onClick={() => setShowTools((v) => !v)}
+              title={showTools ? "Esconder ferramentas" : "Mostrar ferramentas"}
+            >
+              {showTools ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              <span className="hidden sm:inline ml-1 text-xs">Ferramentas</span>
+            </Button>
+            {showTools && (
+              <Button size="sm" variant="outline" className="h-8 px-2" onClick={resetAll}>
+                <RotateCcw className="w-4 h-4 sm:mr-1" />
+                <span className="hidden sm:inline">Zerar</span>
+              </Button>
+            )}
+          </div>
         </header>
 
         {/* Emotion picker */}
-        <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
-            Escolha uma ou mais emoções ({selected.length} selecionada{selected.length > 1 ? "s" : ""})
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {EMOTIONS.map((e) => {
-              const isSelected = selected.some((s) => s.id === e.id);
-              return (
-                <button
-                  key={e.id}
-                  onClick={() => toggleEmotion(e.id)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border-2 text-sm font-semibold transition-all ${
-                    isSelected ? "shadow-md scale-105" : "border-border/60 hover:border-border bg-card opacity-70"
-                  }`}
-                  style={isSelected ? { backgroundColor: e.color + "30", borderColor: e.color } : {}}
-                >
-                  <span className="text-lg">{e.emoji}</span> {e.label}
-                  {isSelected && <span className="ml-1 text-[10px] opacity-70">✓</span>}
-                </button>
-              );
-            })}
+        {showEmotions && (
+          <div className="bg-white/70 backdrop-blur rounded-2xl border border-white/80 shadow-sm px-3 py-2">
+            <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
+              Escolha uma ou mais emoções ({selected.length} selecionada{selected.length !== 1 ? "s" : ""})
+            </p>
+            <div className="flex flex-wrap gap-1.5 sm:gap-2 max-h-[28vh] sm:max-h-none overflow-y-auto">
+              {EMOTIONS.map((e) => {
+                const isSelected = selected.some((s) => s.id === e.id);
+                return (
+                  <button
+                    key={e.id}
+                    onClick={() => toggleEmotion(e.id)}
+                    className={`flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border-2 text-xs sm:text-sm font-semibold transition-all ${
+                      isSelected ? "shadow-md scale-105" : "border-border/60 hover:border-border bg-card opacity-70"
+                    }`}
+                    style={isSelected ? { backgroundColor: e.color + "30", borderColor: e.color } : {}}
+                  >
+                    <span className="text-base sm:text-lg">{e.emoji}</span> {e.label}
+                    {isSelected && <span className="ml-0.5 text-[10px] opacity-70">✓</span>}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Thermometers — one per selected emotion */}
-        <div className="flex gap-4 overflow-x-auto pb-2 pt-1 px-1 -mx-1 min-h-[200px] items-center">
+        <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-2 pt-1 px-1 -mx-1 min-h-[200px] items-center snap-x">
           {selected.length === 0 ? (
             <div className="w-full flex flex-col items-center justify-center text-muted-foreground py-8">
               <p className="text-sm font-semibold">Nenhuma emoção escolhida ainda</p>
@@ -249,36 +278,39 @@ export default function Termometro({ room }: Props) {
               const em = EMOTIONS.find((e) => e.id === s.id);
               if (!em) return null;
               return (
-                <ThermoColumn
-                  key={s.id}
-                  emotion={em}
-                  level={s.level}
-                  onChange={(v) => updateLevel(s.id, v)}
-                  onRemove={() => toggleEmotion(s.id)}
-                />
+                <div key={s.id} className="snap-start">
+                  <ThermoColumn
+                    emotion={em}
+                    level={s.level}
+                    onChange={(v) => updateLevel(s.id, v)}
+                    onRemove={() => toggleEmotion(s.id)}
+                  />
+                </div>
               );
             })
           )}
         </div>
 
         {/* Note */}
-        <div className="flex flex-col gap-2">
-          <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            O que está acontecendo? (opcional)
-          </label>
-          <textarea
-            value={note}
-            onChange={(e) => {
-              setNote(e.target.value);
-              broadcast({ note: e.target.value });
-            }}
-            placeholder="Conte aqui o que faz você sentir assim..."
-            className="min-h-[100px] p-3 rounded-lg border-2 border-border/60 bg-card/90 backdrop-blur resize-none focus:outline-none focus:border-primary text-sm"
-          />
-          <p className="text-xs text-muted-foreground italic">
-            Toque numa emoção para adicionar ou remover. Arraste cada termômetro para ajustar o nível.
-          </p>
-        </div>
+        {showTools && (
+          <div className="flex flex-col gap-2">
+            <label className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              O que está acontecendo? (opcional)
+            </label>
+            <textarea
+              value={note}
+              onChange={(e) => {
+                setNote(e.target.value);
+                broadcast({ note: e.target.value });
+              }}
+              placeholder="Conte aqui o que faz você sentir assim..."
+              className="min-h-[80px] sm:min-h-[100px] p-3 rounded-lg border-2 border-border/60 bg-card/90 backdrop-blur resize-none focus:outline-none focus:border-primary text-sm"
+            />
+            <p className="text-[11px] sm:text-xs text-muted-foreground italic">
+              Toque numa emoção para adicionar ou remover. Arraste cada termômetro para ajustar o nível.
+            </p>
+          </div>
+        )}
       </div>
     </SceneBackdrop>
   );
