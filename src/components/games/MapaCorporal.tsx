@@ -311,7 +311,7 @@ export default function MapaCorporal({ room }: Props) {
         </div>
 
         {/* Legend */}
-        <aside className="bg-card border-2 rounded-2xl p-3 shadow-sm flex flex-col gap-2 overflow-auto">
+        <aside className="bg-card border-2 rounded-xl sm:rounded-2xl p-2 sm:p-3 shadow-sm flex flex-col gap-2 overflow-auto max-h-[30vh] md:max-h-none">
           <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
             O que o corpo está dizendo
           </div>
