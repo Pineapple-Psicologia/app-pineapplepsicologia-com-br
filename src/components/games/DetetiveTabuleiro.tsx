@@ -556,7 +556,7 @@ export default function DetetiveTabuleiro({ room }: Props) {
                 >
                   <div className="absolute top-full left-1/2 -translate-x-1/2 mt-0.5 w-8 h-1.5 bg-black/25 rounded-full blur-[2px]" />
                   <div
-                    className={`relative text-xl sm:text-2xl w-11 h-11 sm:w-14 sm:h-14 rounded-full flex items-center justify-center border-[3px] transition-all ${l.tw} ${
+                    className={`relative text-2xl sm:text-2xl w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center border-[3px] transition-all ${l.tw} ${
                       current
                         ? "border-white ring-4 ring-yellow-300 scale-110 shadow-[0_0_25px_rgba(251,191,36,0.7)]"
                         : done
