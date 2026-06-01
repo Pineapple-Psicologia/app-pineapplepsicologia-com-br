@@ -269,20 +269,22 @@ export default function DetetiveAventura({ room }: Props) {
             onClick={() => downloadCasePdf(state)}
             disabled={!state.thought.trim() && !state.situation.trim()}
             title="Baixar resumo do caso em PDF"
+            className="px-2 sm:px-3 h-8"
           >
-            <Download className="w-4 h-4 mr-1" /> Baixar PDF
+            <Download className="w-4 h-4 sm:mr-1" /> <span className="hidden sm:inline">Baixar PDF</span>
           </Button>
           <Button
             size="sm"
             variant="outline"
             onClick={() => update({ visual: isNoir ? "cartoon" : "noir" })}
             title={isNoir ? "Modo cartoon (cores)" : "Modo noir (preto e branco)"}
+            className="px-2 sm:px-3 h-8"
           >
-            {isNoir ? <Sun className="w-4 h-4 mr-1" /> : <Moon className="w-4 h-4 mr-1" />}
-            {isNoir ? "Cartoon" : "Noir"}
+            {isNoir ? <Sun className="w-4 h-4 sm:mr-1" /> : <Moon className="w-4 h-4 sm:mr-1" />}
+            <span className="hidden sm:inline">{isNoir ? "Cartoon" : "Noir"}</span>
           </Button>
-          <Button size="sm" variant="outline" onClick={reset}>
-            <RotateCcw className="w-4 h-4 mr-1" /> Recomeçar
+          <Button size="sm" variant="outline" onClick={reset} className="px-2 sm:px-3 h-8">
+            <RotateCcw className="w-4 h-4 sm:mr-1" /> <span className="hidden sm:inline">Recomeçar</span>
           </Button>
         </div>
       </header>
