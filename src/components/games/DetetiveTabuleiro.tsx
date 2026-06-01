@@ -580,7 +580,7 @@ export default function DetetiveTabuleiro({ room }: Props) {
                     </span>
                   </div>
                   <div
-                    className={`text-[9px] sm:text-[10px] font-black text-amber-950 bg-white/95 rounded-full px-2 py-0.5 leading-tight whitespace-nowrap shadow-md border-2 max-w-[90px] sm:max-w-none truncate ${
+                    className={`hidden sm:block text-[10px] font-black text-amber-950 bg-white/95 rounded-full px-2 py-0.5 leading-tight whitespace-nowrap shadow-md border-2 max-w-none truncate ${
                       current ? "border-amber-500" : "border-amber-900/20"
                     }`}
                   >
