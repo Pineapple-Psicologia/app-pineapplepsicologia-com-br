@@ -154,7 +154,7 @@ export default function DetetiveAventura({ room }: Props) {
 
   return (
     <div
-      className="h-full w-full flex flex-col gap-3 p-3 md:p-4 rounded-2xl border-4 border-amber-900/25 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.35)] relative overflow-hidden"
+      className="h-full w-full flex flex-col gap-2 sm:gap-3 p-2 sm:p-3 md:p-4 rounded-2xl border-2 sm:border-4 border-amber-900/25 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.35)] relative overflow-hidden"
       style={{
         backgroundImage: `linear-gradient(rgba(20,15,10,0.55), rgba(20,15,10,0.55)), url(${cenaLaboratorio})`,
         backgroundSize: "cover",
@@ -162,16 +162,16 @@ export default function DetetiveAventura({ room }: Props) {
       }}
     >
       {/* Top bar */}
-      <header className="flex items-center justify-between flex-wrap gap-3 bg-card border-2 rounded-2xl px-4 py-2 shadow-sm">
-        <div className="flex items-center gap-2 min-w-0">
-          <Search className="w-5 h-5 text-primary shrink-0" />
-          <h2 className="text-lg md:text-xl font-bold truncate">Detetive: Aventura 🕵️</h2>
+      <header className="flex items-center justify-between gap-2 bg-card border-2 rounded-xl sm:rounded-2xl px-2.5 sm:px-4 py-1.5 sm:py-2 shadow-sm">
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
+          <Search className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
+          <h2 className="text-sm sm:text-lg md:text-xl font-bold truncate">Detetive 🕵️</h2>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <Sheet>
             <SheetTrigger asChild>
-              <Button size="sm" variant="outline">
-                <BookOpen className="w-4 h-4 mr-1" /> Como jogar
+              <Button size="sm" variant="outline" className="px-2 sm:px-3 h-8">
+                <BookOpen className="w-4 h-4 sm:mr-1" /> <span className="hidden sm:inline">Como jogar</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
@@ -269,20 +269,22 @@ export default function DetetiveAventura({ room }: Props) {
             onClick={() => downloadCasePdf(state)}
             disabled={!state.thought.trim() && !state.situation.trim()}
             title="Baixar resumo do caso em PDF"
+            className="px-2 sm:px-3 h-8"
           >
-            <Download className="w-4 h-4 mr-1" /> Baixar PDF
+            <Download className="w-4 h-4 sm:mr-1" /> <span className="hidden sm:inline">Baixar PDF</span>
           </Button>
           <Button
             size="sm"
             variant="outline"
             onClick={() => update({ visual: isNoir ? "cartoon" : "noir" })}
             title={isNoir ? "Modo cartoon (cores)" : "Modo noir (preto e branco)"}
+            className="px-2 sm:px-3 h-8"
           >
-            {isNoir ? <Sun className="w-4 h-4 mr-1" /> : <Moon className="w-4 h-4 mr-1" />}
-            {isNoir ? "Cartoon" : "Noir"}
+            {isNoir ? <Sun className="w-4 h-4 sm:mr-1" /> : <Moon className="w-4 h-4 sm:mr-1" />}
+            <span className="hidden sm:inline">{isNoir ? "Cartoon" : "Noir"}</span>
           </Button>
-          <Button size="sm" variant="outline" onClick={reset}>
-            <RotateCcw className="w-4 h-4 mr-1" /> Recomeçar
+          <Button size="sm" variant="outline" onClick={reset} className="px-2 sm:px-3 h-8">
+            <RotateCcw className="w-4 h-4 sm:mr-1" /> <span className="hidden sm:inline">Recomeçar</span>
           </Button>
         </div>
       </header>
@@ -296,7 +298,7 @@ export default function DetetiveAventura({ room }: Props) {
             <button
               key={s.id}
               onClick={() => update({ scene: s.id, activeHint: null })}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border-2 transition-all ${
+              className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-semibold whitespace-nowrap border-2 transition-all ${
                 active
                   ? "bg-primary text-primary-foreground border-primary scale-105"
                   : visited
@@ -313,7 +315,7 @@ export default function DetetiveAventura({ room }: Props) {
       </nav>
 
       {/* Scene viewport with hotspots */}
-      <div className="relative flex-1 min-h-[220px] sm:min-h-[320px] rounded-2xl overflow-hidden border-4 border-amber-900/25 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.35)]">
+      <div className="relative h-[38vh] min-h-[200px] sm:h-auto sm:flex-1 sm:min-h-[320px] rounded-xl sm:rounded-2xl overflow-hidden border-2 sm:border-4 border-amber-900/25 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.35)]">
         <img
           src={scene.bg}
           alt={scene.title}
@@ -361,13 +363,13 @@ export default function DetetiveAventura({ room }: Props) {
                 } animate-ping`}
               />
               <span
-                className={`relative flex items-center justify-center w-11 h-11 rounded-full text-2xl border-2 shadow-lg transition-transform group-hover:scale-110 ${
+                className={`relative flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-full text-xl sm:text-2xl border-2 shadow-lg transition-transform group-hover:scale-110 active:scale-95 ${
                   collected
                     ? "bg-emerald-100 border-emerald-500"
                     : "bg-amber-100 border-amber-500"
                 }`}
               >
-                {collected ? <Check className="w-5 h-5 text-emerald-700" /> : h.emoji}
+                {collected ? <Check className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-700" /> : h.emoji}
               </span>
               <span className="absolute left-1/2 top-full mt-1 -translate-x-1/2 px-2 py-0.5 rounded bg-black/70 text-white text-[10px] font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                 {h.label}
@@ -392,7 +394,7 @@ export default function DetetiveAventura({ room }: Props) {
       </div>
 
       {/* Interactive panel for current scene */}
-      <div className="bg-card border-2 rounded-2xl p-3 md:p-4 max-h-[42vh] overflow-auto">
+      <div className="bg-card border-2 rounded-xl sm:rounded-2xl p-2.5 sm:p-3 md:p-4 flex-1 sm:flex-none sm:max-h-[42vh] overflow-auto min-h-0">
         {state.scene === "crime" && (
           <div className="flex flex-col gap-2">
             <h3 className="font-bold flex items-center gap-1.5">🔍 Registre os fatos da cena</h3>
