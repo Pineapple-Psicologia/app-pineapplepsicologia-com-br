@@ -452,48 +452,100 @@ export default function DetetiveTabuleiro({ room }: Props) {
         </div>
       )}
 
-      {/* Lista de casas (sem tabuleiro 3D/2D) */}
-      <div className="relative flex-1 rounded-2xl border-2 border-amber-900/30 bg-white/85 backdrop-blur p-3 md:p-4 overflow-auto">
-        <div className="text-[10px] uppercase font-black tracking-wider text-amber-700 mb-2">
-          Roteiro do caso · clique para abrir
+      {/* Tabuleiro 2D ilustrado */}
+      <div className="relative flex-1 rounded-2xl border-4 border-amber-900/40 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100 p-2 sm:p-3 shadow-inner overflow-hidden min-h-[260px]">
+        {/* Textura de papel envelhecido */}
+        <div
+          className="absolute inset-0 opacity-30 pointer-events-none"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 20% 30%, rgba(180,120,50,0.18) 0, transparent 40%), radial-gradient(circle at 80% 70%, rgba(180,120,50,0.15) 0, transparent 45%), radial-gradient(circle at 50% 100%, rgba(120,70,20,0.12) 0, transparent 50%)",
+          }}
+        />
+        <div className="absolute top-2 left-3 text-[10px] uppercase font-black tracking-wider text-amber-800/80 z-10">
+          🗺️ Mapa da Investigação · Casa {state.currentIdx + 1}/{LOCATIONS.length}
         </div>
-        <ul className="flex flex-col gap-2">
+
+        <div className="relative w-full h-full min-h-[230px]">
+          {/* Caminho conectando as casas */}
+          <svg
+            className="absolute inset-0 w-full h-full pointer-events-none"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+          >
+            <defs>
+              <pattern id="dashPath" patternUnits="userSpaceOnUse" width="2" height="2">
+                <circle cx="1" cy="1" r="0.4" fill="#92400e" />
+              </pattern>
+            </defs>
+            <path
+              d={LOCATIONS.map((l, i) => `${i === 0 ? "M" : "L"} ${l.x} ${l.y}`).join(" ")}
+              fill="none"
+              stroke="#92400e"
+              strokeWidth="0.7"
+              strokeDasharray="1.5 1.5"
+              strokeLinecap="round"
+              opacity="0.55"
+              vectorEffect="non-scaling-stroke"
+            />
+          </svg>
+
+          {/* Casas (tiles) */}
           {LOCATIONS.map((l, idx) => {
             const done = state.completed.includes(l.id);
             const current = idx === state.currentIdx;
             const disabled = !isPsi;
             return (
-              <li key={l.id}>
-                <button
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => isPsi && openLocation(l.id)}
-                  className={`w-full flex items-center gap-3 rounded-xl border-2 px-3 py-2 text-left transition shadow-sm ${
+              <button
+                key={l.id}
+                type="button"
+                disabled={disabled}
+                onClick={() => isPsi && openLocation(l.id)}
+                title={`${idx + 1}. ${l.name} — ${l.hint}`}
+                style={{ left: `${l.x}%`, top: `${l.y}%` }}
+                className={`absolute -translate-x-1/2 -translate-y-1/2 group flex flex-col items-center gap-0.5 transition-transform ${
+                  disabled ? "cursor-default" : "cursor-pointer hover:scale-110"
+                }`}
+              >
+                <div
+                  className={`relative text-xl sm:text-2xl w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center border-[3px] shadow-lg transition-all ${l.tw} ${
                     current
-                      ? "border-amber-600 bg-amber-50 ring-2 ring-amber-400"
+                      ? "border-amber-600 ring-4 ring-amber-400/60 scale-110"
                       : done
-                      ? "border-emerald-400 bg-emerald-50"
-                      : "border-amber-900/20 bg-white hover:bg-amber-50"
-                  } ${disabled ? "cursor-default" : "cursor-pointer"}`}
+                      ? "border-emerald-500 opacity-90"
+                      : "border-white"
+                  }`}
                 >
-                  <div className={`text-2xl w-10 h-10 rounded-lg flex items-center justify-center border-2 border-white shadow ${l.tw}`}>
-                    {l.emoji}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[10px] uppercase font-black tracking-wider text-amber-700">
-                      Casa {idx + 1}/{LOCATIONS.length} · {l.points} pts
-                    </div>
-                    <div className="font-bold text-sm text-amber-900 truncate">{l.name}</div>
-                    <div className="text-xs text-amber-900/70 truncate">{l.hint}</div>
-                  </div>
-                  <div className="text-xs font-black">
-                    {done ? "✓" : current ? "▶" : ""}
-                  </div>
-                </button>
-              </li>
+                  {l.emoji}
+                  {done && (
+                    <span className="absolute -top-1 -right-1 bg-emerald-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center border border-white shadow">
+                      ✓
+                    </span>
+                  )}
+                  <span className="absolute -bottom-1 -left-1 bg-amber-900 text-amber-50 text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border border-amber-50 shadow">
+                    {idx + 1}
+                  </span>
+                </div>
+                <div
+                  className={`text-[9px] sm:text-[10px] font-black text-amber-950 bg-white/90 rounded px-1 leading-tight whitespace-nowrap shadow-sm border border-amber-900/20 max-w-[80px] sm:max-w-none truncate ${
+                    current ? "ring-1 ring-amber-500" : ""
+                  }`}
+                >
+                  {l.name}
+                </div>
+              </button>
             );
           })}
-        </ul>
+
+          {/* Peão do detetive na casa atual */}
+          <div
+            style={{ left: `${currentLoc.x}%`, top: `${currentLoc.y}%` }}
+            className="absolute -translate-x-1/2 -translate-y-[140%] pointer-events-none z-20 animate-bounce"
+          >
+            <div className="text-2xl sm:text-3xl drop-shadow-[0_2px_3px_rgba(0,0,0,0.4)]">🕵️</div>
+            <div className="w-3 h-1 bg-black/30 rounded-full mx-auto blur-sm" />
+          </div>
+        </div>
       </div>
 
 
