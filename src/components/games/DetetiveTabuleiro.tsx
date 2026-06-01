@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { RotateCcw, Check, ChevronRight, Dices, Sparkles, Trophy, History, Award, HelpCircle, X } from "lucide-react";
 
 import sceneBg from "@/assets/scene-detetive-tabuleiro.jpg";
@@ -546,12 +547,14 @@ export default function DetetiveTabuleiro({ room }: Props) {
                 <button
                   key={l.id}
                   type="button"
-                  disabled={disabled}
-                  onClick={() => isPsi && openLocation(l.id)}
+                  onClick={() => {
+                    if (isPsi) openLocation(l.id);
+                    else toast.info("Só o mestre (psi) abre as casas — peça pra ele tocar daí.");
+                  }}
                   title={`${idx + 1}. ${l.name} — ${l.hint}`}
                   style={{ left: `${l.x}%`, top: `${l.y}%` }}
-                  className={`absolute -translate-x-1/2 -translate-y-1/2 group flex flex-col items-center gap-1 transition-transform z-10 ${
-                    disabled ? "cursor-default" : "cursor-pointer hover:scale-110 active:scale-95"
+                  className={`absolute -translate-x-1/2 -translate-y-1/2 group flex flex-col items-center gap-1 transition-transform z-10 cursor-pointer ${
+                    isPsi ? "hover:scale-110 active:scale-95" : "active:scale-95"
                   }`}
                 >
                   <div className="absolute top-full left-1/2 -translate-x-1/2 mt-0.5 w-8 h-1.5 bg-black/25 rounded-full blur-[2px]" />
