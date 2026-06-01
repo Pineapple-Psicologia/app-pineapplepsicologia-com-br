@@ -299,12 +299,8 @@ export default function DetetiveTabuleiro({ room }: Props) {
     setState((prev) => {
       const wasCompleted = prev.completed.includes(id);
       const completed = wasCompleted ? prev.completed : [...prev.completed, id];
-      // Hint penalty: each hint used in this location reduces the points,
-      // but never below HINT_MIN_RATIO of the base value.
       const base = LOCATIONS[idx].points;
-      const used = prev.hintsUsed[id] ?? 0;
-      const minPts = Math.ceil(base * HINT_MIN_RATIO);
-      const earnedPoints = wasCompleted ? 0 : Math.max(minPts, base - used * HINT_PENALTY);
+      const earnedPoints = wasCompleted ? 0 : base;
       const next: State = {
         ...prev,
         completed,
