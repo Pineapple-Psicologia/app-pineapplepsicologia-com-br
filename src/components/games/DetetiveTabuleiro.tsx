@@ -644,6 +644,63 @@ export default function DetetiveTabuleiro({ room }: Props) {
         </aside>
       </div>
 
+      {/* Drawer "Como jogar" — mobile */}
+      {showHelp && (
+        <div className="lg:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-3 animate-fade-in" onClick={() => setShowHelp(false)}>
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md rounded-3xl border-4 border-amber-900/30 bg-gradient-to-br from-white via-amber-50 to-orange-50 p-4 shadow-2xl max-h-[85vh] overflow-auto animate-scale-in"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className="text-2xl">📖</div>
+                <h3 className="font-black text-amber-900 text-base">Como jogar</h3>
+              </div>
+              <button
+                onClick={() => setShowHelp(false)}
+                className="w-8 h-8 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-900 flex items-center justify-center"
+                aria-label="Fechar"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-xs text-amber-900/80 mb-3 leading-snug">
+              Investigue um pensamento difícil passando por <b>10 casas</b> do mapa. A psi é o
+              Mestre do Jogo · o paciente acompanha em tempo real.
+            </p>
+            <ol className="space-y-2 text-xs text-amber-950">
+              {[
+                { n: 1, t: "Escolha uma casa", d: "A psi clica na próxima casa do mapa para abrir aquele desafio." },
+                { n: 2, t: "Responda junto", d: "Cada casa traz uma pergunta (cena, emoção, corpo, pensamento, distorções...)." },
+                { n: 3, t: "Use o dado se travar", d: "Role o dado 🎲 pra ganhar uma dica. As dicas não reduzem pontos." },
+                { n: 4, t: "Ganhe pontos e medalhas", d: "Casas completas viram ✓ verdes, somam pontos e desbloqueiam medalhas 🏅." },
+                { n: 5, t: "Encerre o caso", d: "Na última casa, o pensamento original vira uma versão mais justa. Cerimônia! 🏆" },
+              ].map((s) => (
+                <li key={s.n} className="flex gap-2">
+                  <div className="shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white font-black text-xs flex items-center justify-center shadow-md border-2 border-white">
+                    {s.n}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-bold text-amber-900">{s.t}</div>
+                    <div className="text-amber-900/75 leading-snug">{s.d}</div>
+                  </div>
+                </li>
+              ))}
+            </ol>
+            <div className="mt-3 pt-3 border-t-2 border-dashed border-amber-300">
+              <div className="text-[10px] uppercase font-black tracking-wider text-amber-700 mb-1">Legenda</div>
+              <div className="grid grid-cols-2 gap-1.5 text-[11px] text-amber-900">
+                <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-amber-400 border-2 border-white shadow" />Casa atual</div>
+                <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-emerald-400 border-2 border-white shadow" />Concluída</div>
+                <div className="flex items-center gap-1.5">🕵️ Detetive</div>
+                <div className="flex items-center gap-1.5">🎲 Dado de dicas</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+
 
       {/* Game master / status bar */}
       {state.caseClosed ? (
