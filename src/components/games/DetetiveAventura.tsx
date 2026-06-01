@@ -298,7 +298,7 @@ export default function DetetiveAventura({ room }: Props) {
             <button
               key={s.id}
               onClick={() => update({ scene: s.id, activeHint: null })}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border-2 transition-all ${
+              className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-semibold whitespace-nowrap border-2 transition-all ${
                 active
                   ? "bg-primary text-primary-foreground border-primary scale-105"
                   : visited
