@@ -56,10 +56,7 @@ const DISTORTIONS = [
 ];
 
 // Per-location hints — the dice picks one of these to support the patient
-// answering the question of the current tile. Unlimited use, but each use
-// reduces the points earned for that tile (see HINT_PENALTY).
-const HINT_PENALTY = 5; // points subtracted per hint used (per location)
-const HINT_MIN_RATIO = 0.5; // never reward below half of the base value
+// answering the question of the current tile. Unlimited use.
 
 const LOCATION_HINTS: Record<LocationId, string[]> = {
   cena: [
