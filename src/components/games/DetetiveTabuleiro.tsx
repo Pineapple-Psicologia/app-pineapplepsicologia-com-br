@@ -375,58 +375,65 @@ export default function DetetiveTabuleiro({ room }: Props) {
 
   return (
     <div
-      className="h-full w-full rounded-xl border-4 border-amber-900/30 p-3 md:p-5 flex flex-col gap-3 overflow-auto relative"
+      className="h-full w-full rounded-xl border-2 sm:border-4 border-amber-900/30 p-2 sm:p-3 md:p-5 flex flex-col gap-2 sm:gap-3 overflow-auto relative"
       style={{
         backgroundImage: `linear-gradient(rgba(255,247,237,0.55), rgba(253,230,138,0.4)), url(${sceneBg})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
     >
-      <header className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h2 className="text-xl md:text-2xl font-bold flex items-center gap-2 text-amber-900">
-            🎲 Detetive dos Pensamentos
+      <header className="flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-base sm:text-xl md:text-2xl font-bold flex items-center gap-1.5 text-amber-900 leading-tight">
+            🎲 <span className="truncate">Detetive dos Pensamentos</span>
           </h2>
-          <p className="text-xs text-amber-900/70 font-semibold">
-            {isPsi ? "🎩 Você é o Mestre do Jogo" : "🎯 Aguarde o mestre rolar o dado"} · Casa atual: <b>{currentLoc.name}</b>
+          <p className="text-[10px] sm:text-xs text-amber-900/70 font-semibold leading-tight mt-0.5">
+            {isPsi ? "🎩 Mestre do Jogo" : "🎯 Aguarde o mestre"} · <b className="truncate">{currentLoc.name}</b>
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+          <button
+            onClick={() => setShowHelp(true)}
+            className="lg:hidden text-[10px] flex items-center gap-1 px-2 py-1 rounded-lg bg-white/90 border-2 border-amber-700 text-amber-900 font-bold hover:bg-white shadow"
+            aria-label="Como jogar"
+          >
+            <HelpCircle className="w-3.5 h-3.5" /> Ajuda
+          </button>
           <button
             onClick={() => setShowHistory(true)}
-            className="text-xs flex items-center gap-1 px-2 py-1 rounded-lg bg-white/80 border-2 border-amber-700 text-amber-900 font-bold hover:bg-white"
+            className="text-[10px] sm:text-xs flex items-center gap-1 px-2 py-1 rounded-lg bg-white/80 border-2 border-amber-700 text-amber-900 font-bold hover:bg-white"
           >
-            <History className="w-3.5 h-3.5" /> Histórico
+            <History className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Histórico</span>
           </button>
           {isPsi && (
-            <Button size="sm" variant="outline" onClick={reset} className="bg-white/80 border-amber-700 text-amber-900 hover:bg-white">
-              <RotateCcw className="w-4 h-4 mr-1" /> Novo caso
+            <Button size="sm" variant="outline" onClick={reset} className="h-8 px-2 bg-white/80 border-amber-700 text-amber-900 hover:bg-white text-xs">
+              <RotateCcw className="w-3.5 h-3.5 sm:mr-1" /> <span className="hidden sm:inline">Novo caso</span>
             </Button>
           )}
         </div>
       </header>
 
       {/* Stats bar */}
-      <div className="grid grid-cols-3 gap-2">
-        <div className="rounded-xl bg-white/85 backdrop-blur border-2 border-amber-700/50 p-2 shadow">
-          <div className="text-[9px] uppercase font-black text-amber-700 tracking-wider">Pontos</div>
-          <div className="text-lg font-black text-amber-900 flex items-center gap-1">
-            <Sparkles className="w-4 h-4 text-amber-500" /> {state.points}
+      <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+        <div className="rounded-lg sm:rounded-xl bg-white/85 backdrop-blur border-2 border-amber-700/50 px-2 py-1.5 sm:p-2 shadow">
+          <div className="text-[8px] sm:text-[9px] uppercase font-black text-amber-700 tracking-wider leading-none">Pontos</div>
+          <div className="text-sm sm:text-lg font-black text-amber-900 flex items-center gap-1 leading-tight">
+            <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-amber-500" /> {state.points}
           </div>
         </div>
-        <div className="rounded-xl bg-white/85 backdrop-blur border-2 border-violet-700/50 p-2 shadow">
-          <div className="text-[9px] uppercase font-black text-violet-700 tracking-wider">Nível Detetive</div>
-          <div className="text-lg font-black text-violet-900 flex items-center gap-1">
-            <Trophy className="w-4 h-4 text-violet-500" /> {level}
+        <div className="rounded-lg sm:rounded-xl bg-white/85 backdrop-blur border-2 border-violet-700/50 px-2 py-1.5 sm:p-2 shadow">
+          <div className="text-[8px] sm:text-[9px] uppercase font-black text-violet-700 tracking-wider leading-none">Nível</div>
+          <div className="text-sm sm:text-lg font-black text-violet-900 flex items-center gap-1 leading-tight">
+            <Trophy className="w-3 h-3 sm:w-4 sm:h-4 text-violet-500" /> {level}
           </div>
           <div className="h-1 mt-0.5 bg-violet-100 rounded-full overflow-hidden">
             <div className="h-full bg-violet-500" style={{ width: `${levelProgress}%` }} />
           </div>
         </div>
-        <div className="rounded-xl bg-white/85 backdrop-blur border-2 border-emerald-700/50 p-2 shadow">
-          <div className="text-[9px] uppercase font-black text-emerald-700 tracking-wider">Medalhas</div>
-          <div className="text-lg font-black text-emerald-900 flex items-center gap-1">
-            <Award className="w-4 h-4 text-emerald-500" /> {state.earnedBadges.length}/{BADGES.length}
+        <div className="rounded-lg sm:rounded-xl bg-white/85 backdrop-blur border-2 border-emerald-700/50 px-2 py-1.5 sm:p-2 shadow">
+          <div className="text-[8px] sm:text-[9px] uppercase font-black text-emerald-700 tracking-wider leading-none">Medalhas</div>
+          <div className="text-sm sm:text-lg font-black text-emerald-900 flex items-center gap-1 leading-tight">
+            <Award className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-500" /> {state.earnedBadges.length}/{BADGES.length}
           </div>
         </div>
       </div>
@@ -438,7 +445,7 @@ export default function DetetiveTabuleiro({ room }: Props) {
             <span
               key={b.id}
               title={b.label}
-              className="text-xs px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-200 to-yellow-100 border border-amber-500 text-amber-900 font-bold shadow-sm"
+              className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-200 to-yellow-100 border border-amber-500 text-amber-900 font-bold shadow-sm"
             >
               {b.emoji} {b.label}
             </span>
