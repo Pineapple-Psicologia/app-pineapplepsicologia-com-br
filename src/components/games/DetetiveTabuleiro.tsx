@@ -793,10 +793,7 @@ function LocationContent({
   diceRolling: boolean;
 }) {
   const loc = LOCATIONS.find((l) => l.id === locId)!;
-  const projectedPoints = Math.max(
-    Math.ceil(loc.points * HINT_MIN_RATIO),
-    loc.points - hintsUsed * HINT_PENALTY
-  );
+  const projectedPoints = loc.points;
   const Header = (
     <div className="p-4 border-b bg-gradient-to-r from-amber-100 to-amber-50 dark:from-stone-800 dark:to-stone-900 rounded-t-2xl">
       <div className="flex items-start justify-between gap-2">
