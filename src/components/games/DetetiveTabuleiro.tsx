@@ -818,7 +818,7 @@ function LocationContent({
             <Dices className="w-4 h-4 mr-1" /> Pedir ajuda (rolar dado)
           </Button>
           <span className="text-[11px] text-muted-foreground">
-            Pedir ajuda é ótimo — mostra interesse. Cada ajuda reduz {HINT_PENALTY} pts (mín. {Math.ceil(loc.points * HINT_MIN_RATIO)} garantidos).
+            Pedir ajuda é ótimo — mostra interesse. As dicas não reduzem pontos.
           </span>
         </div>
       )}
