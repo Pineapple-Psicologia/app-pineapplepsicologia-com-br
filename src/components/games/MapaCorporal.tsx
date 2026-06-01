@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
-import { RotateCcw, Eraser } from "lucide-react";
+import { RotateCcw, Eraser, ChevronDown, ChevronUp } from "lucide-react";
 import personagem from "@/assets/mapa-personagem.png";
 import mapaBg from "@/assets/scene-mapa-corporal.jpg";
 
@@ -81,6 +81,7 @@ export default function MapaCorporal({ room }: Props) {
   const [state, setState] = useState<State>(INITIAL);
   const [isPainting, setIsPainting] = useState(false);
   const [eraseMode, setEraseMode] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
 
   useEffect(() => {
     const off = room.on((m) => {
@@ -119,7 +120,7 @@ export default function MapaCorporal({ room }: Props) {
 
   return (
     <div
-      className="h-full w-full flex flex-col gap-3 p-3 md:p-4 rounded-2xl border-4 border-amber-900/25 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.35)] relative overflow-hidden"
+      className="h-full w-full flex flex-col gap-2 sm:gap-3 p-2 sm:p-3 md:p-4 rounded-xl sm:rounded-2xl border-2 sm:border-4 border-amber-900/25 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.35)] relative overflow-hidden"
       style={{
         backgroundImage: `linear-gradient(rgba(255,250,240,0.5), rgba(186,230,253,0.35)), url(${mapaBg})`,
         backgroundSize: "cover",
@@ -127,33 +128,45 @@ export default function MapaCorporal({ room }: Props) {
       }}
     >
       {/* Header */}
-      <header className="flex items-center justify-between flex-wrap gap-3 bg-card border-2 rounded-2xl px-4 py-2 shadow-sm">
+      <header className="flex items-center justify-between gap-2 bg-card border-2 rounded-xl sm:rounded-2xl px-2.5 sm:px-4 py-1.5 sm:py-2 shadow-sm">
         <div className="flex items-center gap-2 min-w-0">
-          <span className="text-2xl">🧍</span>
+          <span className="text-xl sm:text-2xl">🧍</span>
           <div className="min-w-0">
-            <h2 className="text-lg md:text-xl font-bold leading-tight">Mapa Corporal</h2>
-            <p className="text-[11px] text-muted-foreground leading-tight">
+            <h2 className="text-sm sm:text-lg md:text-xl font-bold leading-tight truncate">Mapa Corporal</h2>
+            <p className="hidden sm:block text-[11px] text-muted-foreground leading-tight">
               Onde você sente cada emoção ou sensação no corpo?
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <Button
             size="sm"
             variant={eraseMode ? "default" : "outline"}
             onClick={() => setEraseMode((v) => !v)}
+            className="h-8 px-2 sm:px-3"
           >
-            <Eraser className="w-4 h-4 mr-1" /> {eraseMode ? "Borracha ativa" : "Borracha"}
+            <Eraser className="w-4 h-4 sm:mr-1" />
+            <span className="hidden sm:inline">{eraseMode ? "Borracha ativa" : "Borracha"}</span>
           </Button>
-          <Button size="sm" variant="outline" onClick={reset}>
-            <RotateCcw className="w-4 h-4 mr-1" /> Limpar
+          <Button size="sm" variant="outline" onClick={reset} className="h-8 px-2 sm:px-3">
+            <RotateCcw className="w-4 h-4 sm:mr-1" />
+            <span className="hidden sm:inline">Limpar</span>
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setPaletteOpen((v) => !v)}
+            className="h-8 px-2 sm:hidden"
+            aria-label={paletteOpen ? "Esconder paleta" : "Mostrar paleta"}
+          >
+            {paletteOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </Button>
         </div>
       </header>
 
-      {/* Mode tabs + palette */}
-      <div className="bg-card border-2 rounded-2xl p-3 shadow-sm">
-        <div className="flex items-center gap-1 mb-3 bg-muted rounded-full p-1 w-fit">
+      {/* Mode tabs + palette — hidden on mobile by default */}
+      <div className={`${paletteOpen ? "block" : "hidden"} sm:block bg-card border-2 rounded-xl sm:rounded-2xl p-2 sm:p-3 shadow-sm`}>
+        <div className="flex items-center gap-1 mb-2 sm:mb-3 bg-muted rounded-full p-1 w-fit">
           {(["emocao", "sensacao"] as const).map((m) => {
             const active = state.mode === m;
             const label = m === "emocao" ? "💗 Emoções" : "🩺 Sensações físicas";
@@ -165,7 +178,7 @@ export default function MapaCorporal({ room }: Props) {
                   const first = (m === "emocao" ? EMOCOES : SENSACOES)[0];
                   update({ mode: m, selected: first.id });
                 }}
-                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold transition-all ${
                   active ? "bg-background shadow text-foreground" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
@@ -175,7 +188,7 @@ export default function MapaCorporal({ room }: Props) {
           })}
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5 sm:gap-2">
           {palette.map((e) => {
             const active = e.id === state.selected && !eraseMode;
             return (
@@ -185,7 +198,7 @@ export default function MapaCorporal({ room }: Props) {
                   setEraseMode(false);
                   update({ selected: e.id });
                 }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold border-2 transition-all ${
+                className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-sm font-semibold border-2 transition-all ${
                   active ? "scale-105 shadow-md" : "hover:scale-105 opacity-85"
                 }`}
                 style={{
@@ -194,7 +207,7 @@ export default function MapaCorporal({ room }: Props) {
                   color: active ? "#fff" : "#111",
                 }}
               >
-                <span className="text-base">{e.emoji}</span>
+                <span className="text-sm sm:text-base">{e.emoji}</span>
                 {e.label}
               </button>
             );
@@ -202,7 +215,7 @@ export default function MapaCorporal({ room }: Props) {
         </div>
 
         {state.mode === "sensacao" && (
-          <p className="text-[11px] text-muted-foreground mt-2 leading-snug">
+          <p className="hidden sm:block text-[11px] text-muted-foreground mt-2 leading-snug">
             Sensações físicas costumam aparecer junto com a ansiedade. Marcar onde elas aparecem
             ajuda a perceber o corpo respondendo — e que isso passa.
           </p>
@@ -210,15 +223,15 @@ export default function MapaCorporal({ room }: Props) {
       </div>
 
       {/* Body + legend */}
-      <div className="flex-1 grid md:grid-cols-[1fr_240px] lg:grid-cols-[1fr_300px] gap-3 min-h-0">
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_240px] lg:grid-cols-[1fr_300px] short:grid-cols-[1fr_200px] gap-2 sm:gap-3 min-h-0">
         {/* Pixar character with hit zones */}
         <div
-          className="relative bg-gradient-to-b from-sky-50 via-white to-violet-50 border-2 rounded-2xl shadow-inner flex items-center justify-center overflow-hidden p-3"
+          className="relative bg-gradient-to-b from-sky-50 via-white to-violet-50 border-2 rounded-xl sm:rounded-2xl shadow-inner flex items-center justify-center overflow-hidden p-2 sm:p-3 min-h-0"
           onMouseUp={() => setIsPainting(false)}
           onMouseLeave={() => setIsPainting(false)}
           onTouchEnd={() => setIsPainting(false)}
         >
-          <div className="relative h-full max-h-[68vh] aspect-[9/16] mx-auto">
+          <div className="relative h-full max-h-full sm:max-h-[68vh] aspect-[9/16] mx-auto">
             <img
               src={personagem}
               alt="Personagem"
@@ -298,7 +311,7 @@ export default function MapaCorporal({ room }: Props) {
         </div>
 
         {/* Legend */}
-        <aside className="bg-card border-2 rounded-2xl p-3 shadow-sm flex flex-col gap-2 overflow-auto">
+        <aside className="bg-card border-2 rounded-xl sm:rounded-2xl p-2 sm:p-3 shadow-sm flex flex-col gap-2 overflow-auto max-h-[30vh] md:max-h-none">
           <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
             O que o corpo está dizendo
           </div>
