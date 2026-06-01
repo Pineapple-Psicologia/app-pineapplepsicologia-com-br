@@ -457,7 +457,7 @@ export default function DetetiveTabuleiro({ room }: Props) {
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-3 min-h-[260px]">
         {/* Tabuleiro */}
         <div
-          className="relative rounded-2xl sm:rounded-3xl border-2 sm:border-4 border-amber-900/30 p-2 sm:p-3 shadow-2xl overflow-hidden min-h-[420px] sm:min-h-[360px] aspect-[4/3] sm:aspect-auto"
+          className="relative rounded-2xl sm:rounded-3xl border-2 sm:border-4 border-amber-900/30 p-2 sm:p-3 shadow-2xl overflow-hidden h-[58vh] min-h-[340px] sm:h-auto sm:min-h-[360px] sm:aspect-auto"
           style={{
             background:
               "radial-gradient(ellipse at 30% 20%, #fef3c7 0%, transparent 55%), radial-gradient(ellipse at 75% 80%, #fed7aa 0%, transparent 60%), linear-gradient(135deg, #bae6fd 0%, #a7f3d0 45%, #fde68a 100%)",
@@ -580,7 +580,7 @@ export default function DetetiveTabuleiro({ room }: Props) {
                     </span>
                   </div>
                   <div
-                    className={`text-[9px] sm:text-[10px] font-black text-amber-950 bg-white/95 rounded-full px-2 py-0.5 leading-tight whitespace-nowrap shadow-md border-2 max-w-[90px] sm:max-w-none truncate ${
+                    className={`hidden sm:block text-[10px] font-black text-amber-950 bg-white/95 rounded-full px-2 py-0.5 leading-tight whitespace-nowrap shadow-md border-2 max-w-none truncate ${
                       current ? "border-amber-500" : "border-amber-900/20"
                     }`}
                   >
