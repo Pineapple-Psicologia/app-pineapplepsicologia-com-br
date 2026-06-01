@@ -457,7 +457,7 @@ export default function DetetiveTabuleiro({ room }: Props) {
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-3 min-h-[260px]">
         {/* Tabuleiro */}
         <div
-          className="relative rounded-3xl border-4 border-amber-900/30 p-2 sm:p-3 shadow-2xl overflow-hidden min-h-[280px]"
+          className="relative rounded-2xl sm:rounded-3xl border-2 sm:border-4 border-amber-900/30 p-2 sm:p-3 shadow-2xl overflow-hidden min-h-[420px] sm:min-h-[360px] aspect-[4/3] sm:aspect-auto"
           style={{
             background:
               "radial-gradient(ellipse at 30% 20%, #fef3c7 0%, transparent 55%), radial-gradient(ellipse at 75% 80%, #fed7aa 0%, transparent 60%), linear-gradient(135deg, #bae6fd 0%, #a7f3d0 45%, #fde68a 100%)",
