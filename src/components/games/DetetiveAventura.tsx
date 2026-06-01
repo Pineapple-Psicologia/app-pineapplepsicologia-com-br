@@ -154,7 +154,7 @@ export default function DetetiveAventura({ room }: Props) {
 
   return (
     <div
-      className="h-full w-full flex flex-col gap-3 p-3 md:p-4 rounded-2xl border-4 border-amber-900/25 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.35)] relative overflow-hidden"
+      className="h-full w-full flex flex-col gap-2 sm:gap-3 p-2 sm:p-3 md:p-4 rounded-2xl border-2 sm:border-4 border-amber-900/25 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.35)] relative overflow-hidden"
       style={{
         backgroundImage: `linear-gradient(rgba(20,15,10,0.55), rgba(20,15,10,0.55)), url(${cenaLaboratorio})`,
         backgroundSize: "cover",
