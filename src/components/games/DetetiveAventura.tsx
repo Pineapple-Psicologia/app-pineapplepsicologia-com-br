@@ -314,8 +314,11 @@ export default function DetetiveAventura({ room }: Props) {
         })}
       </nav>
 
+      {/* Wrapper: stacks vertically; lado a lado em landscape curto (celular deitado) */}
+      <div className="flex flex-col gap-2 sm:gap-3 flex-1 min-h-0 short:flex-row short:gap-2">
+
       {/* Scene viewport with hotspots */}
-      <div className="relative h-[38vh] min-h-[200px] sm:h-auto sm:flex-1 sm:min-h-[320px] rounded-xl sm:rounded-2xl overflow-hidden border-2 sm:border-4 border-amber-900/25 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.35)]">
+      <div className="relative h-[38vh] min-h-[200px] sm:h-auto sm:flex-1 sm:min-h-[320px] short:h-full short:min-h-0 short:flex-1 short:sm:min-h-0 rounded-xl sm:rounded-2xl overflow-hidden border-2 sm:border-4 border-amber-900/25 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.35)]">
         <img
           src={scene.bg}
           alt={scene.title}
@@ -394,7 +397,7 @@ export default function DetetiveAventura({ room }: Props) {
       </div>
 
       {/* Interactive panel for current scene */}
-      <div className="bg-card border-2 rounded-xl sm:rounded-2xl p-2.5 sm:p-3 md:p-4 flex-1 sm:flex-none sm:max-h-[42vh] overflow-auto min-h-0">
+      <div className="bg-card border-2 rounded-xl sm:rounded-2xl p-2.5 sm:p-3 md:p-4 flex-1 sm:flex-none sm:max-h-[42vh] overflow-auto min-h-0 short:flex-none short:max-h-none short:h-full short:w-[46%] short:shrink-0">
         {state.scene === "crime" && (
           <div className="flex flex-col gap-2">
             <h3 className="font-bold flex items-center gap-1.5">🔍 Registre os fatos da cena</h3>
@@ -567,6 +570,7 @@ export default function DetetiveAventura({ room }: Props) {
             </div>
           </div>
         )}
+      </div>
       </div>
     </div>
   );
