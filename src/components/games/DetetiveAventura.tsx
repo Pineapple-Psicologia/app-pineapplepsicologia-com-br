@@ -363,13 +363,13 @@ export default function DetetiveAventura({ room }: Props) {
                 } animate-ping`}
               />
               <span
-                className={`relative flex items-center justify-center w-11 h-11 rounded-full text-2xl border-2 shadow-lg transition-transform group-hover:scale-110 ${
+                className={`relative flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-full text-xl sm:text-2xl border-2 shadow-lg transition-transform group-hover:scale-110 active:scale-95 ${
                   collected
                     ? "bg-emerald-100 border-emerald-500"
                     : "bg-amber-100 border-amber-500"
                 }`}
               >
-                {collected ? <Check className="w-5 h-5 text-emerald-700" /> : h.emoji}
+                {collected ? <Check className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-700" /> : h.emoji}
               </span>
               <span className="absolute left-1/2 top-full mt-1 -translate-x-1/2 px-2 py-0.5 rounded bg-black/70 text-white text-[10px] font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                 {h.label}
