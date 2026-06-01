@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
-import { RotateCcw, Check, ChevronRight, Dices, Sparkles, Trophy, History, Award } from "lucide-react";
+import { RotateCcw, Check, ChevronRight, Dices, Sparkles, Trophy, History, Award, HelpCircle, X } from "lucide-react";
 
 import sceneBg from "@/assets/scene-detetive-tabuleiro.jpg";
 
