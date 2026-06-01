@@ -56,10 +56,7 @@ const DISTORTIONS = [
 ];
 
 // Per-location hints — the dice picks one of these to support the patient
-// answering the question of the current tile. Unlimited use, but each use
-// reduces the points earned for that tile (see HINT_PENALTY).
-const HINT_PENALTY = 5; // points subtracted per hint used (per location)
-const HINT_MIN_RATIO = 0.5; // never reward below half of the base value
+// answering the question of the current tile. Unlimited use.
 
 const LOCATION_HINTS: Record<LocationId, string[]> = {
   cena: [
@@ -299,12 +296,8 @@ export default function DetetiveTabuleiro({ room }: Props) {
     setState((prev) => {
       const wasCompleted = prev.completed.includes(id);
       const completed = wasCompleted ? prev.completed : [...prev.completed, id];
-      // Hint penalty: each hint used in this location reduces the points,
-      // but never below HINT_MIN_RATIO of the base value.
       const base = LOCATIONS[idx].points;
-      const used = prev.hintsUsed[id] ?? 0;
-      const minPts = Math.ceil(base * HINT_MIN_RATIO);
-      const earnedPoints = wasCompleted ? 0 : Math.max(minPts, base - used * HINT_PENALTY);
+      const earnedPoints = wasCompleted ? 0 : base;
       const next: State = {
         ...prev,
         completed,
@@ -699,8 +692,7 @@ export default function DetetiveTabuleiro({ room }: Props) {
               {state.activeHint.text}
             </p>
             <div className="mt-3 text-[11px] text-emerald-800/80">
-              Ajudas usadas nesta casa: <b>{state.hintsUsed[state.activeHint.locId] ?? 0}</b> · cada
-              ajuda reduz <b>{HINT_PENALTY} pts</b> do prêmio (mínimo {Math.round(HINT_MIN_RATIO * 100)}% garantido).
+              Ajudas usadas nesta casa: <b>{state.hintsUsed[state.activeHint.locId] ?? 0}</b> · as dicas não reduzem pontos.
             </div>
             {isPsi && (
               <Button onClick={dismissHint} className="mt-4 w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold">
@@ -801,10 +793,7 @@ function LocationContent({
   diceRolling: boolean;
 }) {
   const loc = LOCATIONS.find((l) => l.id === locId)!;
-  const projectedPoints = Math.max(
-    Math.ceil(loc.points * HINT_MIN_RATIO),
-    loc.points - hintsUsed * HINT_PENALTY
-  );
+  const projectedPoints = loc.points;
   const Header = (
     <div className="p-4 border-b bg-gradient-to-r from-amber-100 to-amber-50 dark:from-stone-800 dark:to-stone-900 rounded-t-2xl">
       <div className="flex items-start justify-between gap-2">
@@ -829,7 +818,7 @@ function LocationContent({
             <Dices className="w-4 h-4 mr-1" /> Pedir ajuda (rolar dado)
           </Button>
           <span className="text-[11px] text-muted-foreground">
-            Pedir ajuda é ótimo — mostra interesse. Cada ajuda reduz {HINT_PENALTY} pts (mín. {Math.ceil(loc.points * HINT_MIN_RATIO)} garantidos).
+            Pedir ajuda é ótimo — mostra interesse. As dicas não reduzem pontos.
           </span>
         </div>
       )}
