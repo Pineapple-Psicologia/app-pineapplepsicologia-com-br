@@ -226,12 +226,12 @@ export default function MapaCorporal({ room }: Props) {
       <div className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_240px] lg:grid-cols-[1fr_300px] short:grid-cols-[1fr_200px] gap-2 sm:gap-3 min-h-0">
         {/* Pixar character with hit zones */}
         <div
-          className="relative bg-gradient-to-b from-sky-50 via-white to-violet-50 border-2 rounded-2xl shadow-inner flex items-center justify-center overflow-hidden p-3"
+          className="relative bg-gradient-to-b from-sky-50 via-white to-violet-50 border-2 rounded-xl sm:rounded-2xl shadow-inner flex items-center justify-center overflow-hidden p-2 sm:p-3 min-h-0"
           onMouseUp={() => setIsPainting(false)}
           onMouseLeave={() => setIsPainting(false)}
           onTouchEnd={() => setIsPainting(false)}
         >
-          <div className="relative h-full max-h-[68vh] aspect-[9/16] mx-auto">
+          <div className="relative h-full max-h-full sm:max-h-[68vh] aspect-[9/16] mx-auto">
             <img
               src={personagem}
               alt="Personagem"
