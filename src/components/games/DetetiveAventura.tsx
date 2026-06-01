@@ -394,7 +394,7 @@ export default function DetetiveAventura({ room }: Props) {
       </div>
 
       {/* Interactive panel for current scene */}
-      <div className="bg-card border-2 rounded-2xl p-3 md:p-4 max-h-[42vh] overflow-auto">
+      <div className="bg-card border-2 rounded-xl sm:rounded-2xl p-2.5 sm:p-3 md:p-4 flex-1 sm:flex-none sm:max-h-[42vh] overflow-auto min-h-0">
         {state.scene === "crime" && (
           <div className="flex flex-col gap-2">
             <h3 className="font-bold flex items-center gap-1.5">🔍 Registre os fatos da cena</h3>
