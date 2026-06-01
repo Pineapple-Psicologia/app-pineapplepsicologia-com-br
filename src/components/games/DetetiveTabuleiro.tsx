@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
-import { RotateCcw, Check, ChevronRight, Dices, Sparkles, Trophy, History, Award } from "lucide-react";
+import { RotateCcw, Check, ChevronRight, Dices, Sparkles, Trophy, History, Award, HelpCircle, X } from "lucide-react";
 
 import sceneBg from "@/assets/scene-detetive-tabuleiro.jpg";
 
@@ -241,6 +241,7 @@ export default function DetetiveTabuleiro({ room }: Props) {
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<CaseHistoryItem[]>(() => loadHistory());
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const celebratedRef = useRef(false);
 
   // Determine if this user is the game master (psi). We start as `false` so
@@ -374,58 +375,65 @@ export default function DetetiveTabuleiro({ room }: Props) {
 
   return (
     <div
-      className="h-full w-full rounded-xl border-4 border-amber-900/30 p-3 md:p-5 flex flex-col gap-3 overflow-auto relative"
+      className="h-full w-full rounded-xl border-2 sm:border-4 border-amber-900/30 p-2 sm:p-3 md:p-5 flex flex-col gap-2 sm:gap-3 overflow-auto relative"
       style={{
         backgroundImage: `linear-gradient(rgba(255,247,237,0.55), rgba(253,230,138,0.4)), url(${sceneBg})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
     >
-      <header className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h2 className="text-xl md:text-2xl font-bold flex items-center gap-2 text-amber-900">
-            🎲 Detetive dos Pensamentos
+      <header className="flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-base sm:text-xl md:text-2xl font-bold flex items-center gap-1.5 text-amber-900 leading-tight">
+            🎲 <span className="truncate">Detetive dos Pensamentos</span>
           </h2>
-          <p className="text-xs text-amber-900/70 font-semibold">
-            {isPsi ? "🎩 Você é o Mestre do Jogo" : "🎯 Aguarde o mestre rolar o dado"} · Casa atual: <b>{currentLoc.name}</b>
+          <p className="text-[10px] sm:text-xs text-amber-900/70 font-semibold leading-tight mt-0.5">
+            {isPsi ? "🎩 Mestre do Jogo" : "🎯 Aguarde o mestre"} · <b className="truncate">{currentLoc.name}</b>
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+          <button
+            onClick={() => setShowHelp(true)}
+            className="lg:hidden text-[10px] flex items-center gap-1 px-2 py-1 rounded-lg bg-white/90 border-2 border-amber-700 text-amber-900 font-bold hover:bg-white shadow"
+            aria-label="Como jogar"
+          >
+            <HelpCircle className="w-3.5 h-3.5" /> Ajuda
+          </button>
           <button
             onClick={() => setShowHistory(true)}
-            className="text-xs flex items-center gap-1 px-2 py-1 rounded-lg bg-white/80 border-2 border-amber-700 text-amber-900 font-bold hover:bg-white"
+            className="text-[10px] sm:text-xs flex items-center gap-1 px-2 py-1 rounded-lg bg-white/80 border-2 border-amber-700 text-amber-900 font-bold hover:bg-white"
           >
-            <History className="w-3.5 h-3.5" /> Histórico
+            <History className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Histórico</span>
           </button>
           {isPsi && (
-            <Button size="sm" variant="outline" onClick={reset} className="bg-white/80 border-amber-700 text-amber-900 hover:bg-white">
-              <RotateCcw className="w-4 h-4 mr-1" /> Novo caso
+            <Button size="sm" variant="outline" onClick={reset} className="h-8 px-2 bg-white/80 border-amber-700 text-amber-900 hover:bg-white text-xs">
+              <RotateCcw className="w-3.5 h-3.5 sm:mr-1" /> <span className="hidden sm:inline">Novo caso</span>
             </Button>
           )}
         </div>
       </header>
 
       {/* Stats bar */}
-      <div className="grid grid-cols-3 gap-2">
-        <div className="rounded-xl bg-white/85 backdrop-blur border-2 border-amber-700/50 p-2 shadow">
-          <div className="text-[9px] uppercase font-black text-amber-700 tracking-wider">Pontos</div>
-          <div className="text-lg font-black text-amber-900 flex items-center gap-1">
-            <Sparkles className="w-4 h-4 text-amber-500" /> {state.points}
+      <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+        <div className="rounded-lg sm:rounded-xl bg-white/85 backdrop-blur border-2 border-amber-700/50 px-2 py-1.5 sm:p-2 shadow">
+          <div className="text-[8px] sm:text-[9px] uppercase font-black text-amber-700 tracking-wider leading-none">Pontos</div>
+          <div className="text-sm sm:text-lg font-black text-amber-900 flex items-center gap-1 leading-tight">
+            <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-amber-500" /> {state.points}
           </div>
         </div>
-        <div className="rounded-xl bg-white/85 backdrop-blur border-2 border-violet-700/50 p-2 shadow">
-          <div className="text-[9px] uppercase font-black text-violet-700 tracking-wider">Nível Detetive</div>
-          <div className="text-lg font-black text-violet-900 flex items-center gap-1">
-            <Trophy className="w-4 h-4 text-violet-500" /> {level}
+        <div className="rounded-lg sm:rounded-xl bg-white/85 backdrop-blur border-2 border-violet-700/50 px-2 py-1.5 sm:p-2 shadow">
+          <div className="text-[8px] sm:text-[9px] uppercase font-black text-violet-700 tracking-wider leading-none">Nível</div>
+          <div className="text-sm sm:text-lg font-black text-violet-900 flex items-center gap-1 leading-tight">
+            <Trophy className="w-3 h-3 sm:w-4 sm:h-4 text-violet-500" /> {level}
           </div>
           <div className="h-1 mt-0.5 bg-violet-100 rounded-full overflow-hidden">
             <div className="h-full bg-violet-500" style={{ width: `${levelProgress}%` }} />
           </div>
         </div>
-        <div className="rounded-xl bg-white/85 backdrop-blur border-2 border-emerald-700/50 p-2 shadow">
-          <div className="text-[9px] uppercase font-black text-emerald-700 tracking-wider">Medalhas</div>
-          <div className="text-lg font-black text-emerald-900 flex items-center gap-1">
-            <Award className="w-4 h-4 text-emerald-500" /> {state.earnedBadges.length}/{BADGES.length}
+        <div className="rounded-lg sm:rounded-xl bg-white/85 backdrop-blur border-2 border-emerald-700/50 px-2 py-1.5 sm:p-2 shadow">
+          <div className="text-[8px] sm:text-[9px] uppercase font-black text-emerald-700 tracking-wider leading-none">Medalhas</div>
+          <div className="text-sm sm:text-lg font-black text-emerald-900 flex items-center gap-1 leading-tight">
+            <Award className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-500" /> {state.earnedBadges.length}/{BADGES.length}
           </div>
         </div>
       </div>
@@ -437,7 +445,7 @@ export default function DetetiveTabuleiro({ room }: Props) {
             <span
               key={b.id}
               title={b.label}
-              className="text-xs px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-200 to-yellow-100 border border-amber-500 text-amber-900 font-bold shadow-sm"
+              className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-200 to-yellow-100 border border-amber-500 text-amber-900 font-bold shadow-sm"
             >
               {b.emoji} {b.label}
             </span>
@@ -449,7 +457,7 @@ export default function DetetiveTabuleiro({ room }: Props) {
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-3 min-h-[260px]">
         {/* Tabuleiro */}
         <div
-          className="relative rounded-3xl border-4 border-amber-900/30 p-2 sm:p-3 shadow-2xl overflow-hidden min-h-[280px]"
+          className="relative rounded-2xl sm:rounded-3xl border-2 sm:border-4 border-amber-900/30 p-2 sm:p-3 shadow-2xl overflow-hidden min-h-[420px] sm:min-h-[360px] aspect-[4/3] sm:aspect-auto"
           style={{
             background:
               "radial-gradient(ellipse at 30% 20%, #fef3c7 0%, transparent 55%), radial-gradient(ellipse at 75% 80%, #fed7aa 0%, transparent 60%), linear-gradient(135deg, #bae6fd 0%, #a7f3d0 45%, #fde68a 100%)",
@@ -548,7 +556,7 @@ export default function DetetiveTabuleiro({ room }: Props) {
                 >
                   <div className="absolute top-full left-1/2 -translate-x-1/2 mt-0.5 w-8 h-1.5 bg-black/25 rounded-full blur-[2px]" />
                   <div
-                    className={`relative text-xl sm:text-2xl w-11 h-11 sm:w-14 sm:h-14 rounded-full flex items-center justify-center border-[3px] transition-all ${l.tw} ${
+                    className={`relative text-2xl sm:text-2xl w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center border-[3px] transition-all ${l.tw} ${
                       current
                         ? "border-white ring-4 ring-yellow-300 scale-110 shadow-[0_0_25px_rgba(251,191,36,0.7)]"
                         : done
@@ -594,7 +602,7 @@ export default function DetetiveTabuleiro({ room }: Props) {
         </div>
 
         {/* Painel "Como jogar" */}
-        <aside className="rounded-3xl border-4 border-amber-900/30 bg-gradient-to-br from-white via-amber-50 to-orange-50 p-3 sm:p-4 shadow-xl overflow-auto max-h-[60vh] lg:max-h-none">
+        <aside className="hidden lg:block rounded-3xl border-4 border-amber-900/30 bg-gradient-to-br from-white via-amber-50 to-orange-50 p-3 sm:p-4 shadow-xl overflow-auto max-h-[60vh] lg:max-h-none">
           <div className="flex items-center gap-2 mb-2">
             <div className="text-2xl">📖</div>
             <h3 className="font-black text-amber-900 text-sm sm:text-base">Como jogar</h3>
@@ -635,6 +643,63 @@ export default function DetetiveTabuleiro({ room }: Props) {
           </div>
         </aside>
       </div>
+
+      {/* Drawer "Como jogar" — mobile */}
+      {showHelp && (
+        <div className="lg:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-3 animate-fade-in" onClick={() => setShowHelp(false)}>
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md rounded-3xl border-4 border-amber-900/30 bg-gradient-to-br from-white via-amber-50 to-orange-50 p-4 shadow-2xl max-h-[85vh] overflow-auto animate-scale-in"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className="text-2xl">📖</div>
+                <h3 className="font-black text-amber-900 text-base">Como jogar</h3>
+              </div>
+              <button
+                onClick={() => setShowHelp(false)}
+                className="w-8 h-8 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-900 flex items-center justify-center"
+                aria-label="Fechar"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-xs text-amber-900/80 mb-3 leading-snug">
+              Investigue um pensamento difícil passando por <b>10 casas</b> do mapa. A psi é o
+              Mestre do Jogo · o paciente acompanha em tempo real.
+            </p>
+            <ol className="space-y-2 text-xs text-amber-950">
+              {[
+                { n: 1, t: "Escolha uma casa", d: "A psi clica na próxima casa do mapa para abrir aquele desafio." },
+                { n: 2, t: "Responda junto", d: "Cada casa traz uma pergunta (cena, emoção, corpo, pensamento, distorções...)." },
+                { n: 3, t: "Use o dado se travar", d: "Role o dado 🎲 pra ganhar uma dica. As dicas não reduzem pontos." },
+                { n: 4, t: "Ganhe pontos e medalhas", d: "Casas completas viram ✓ verdes, somam pontos e desbloqueiam medalhas 🏅." },
+                { n: 5, t: "Encerre o caso", d: "Na última casa, o pensamento original vira uma versão mais justa. Cerimônia! 🏆" },
+              ].map((s) => (
+                <li key={s.n} className="flex gap-2">
+                  <div className="shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white font-black text-xs flex items-center justify-center shadow-md border-2 border-white">
+                    {s.n}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-bold text-amber-900">{s.t}</div>
+                    <div className="text-amber-900/75 leading-snug">{s.d}</div>
+                  </div>
+                </li>
+              ))}
+            </ol>
+            <div className="mt-3 pt-3 border-t-2 border-dashed border-amber-300">
+              <div className="text-[10px] uppercase font-black tracking-wider text-amber-700 mb-1">Legenda</div>
+              <div className="grid grid-cols-2 gap-1.5 text-[11px] text-amber-900">
+                <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-amber-400 border-2 border-white shadow" />Casa atual</div>
+                <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-emerald-400 border-2 border-white shadow" />Concluída</div>
+                <div className="flex items-center gap-1.5">🕵️ Detetive</div>
+                <div className="flex items-center gap-1.5">🎲 Dado de dicas</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
 
 
       {/* Game master / status bar */}
