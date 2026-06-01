@@ -571,6 +571,7 @@ export default function DetetiveAventura({ room }: Props) {
           </div>
         )}
       </div>
+      </div>
     </div>
   );
 }
