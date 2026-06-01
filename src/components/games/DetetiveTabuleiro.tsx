@@ -692,8 +692,7 @@ export default function DetetiveTabuleiro({ room }: Props) {
               {state.activeHint.text}
             </p>
             <div className="mt-3 text-[11px] text-emerald-800/80">
-              Ajudas usadas nesta casa: <b>{state.hintsUsed[state.activeHint.locId] ?? 0}</b> · cada
-              ajuda reduz <b>{HINT_PENALTY} pts</b> do prêmio (mínimo {Math.round(HINT_MIN_RATIO * 100)}% garantido).
+              Ajudas usadas nesta casa: <b>{state.hintsUsed[state.activeHint.locId] ?? 0}</b> · as dicas não reduzem pontos.
             </div>
             {isPsi && (
               <Button onClick={dismissHint} className="mt-4 w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold">
