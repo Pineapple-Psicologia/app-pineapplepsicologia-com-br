@@ -1,4 +1,4 @@
-export type GameId = "whiteboard" | "termometro" | "detetive" | "detetive-tabuleiro" | "detetive-aventura" | "mapa-corporal" | "triangulo" | "entre-lentes" | "respiracao" | "ancoragem" | "folhas-no-rio" | "bussola" | "minha-casa";
+export type GameId = "whiteboard" | "termometro" | "detetive" | "detetive-tabuleiro" | "detetive-aventura" | "triangulo" | "entre-lentes" | "respiracao" | "ancoragem" | "folhas-no-rio" | "bussola" | "minha-casa";
 
 export type GameMeta = {
   id: GameId;
@@ -59,16 +59,6 @@ export const GAMES: GameMeta[] = [
       "Modo point & click: entre em cada cena (crime, interrogatório, laboratório, arquivo, veredito), clique em pistas e resolva o caso junto. Visual cartoon ou noir.",
     ageRange: "9–17 anos",
     approach: "TCC imersiva",
-    available: true,
-  },
-  {
-    id: "mapa-corporal",
-    title: "Mapa Corporal",
-    emoji: "🧍",
-    description:
-      "Silhueta interativa onde o paciente pinta onde sente cada emoção no corpo. Ótimo pra abrir e fechar sessão.",
-    ageRange: "7–12 anos",
-    approach: "Consciência corporal",
     available: true,
   },
   {
