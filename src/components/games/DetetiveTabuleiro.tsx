@@ -452,100 +452,195 @@ export default function DetetiveTabuleiro({ room }: Props) {
         </div>
       )}
 
-      {/* Tabuleiro 2D ilustrado */}
-      <div className="relative flex-1 rounded-2xl border-4 border-amber-900/40 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100 p-2 sm:p-3 shadow-inner overflow-hidden min-h-[260px]">
-        {/* Textura de papel envelhecido */}
+      {/* Tabuleiro 2D estilo Pixar + Painel "Como jogar" */}
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-3 min-h-[260px]">
+        {/* Tabuleiro */}
         <div
-          className="absolute inset-0 opacity-30 pointer-events-none"
+          className="relative rounded-3xl border-4 border-amber-900/30 p-2 sm:p-3 shadow-2xl overflow-hidden min-h-[280px]"
           style={{
-            backgroundImage:
-              "radial-gradient(circle at 20% 30%, rgba(180,120,50,0.18) 0, transparent 40%), radial-gradient(circle at 80% 70%, rgba(180,120,50,0.15) 0, transparent 45%), radial-gradient(circle at 50% 100%, rgba(120,70,20,0.12) 0, transparent 50%)",
+            background:
+              "radial-gradient(ellipse at 30% 20%, #fef3c7 0%, transparent 55%), radial-gradient(ellipse at 75% 80%, #fed7aa 0%, transparent 60%), linear-gradient(135deg, #bae6fd 0%, #a7f3d0 45%, #fde68a 100%)",
           }}
-        />
-        <div className="absolute top-2 left-3 text-[10px] uppercase font-black tracking-wider text-amber-800/80 z-10">
-          🗺️ Mapa da Investigação · Casa {state.currentIdx + 1}/{LOCATIONS.length}
-        </div>
+        >
+          {/* Nuvens fofas estilo Pixar */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <div className="absolute top-[8%] left-[12%] w-16 h-8 bg-white/70 rounded-full blur-[2px]" />
+            <div className="absolute top-[6%] left-[18%] w-10 h-6 bg-white/80 rounded-full blur-[2px]" />
+            <div className="absolute top-[14%] right-[15%] w-20 h-9 bg-white/70 rounded-full blur-[2px]" />
+            <div className="absolute top-[12%] right-[22%] w-12 h-7 bg-white/80 rounded-full blur-[2px]" />
+            {/* Colinas ao fundo */}
+            <svg className="absolute bottom-0 left-0 w-full h-[40%]" viewBox="0 0 100 40" preserveAspectRatio="none">
+              <ellipse cx="20" cy="42" rx="35" ry="18" fill="#86efac" opacity="0.55" />
+              <ellipse cx="65" cy="44" rx="40" ry="20" fill="#6ee7b7" opacity="0.5" />
+              <ellipse cx="90" cy="42" rx="25" ry="15" fill="#5eead4" opacity="0.5" />
+            </svg>
+            {/* Sol brilhante */}
+            <div className="absolute top-3 right-4 w-12 h-12 rounded-full bg-gradient-to-br from-yellow-200 to-orange-300 shadow-[0_0_40px_rgba(251,191,36,0.6)] opacity-90" />
+          </div>
 
-        <div className="relative w-full h-full min-h-[230px]">
-          {/* Caminho conectando as casas */}
-          <svg
-            className="absolute inset-0 w-full h-full pointer-events-none"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-          >
-            <defs>
-              <pattern id="dashPath" patternUnits="userSpaceOnUse" width="2" height="2">
-                <circle cx="1" cy="1" r="0.4" fill="#92400e" />
-              </pattern>
-            </defs>
-            <path
-              d={LOCATIONS.map((l, i) => `${i === 0 ? "M" : "L"} ${l.x} ${l.y}`).join(" ")}
-              fill="none"
-              stroke="#92400e"
-              strokeWidth="0.7"
-              strokeDasharray="1.5 1.5"
-              strokeLinecap="round"
-              opacity="0.55"
-              vectorEffect="non-scaling-stroke"
-            />
-          </svg>
+          <div className="absolute top-2 left-3 text-[10px] uppercase font-black tracking-wider text-amber-900 z-10 bg-white/70 rounded-full px-2 py-0.5 shadow">
+            🗺️ Mapa da Investigação · Casa {state.currentIdx + 1}/{LOCATIONS.length}
+          </div>
 
-          {/* Casas (tiles) */}
-          {LOCATIONS.map((l, idx) => {
-            const done = state.completed.includes(l.id);
-            const current = idx === state.currentIdx;
-            const disabled = !isPsi;
-            return (
-              <button
-                key={l.id}
-                type="button"
-                disabled={disabled}
-                onClick={() => isPsi && openLocation(l.id)}
-                title={`${idx + 1}. ${l.name} — ${l.hint}`}
-                style={{ left: `${l.x}%`, top: `${l.y}%` }}
-                className={`absolute -translate-x-1/2 -translate-y-1/2 group flex flex-col items-center gap-0.5 transition-transform ${
-                  disabled ? "cursor-default" : "cursor-pointer hover:scale-110"
-                }`}
-              >
-                <div
-                  className={`relative text-xl sm:text-2xl w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center border-[3px] shadow-lg transition-all ${l.tw} ${
-                    current
-                      ? "border-amber-600 ring-4 ring-amber-400/60 scale-110"
-                      : done
-                      ? "border-emerald-500 opacity-90"
-                      : "border-white"
+          <div className="relative w-full h-full min-h-[260px]">
+            {/* Caminho conectando as casas */}
+            <svg
+              className="absolute inset-0 w-full h-full pointer-events-none"
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
+            >
+              <defs>
+                <linearGradient id="pathGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#fbbf24" />
+                  <stop offset="100%" stopColor="#f97316" />
+                </linearGradient>
+                <filter id="pathGlow">
+                  <feGaussianBlur stdDeviation="1.2" result="b" />
+                  <feMerge>
+                    <feMergeNode in="b" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+              {/* Sombra do caminho */}
+              <path
+                d={LOCATIONS.map((l, i) => `${i === 0 ? "M" : "L"} ${l.x} ${l.y + 0.8}`).join(" ")}
+                fill="none"
+                stroke="rgba(120,53,15,0.25)"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                vectorEffect="non-scaling-stroke"
+                style={{ strokeWidth: "8px" }}
+              />
+              {/* Caminho principal */}
+              <path
+                d={LOCATIONS.map((l, i) => `${i === 0 ? "M" : "L"} ${l.x} ${l.y}`).join(" ")}
+                fill="none"
+                stroke="url(#pathGrad)"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                filter="url(#pathGlow)"
+                vectorEffect="non-scaling-stroke"
+                style={{ strokeWidth: "6px" }}
+              />
+              {/* Linha pontilhada decorativa por cima */}
+              <path
+                d={LOCATIONS.map((l, i) => `${i === 0 ? "M" : "L"} ${l.x} ${l.y}`).join(" ")}
+                fill="none"
+                stroke="white"
+                strokeDasharray="2 3"
+                strokeLinecap="round"
+                vectorEffect="non-scaling-stroke"
+                style={{ strokeWidth: "1.5px" }}
+                opacity="0.9"
+              />
+            </svg>
+
+            {/* Casas (tiles) estilo Pixar */}
+            {LOCATIONS.map((l, idx) => {
+              const done = state.completed.includes(l.id);
+              const current = idx === state.currentIdx;
+              const disabled = !isPsi;
+              return (
+                <button
+                  key={l.id}
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => isPsi && openLocation(l.id)}
+                  title={`${idx + 1}. ${l.name} — ${l.hint}`}
+                  style={{ left: `${l.x}%`, top: `${l.y}%` }}
+                  className={`absolute -translate-x-1/2 -translate-y-1/2 group flex flex-col items-center gap-1 transition-transform z-10 ${
+                    disabled ? "cursor-default" : "cursor-pointer hover:scale-110 active:scale-95"
                   }`}
                 >
-                  {l.emoji}
-                  {done && (
-                    <span className="absolute -top-1 -right-1 bg-emerald-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center border border-white shadow">
-                      ✓
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-0.5 w-8 h-1.5 bg-black/25 rounded-full blur-[2px]" />
+                  <div
+                    className={`relative text-xl sm:text-2xl w-11 h-11 sm:w-14 sm:h-14 rounded-full flex items-center justify-center border-[3px] transition-all ${l.tw} ${
+                      current
+                        ? "border-white ring-4 ring-yellow-300 scale-110 shadow-[0_0_25px_rgba(251,191,36,0.7)]"
+                        : done
+                        ? "border-emerald-300 opacity-95"
+                        : "border-white shadow-xl"
+                    }`}
+                    style={{
+                      backgroundImage:
+                        "radial-gradient(circle at 30% 25%, rgba(255,255,255,0.7), transparent 50%)",
+                      boxShadow: current ? undefined : "0 6px 14px -2px rgba(0,0,0,0.35), inset 0 -3px 6px rgba(0,0,0,0.18), inset 0 2px 3px rgba(255,255,255,0.6)",
+                    }}
+                  >
+                    <span className="drop-shadow-sm">{l.emoji}</span>
+                    {done && (
+                      <span className="absolute -top-1 -right-1 bg-emerald-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-md font-black">
+                        ✓
+                      </span>
+                    )}
+                    <span className="absolute -bottom-1 -left-1 bg-gradient-to-br from-amber-700 to-amber-900 text-amber-50 text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-amber-50 shadow-md">
+                      {idx + 1}
                     </span>
-                  )}
-                  <span className="absolute -bottom-1 -left-1 bg-amber-900 text-amber-50 text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border border-amber-50 shadow">
-                    {idx + 1}
-                  </span>
-                </div>
-                <div
-                  className={`text-[9px] sm:text-[10px] font-black text-amber-950 bg-white/90 rounded px-1 leading-tight whitespace-nowrap shadow-sm border border-amber-900/20 max-w-[80px] sm:max-w-none truncate ${
-                    current ? "ring-1 ring-amber-500" : ""
-                  }`}
-                >
-                  {l.name}
-                </div>
-              </button>
-            );
-          })}
+                  </div>
+                  <div
+                    className={`text-[9px] sm:text-[10px] font-black text-amber-950 bg-white/95 rounded-full px-2 py-0.5 leading-tight whitespace-nowrap shadow-md border-2 max-w-[90px] sm:max-w-none truncate ${
+                      current ? "border-amber-500" : "border-amber-900/20"
+                    }`}
+                  >
+                    {l.name}
+                  </div>
+                </button>
+              );
+            })}
 
-          {/* Peão do detetive na casa atual */}
-          <div
-            style={{ left: `${currentLoc.x}%`, top: `${currentLoc.y}%` }}
-            className="absolute -translate-x-1/2 -translate-y-[140%] pointer-events-none z-20 animate-bounce"
-          >
-            <div className="text-2xl sm:text-3xl drop-shadow-[0_2px_3px_rgba(0,0,0,0.4)]">🕵️</div>
-            <div className="w-3 h-1 bg-black/30 rounded-full mx-auto blur-sm" />
+            {/* Peão do detetive na casa atual */}
+            <div
+              style={{ left: `${currentLoc.x}%`, top: `${currentLoc.y}%` }}
+              className="absolute -translate-x-1/2 -translate-y-[160%] pointer-events-none z-20 animate-bounce"
+            >
+              <div className="text-3xl sm:text-4xl drop-shadow-[0_4px_4px_rgba(0,0,0,0.4)]">🕵️</div>
+              <div className="w-4 h-1.5 bg-black/40 rounded-full mx-auto blur-[2px] -mt-1" />
+            </div>
           </div>
         </div>
+
+        {/* Painel "Como jogar" */}
+        <aside className="rounded-3xl border-4 border-amber-900/30 bg-gradient-to-br from-white via-amber-50 to-orange-50 p-3 sm:p-4 shadow-xl overflow-auto max-h-[60vh] lg:max-h-none">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="text-2xl">📖</div>
+            <h3 className="font-black text-amber-900 text-sm sm:text-base">Como jogar</h3>
+          </div>
+          <p className="text-[11px] text-amber-900/80 mb-3 leading-snug">
+            Investigue um pensamento difícil passando por <b>10 casas</b> do mapa. A psi é o
+            Mestre do Jogo · o paciente acompanha em tempo real.
+          </p>
+
+          <ol className="space-y-2 text-[11px] text-amber-950">
+            {[
+              { n: 1, t: "Escolha uma casa", d: "A psi clica na próxima casa do mapa para abrir aquele desafio." },
+              { n: 2, t: "Responda junto", d: "Cada casa traz uma pergunta (cena, emoção, corpo, pensamento, distorções...)." },
+              { n: 3, t: "Use o dado se travar", d: "Role o dado 🎲 pra ganhar uma dica. Cada dica reduz alguns pontos da casa." },
+              { n: 4, t: "Ganhe pontos e medalhas", d: "Casas completas viram ✓ verdes, somam pontos e desbloqueiam medalhas 🏅." },
+              { n: 5, t: "Encerre o caso", d: "Na última casa, o pensamento original vira uma versão mais justa. Cerimônia! 🏆" },
+            ].map((s) => (
+              <li key={s.n} className="flex gap-2">
+                <div className="shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white font-black text-xs flex items-center justify-center shadow-md border-2 border-white">
+                  {s.n}
+                </div>
+                <div className="min-w-0">
+                  <div className="font-bold text-amber-900">{s.t}</div>
+                  <div className="text-amber-900/75 leading-snug">{s.d}</div>
+                </div>
+              </li>
+            ))}
+          </ol>
+
+          <div className="mt-3 pt-3 border-t-2 border-dashed border-amber-300">
+            <div className="text-[10px] uppercase font-black tracking-wider text-amber-700 mb-1">Legenda</div>
+            <div className="grid grid-cols-2 gap-1.5 text-[10px] text-amber-900">
+              <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-amber-400 border-2 border-white shadow" />Casa atual</div>
+              <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-emerald-400 border-2 border-white shadow" />Concluída</div>
+              <div className="flex items-center gap-1.5">🕵️ Detetive</div>
+              <div className="flex items-center gap-1.5">🎲 Dado de dicas</div>
+            </div>
+          </div>
+        </aside>
       </div>
 
 
