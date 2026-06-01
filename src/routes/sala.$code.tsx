@@ -150,8 +150,6 @@ function SalaPage() {
             <TrianguloCognitivo room={room} />
           ) : game === "entre-lentes" ? (
             <EntreLentes room={room} />
-          ) : game === "respiracao" ? (
-            <RespiracaoQuadrada room={room} />
           ) : game === "ancoragem" ? (
             <Ancoragem54321 room={room} />
           ) : game === "folhas-no-rio" ? (

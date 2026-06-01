@@ -82,16 +82,6 @@ export const GAMES: GameMeta[] = [
     available: true,
   },
   {
-    id: "respiracao",
-    title: "Respiração Quadrada",
-    emoji: "🌬️",
-    description:
-      "Box breathing animado e sincronizado. Quadrado pulsante guia inspirar, segurar, expirar e segurar. Regulação parassimpática ao vivo.",
-    ageRange: "6–17 anos",
-    approach: "Mindfulness · regulação somática",
-    available: true,
-  },
-  {
     id: "ancoragem",
     title: "5-4-3-2-1 Ancoragem",
     emoji: "⚓",
