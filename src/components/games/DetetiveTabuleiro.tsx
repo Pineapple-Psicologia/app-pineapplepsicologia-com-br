@@ -241,6 +241,7 @@ export default function DetetiveTabuleiro({ room }: Props) {
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<CaseHistoryItem[]>(() => loadHistory());
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const celebratedRef = useRef(false);
 
   // Determine if this user is the game master (psi). We start as `false` so
