@@ -602,7 +602,7 @@ export default function DetetiveTabuleiro({ room }: Props) {
         </div>
 
         {/* Painel "Como jogar" */}
-        <aside className="rounded-3xl border-4 border-amber-900/30 bg-gradient-to-br from-white via-amber-50 to-orange-50 p-3 sm:p-4 shadow-xl overflow-auto max-h-[60vh] lg:max-h-none">
+        <aside className="hidden lg:block rounded-3xl border-4 border-amber-900/30 bg-gradient-to-br from-white via-amber-50 to-orange-50 p-3 sm:p-4 shadow-xl overflow-auto max-h-[60vh] lg:max-h-none">
           <div className="flex items-center gap-2 mb-2">
             <div className="text-2xl">📖</div>
             <h3 className="font-black text-amber-900 text-sm sm:text-base">Como jogar</h3>
