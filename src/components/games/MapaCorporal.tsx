@@ -81,6 +81,7 @@ export default function MapaCorporal({ room }: Props) {
   const [state, setState] = useState<State>(INITIAL);
   const [isPainting, setIsPainting] = useState(false);
   const [eraseMode, setEraseMode] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
 
   useEffect(() => {
     const off = room.on((m) => {
