@@ -692,7 +692,7 @@ export default function DetetiveTabuleiro({ room }: Props) {
               {state.activeHint.text}
             </p>
             <div className="mt-3 text-[11px] text-emerald-800/80">
-              Ajudas usadas nesta casa: <b>{state.hintsUsed[state.activeHint.locId] ?? 0}</b> · as dicas não reduzem pontos.
+              Ajudas usadas nesta casa: <b>{state.hintsUsed[state.activeHint.locId] ?? 0}</b>
             </div>
             {isPsi && (
               <Button onClick={dismissHint} className="mt-4 w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold">
@@ -802,7 +802,6 @@ function LocationContent({
           <h3 className="text-xl font-bold">{loc.name}</h3>
           <p className="text-xs text-muted-foreground">
             {loc.hint} · vale <b>{projectedPoints}</b> pts
-            {hintsUsed > 0 && <span className="text-orange-700"> (–{loc.points - projectedPoints} por {hintsUsed} ajuda{hintsUsed > 1 ? "s" : ""})</span>}
           </p>
         </div>
         <button onClick={onClose} className="text-2xl text-muted-foreground hover:text-foreground">✕</button>
@@ -818,7 +817,7 @@ function LocationContent({
             <Dices className="w-4 h-4 mr-1" /> Pedir ajuda (rolar dado)
           </Button>
           <span className="text-[11px] text-muted-foreground">
-            Pedir ajuda é ótimo — mostra interesse. As dicas não reduzem pontos.
+            Pedir ajuda é ótimo — mostra interesse.
           </span>
         </div>
       )}
