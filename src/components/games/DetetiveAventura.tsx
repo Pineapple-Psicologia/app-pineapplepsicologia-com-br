@@ -314,8 +314,11 @@ export default function DetetiveAventura({ room }: Props) {
         })}
       </nav>
 
+      {/* Wrapper: stacks vertically; lado a lado em landscape curto (celular deitado) */}
+      <div className="flex flex-col gap-2 sm:gap-3 flex-1 min-h-0 short:flex-row short:gap-2">
+
       {/* Scene viewport with hotspots */}
-      <div className="relative h-[38vh] min-h-[200px] sm:h-auto sm:flex-1 sm:min-h-[320px] rounded-xl sm:rounded-2xl overflow-hidden border-2 sm:border-4 border-amber-900/25 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.35)]">
+      <div className="relative h-[38vh] min-h-[200px] sm:h-auto sm:flex-1 sm:min-h-[320px] short:h-full short:min-h-0 short:flex-1 short:sm:min-h-0 rounded-xl sm:rounded-2xl overflow-hidden border-2 sm:border-4 border-amber-900/25 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.35)]">
         <img
           src={scene.bg}
           alt={scene.title}
