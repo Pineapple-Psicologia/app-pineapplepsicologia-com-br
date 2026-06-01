@@ -1,4 +1,4 @@
-export type GameId = "whiteboard" | "termometro" | "detetive" | "detetive-tabuleiro" | "detetive-aventura" | "triangulo" | "entre-lentes" | "respiracao" | "ancoragem" | "folhas-no-rio" | "bussola" | "minha-casa";
+export type GameId = "whiteboard" | "termometro" | "detetive" | "detetive-tabuleiro" | "detetive-aventura" | "triangulo" | "entre-lentes" | "ancoragem" | "folhas-no-rio" | "bussola" | "minha-casa";
 
 export type GameMeta = {
   id: GameId;
@@ -79,16 +79,6 @@ export const GAMES: GameMeta[] = [
       "Jogo narrativo: a mesma cena escolar muda conforme a lente cognitiva equipada (vergonha, catástrofe, curiosa). Investigue pistas pra ganhar clareza.",
     ageRange: "9–16 anos",
     approach: "TCC · flexibilidade cognitiva",
-    available: true,
-  },
-  {
-    id: "respiracao",
-    title: "Respiração Quadrada",
-    emoji: "🌬️",
-    description:
-      "Box breathing animado e sincronizado. Quadrado pulsante guia inspirar, segurar, expirar e segurar. Regulação parassimpática ao vivo.",
-    ageRange: "6–17 anos",
-    approach: "Mindfulness · regulação somática",
     available: true,
   },
   {

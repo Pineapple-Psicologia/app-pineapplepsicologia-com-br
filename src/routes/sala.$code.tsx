@@ -11,7 +11,7 @@ import DetetiveAventura from "@/components/games/DetetiveAventura";
 
 import TrianguloCognitivo from "@/components/games/TrianguloCognitivo";
 import EntreLentes from "@/components/games/EntreLentes";
-import RespiracaoQuadrada from "@/components/games/RespiracaoQuadrada";
+
 import Ancoragem54321 from "@/components/games/Ancoragem54321";
 import FolhasNoRio from "@/components/games/FolhasNoRio";
 import BussolaValores from "@/components/games/BussolaValores";
@@ -23,7 +23,7 @@ import { getGame } from "@/lib/games";
 import { downloadElementAsPdf } from "@/lib/downloadPdf";
 import { useAuth } from "@/hooks/use-auth";
 
-const GAMES = ["whiteboard", "termometro", "detetive", "detetive-tabuleiro", "detetive-aventura", "triangulo", "entre-lentes", "respiracao", "ancoragem", "folhas-no-rio", "bussola", "minha-casa"] as const;
+const GAMES = ["whiteboard", "termometro", "detetive", "detetive-tabuleiro", "detetive-aventura", "triangulo", "entre-lentes", "ancoragem", "folhas-no-rio", "bussola", "minha-casa"] as const;
 
 const searchSchema = z.object({
   role: z.enum(["psi", "paciente"]).catch("paciente").default("paciente"),
@@ -150,8 +150,6 @@ function SalaPage() {
             <TrianguloCognitivo room={room} />
           ) : game === "entre-lentes" ? (
             <EntreLentes room={room} />
-          ) : game === "respiracao" ? (
-            <RespiracaoQuadrada room={room} />
           ) : game === "ancoragem" ? (
             <Ancoragem54321 room={room} />
           ) : game === "folhas-no-rio" ? (
