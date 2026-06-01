@@ -162,16 +162,16 @@ export default function DetetiveAventura({ room }: Props) {
       }}
     >
       {/* Top bar */}
-      <header className="flex items-center justify-between flex-wrap gap-3 bg-card border-2 rounded-2xl px-4 py-2 shadow-sm">
-        <div className="flex items-center gap-2 min-w-0">
-          <Search className="w-5 h-5 text-primary shrink-0" />
-          <h2 className="text-lg md:text-xl font-bold truncate">Detetive: Aventura 🕵️</h2>
+      <header className="flex items-center justify-between gap-2 bg-card border-2 rounded-xl sm:rounded-2xl px-2.5 sm:px-4 py-1.5 sm:py-2 shadow-sm">
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
+          <Search className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
+          <h2 className="text-sm sm:text-lg md:text-xl font-bold truncate">Detetive 🕵️</h2>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <Sheet>
             <SheetTrigger asChild>
-              <Button size="sm" variant="outline">
-                <BookOpen className="w-4 h-4 mr-1" /> Como jogar
+              <Button size="sm" variant="outline" className="px-2 sm:px-3 h-8">
+                <BookOpen className="w-4 h-4 sm:mr-1" /> <span className="hidden sm:inline">Como jogar</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
