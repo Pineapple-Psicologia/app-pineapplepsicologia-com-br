@@ -191,18 +191,43 @@ export default function MinhaCasa({ room }: Props) {
   const [state, setState] = useState<State>(DEFAULT_STATE);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [emojiOpen, setEmojiOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  // sync realtime (mescla defaults para compat com payloads antigos)
+  // sync realtime — evita ping-pong: quando o estado chega do peer, NÃO rebroadcast.
+  const remoteRef = useRef(false);
+  const sendTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingStateRef = useRef<State | null>(null);
+
   useEffect(() => {
     return room.on?.((m) => {
       if (m.type === "casa:state") {
         const p = m.payload as Partial<State>;
+        remoteRef.current = true;
         setState({ ...DEFAULT_STATE, ...p, covers: p.covers ?? [], notes: p.notes ?? [], stickers: p.stickers ?? [] });
       }
     });
   }, [room]);
-  useEffect(() => { room.send?.("casa:state", state); }, [state, room]);
+
+  useEffect(() => {
+    if (remoteRef.current) {
+      remoteRef.current = false;
+      return;
+    }
+    pendingStateRef.current = state;
+    if (sendTimerRef.current) return;
+    sendTimerRef.current = setTimeout(() => {
+      sendTimerRef.current = null;
+      if (pendingStateRef.current) {
+        room.send?.("casa:state", pendingStateRef.current);
+        pendingStateRef.current = null;
+      }
+    }, 80);
+  }, [state, room]);
+
+  useEffect(() => () => {
+    if (sendTimerRef.current) clearTimeout(sendTimerRef.current);
+  }, []);
 
   const mood = MOODS.find((m) => m.id === state.mood)!;
   
@@ -381,15 +406,18 @@ export default function MinhaCasa({ room }: Props) {
   const selectedDef = selected ? CHARACTERS.find((c) => c.id === selected.charId) : null;
 
   return (
-    <div className="flex flex-col h-full gap-3">
+    <div className="flex flex-col h-full gap-2 sm:gap-3 p-1 sm:p-0">
       {/* header */}
-      <div className="flex items-center justify-between gap-3 px-1 flex-wrap">
-        <div className="flex items-center gap-2">
-          <Home className="w-5 h-5 text-amber-700" />
-          <h2 className="font-display text-xl font-bold">Minha Casa</h2>
+      <div className="flex items-center justify-between gap-2 px-1 flex-wrap">
+        <div className="flex items-center gap-2 min-w-0">
+          <Home className="w-5 h-5 text-amber-700 shrink-0" />
+          <h2 className="font-display text-base sm:text-xl font-bold truncate">Minha Casa</h2>
           <span className="text-xs text-muted-foreground hidden md:inline">Quem mora aqui? Onde cada um fica?</span>
         </div>
-        <div className="flex items-center gap-2 flex-wrap relative">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap relative">
+          <Button size="sm" variant="outline" className="sm:hidden h-8 px-2" onClick={() => setSidebarOpen((v) => !v)}>
+            👥 <span className="ml-1 text-xs">Pessoas</span>
+          </Button>
           <div className="relative">
             <Button size="sm" variant="outline" onClick={() => setEmojiOpen((v) => !v)} title="Adicionar emoji">
               <Smile className="w-4 h-4" /> <span className="hidden sm:inline">Emojis</span>
@@ -451,9 +479,20 @@ export default function MinhaCasa({ room }: Props) {
         </div>
       </div>
 
-      <div className="flex-1 flex gap-3 min-h-0">
-        {/* sidebar de personagens */}
-        <aside className="w-48 shrink-0 bg-white/85 border rounded-xl p-2 overflow-auto">
+      <div className="flex-1 flex gap-2 sm:gap-3 min-h-0 relative">
+        {/* sidebar de personagens — drawer no mobile */}
+        {sidebarOpen && (
+          <div className="sm:hidden fixed inset-0 z-40 bg-black/40" onClick={() => setSidebarOpen(false)} />
+        )}
+        <aside
+          className={`${sidebarOpen ? "translate-x-0" : "-translate-x-full"} sm:translate-x-0 transition-transform fixed sm:static left-0 top-0 h-full z-50 sm:z-auto w-44 sm:w-48 shrink-0 bg-white sm:bg-white/85 border rounded-none sm:rounded-xl p-2 overflow-auto shadow-2xl sm:shadow-none`}
+        >
+          <div className="flex items-center justify-between sm:hidden mb-2">
+            <span className="text-xs font-bold">Pessoas & Pets</span>
+            <button onClick={() => setSidebarOpen(false)} className="w-7 h-7 rounded-full border flex items-center justify-center">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
           {(["familia", "familia-negra", "extras", "pets"] as CharGroup[]).map((grp, idx) => {
             const items = CHARACTERS.filter((c) => c.group === grp);
             if (items.length === 0) return null;
@@ -465,7 +504,7 @@ export default function MinhaCasa({ room }: Props) {
                   {items.map((c) => (
                     <button
                       key={c.id}
-                      onClick={() => addCharacter(c)}
+                      onClick={() => { addCharacter(c); setSidebarOpen(false); }}
                       title={`Adicionar ${c.label}`}
                       className="group flex flex-col items-center gap-0.5 p-1.5 rounded-lg border bg-white hover:bg-amber-50 hover:border-amber-300 transition"
                     >
