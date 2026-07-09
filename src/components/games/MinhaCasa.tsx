@@ -191,18 +191,43 @@ export default function MinhaCasa({ room }: Props) {
   const [state, setState] = useState<State>(DEFAULT_STATE);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [emojiOpen, setEmojiOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  // sync realtime (mescla defaults para compat com payloads antigos)
+  // sync realtime — evita ping-pong: quando o estado chega do peer, NÃO rebroadcast.
+  const remoteRef = useRef(false);
+  const sendTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingStateRef = useRef<State | null>(null);
+
   useEffect(() => {
     return room.on?.((m) => {
       if (m.type === "casa:state") {
         const p = m.payload as Partial<State>;
+        remoteRef.current = true;
         setState({ ...DEFAULT_STATE, ...p, covers: p.covers ?? [], notes: p.notes ?? [], stickers: p.stickers ?? [] });
       }
     });
   }, [room]);
-  useEffect(() => { room.send?.("casa:state", state); }, [state, room]);
+
+  useEffect(() => {
+    if (remoteRef.current) {
+      remoteRef.current = false;
+      return;
+    }
+    pendingStateRef.current = state;
+    if (sendTimerRef.current) return;
+    sendTimerRef.current = setTimeout(() => {
+      sendTimerRef.current = null;
+      if (pendingStateRef.current) {
+        room.send?.("casa:state", pendingStateRef.current);
+        pendingStateRef.current = null;
+      }
+    }, 80);
+  }, [state, room]);
+
+  useEffect(() => () => {
+    if (sendTimerRef.current) clearTimeout(sendTimerRef.current);
+  }, []);
 
   const mood = MOODS.find((m) => m.id === state.mood)!;
   
