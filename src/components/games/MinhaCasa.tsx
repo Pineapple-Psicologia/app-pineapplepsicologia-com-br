@@ -479,9 +479,20 @@ export default function MinhaCasa({ room }: Props) {
         </div>
       </div>
 
-      <div className="flex-1 flex gap-3 min-h-0">
-        {/* sidebar de personagens */}
-        <aside className="w-48 shrink-0 bg-white/85 border rounded-xl p-2 overflow-auto">
+      <div className="flex-1 flex gap-2 sm:gap-3 min-h-0 relative">
+        {/* sidebar de personagens — drawer no mobile */}
+        {sidebarOpen && (
+          <div className="sm:hidden fixed inset-0 z-40 bg-black/40" onClick={() => setSidebarOpen(false)} />
+        )}
+        <aside
+          className={`${sidebarOpen ? "translate-x-0" : "-translate-x-full"} sm:translate-x-0 transition-transform fixed sm:static left-0 top-0 h-full z-50 sm:z-auto w-44 sm:w-48 shrink-0 bg-white sm:bg-white/85 border rounded-none sm:rounded-xl p-2 overflow-auto shadow-2xl sm:shadow-none`}
+        >
+          <div className="flex items-center justify-between sm:hidden mb-2">
+            <span className="text-xs font-bold">Pessoas & Pets</span>
+            <button onClick={() => setSidebarOpen(false)} className="w-7 h-7 rounded-full border flex items-center justify-center">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
           {(["familia", "familia-negra", "extras", "pets"] as CharGroup[]).map((grp, idx) => {
             const items = CHARACTERS.filter((c) => c.group === grp);
             if (items.length === 0) return null;
@@ -493,7 +504,7 @@ export default function MinhaCasa({ room }: Props) {
                   {items.map((c) => (
                     <button
                       key={c.id}
-                      onClick={() => addCharacter(c)}
+                      onClick={() => { addCharacter(c); setSidebarOpen(false); }}
                       title={`Adicionar ${c.label}`}
                       className="group flex flex-col items-center gap-0.5 p-1.5 rounded-lg border bg-white hover:bg-amber-50 hover:border-amber-300 transition"
                     >
