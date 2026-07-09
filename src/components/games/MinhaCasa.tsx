@@ -406,15 +406,18 @@ export default function MinhaCasa({ room }: Props) {
   const selectedDef = selected ? CHARACTERS.find((c) => c.id === selected.charId) : null;
 
   return (
-    <div className="flex flex-col h-full gap-3">
+    <div className="flex flex-col h-full gap-2 sm:gap-3 p-1 sm:p-0">
       {/* header */}
-      <div className="flex items-center justify-between gap-3 px-1 flex-wrap">
-        <div className="flex items-center gap-2">
-          <Home className="w-5 h-5 text-amber-700" />
-          <h2 className="font-display text-xl font-bold">Minha Casa</h2>
+      <div className="flex items-center justify-between gap-2 px-1 flex-wrap">
+        <div className="flex items-center gap-2 min-w-0">
+          <Home className="w-5 h-5 text-amber-700 shrink-0" />
+          <h2 className="font-display text-base sm:text-xl font-bold truncate">Minha Casa</h2>
           <span className="text-xs text-muted-foreground hidden md:inline">Quem mora aqui? Onde cada um fica?</span>
         </div>
-        <div className="flex items-center gap-2 flex-wrap relative">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap relative">
+          <Button size="sm" variant="outline" className="sm:hidden h-8 px-2" onClick={() => setSidebarOpen((v) => !v)}>
+            👥 <span className="ml-1 text-xs">Pessoas</span>
+          </Button>
           <div className="relative">
             <Button size="sm" variant="outline" onClick={() => setEmojiOpen((v) => !v)} title="Adicionar emoji">
               <Smile className="w-4 h-4" /> <span className="hidden sm:inline">Emojis</span>
