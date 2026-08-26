@@ -1,4 +1,4 @@
-export type GameId = "whiteboard" | "termometro" | "detetive" | "detetive-tabuleiro" | "detetive-aventura" | "triangulo" | "entre-lentes" | "ancoragem" | "folhas-no-rio" | "bussola" | "minha-casa";
+export type GameId = "whiteboard" | "termometro" | "detetive" | "detetive-tabuleiro" | "detetive-aventura" | "triangulo" | "entre-lentes" | "ancoragem" | "folhas-no-rio" | "bussola" | "minha-casa" | "missao-autocontrole";
 
 export type GameMeta = {
   id: GameId;
@@ -119,6 +119,16 @@ export const GAMES: GameMeta[] = [
       "Construa simbolicamente sua casa: cômodos, móveis, família e pets. Iluminação, expressões e proximidades revelam vínculos e emoções.",
     ageRange: "7–17 anos",
     approach: "Lúdico simbólico · família",
+    available: true,
+  },
+  {
+    id: "missao-autocontrole",
+    title: "Missão Autocontrole",
+    emoji: "🚀",
+    description:
+      "Treino de controle de impulsos com a técnica P.A.R.A. (Parar, Afastar, Respirar, Agir) e missões com dilemas reais do dia a dia. Ideal para TOD.",
+    ageRange: "10–15 anos",
+    approach: "TCC · controle de impulsos · TOD",
     available: true,
   },
   {
