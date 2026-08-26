@@ -337,81 +337,62 @@ export default function HistoriaEspiral({ room }: Props) {
             </div>
           </>
         ) : (
-          /* Modelo da espiral */
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-            <div className="rounded-2xl border bg-card p-2 sm:p-4">
-              <svg viewBox="0 0 420 360" className="w-full h-auto">
-                <defs>
-                  <linearGradient id="he-spiral" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stopColor="#3A86FF" />
-                    <stop offset="50%" stopColor="#06D6A0" />
-                    <stop offset="100%" stopColor="#9B5DE5" />
-                  </linearGradient>
-                </defs>
-                <rect x="4" y="4" width="412" height="352" rx="14" fill="hsl(var(--muted))" opacity="0.35" />
-                <path d={spiralPath(210, 180)} fill="none" stroke="url(#he-spiral)" strokeWidth="6" strokeLinecap="round" opacity="0.85" />
-                {stations.map((st, i) => {
-                  const t = stations.length === 1 ? 0 : i / (stations.length - 1);
-                  const [x, y] = spiralPoint(t, 210, 180);
-                  const card = chosenCards[i];
-                  return (
-                    <g key={st.titulo}>
-                      <circle cx={x} cy={y} r="26" fill="hsl(var(--card))" stroke={st.color} strokeWidth="4" />
-                      <text x={x} y={y + 8} textAnchor="middle" fontSize="24">
-                        {card ? card.emoji : "✏️"}
-                      </text>
-                      <circle cx={x + 20} cy={y - 20} r="10" fill={st.color} />
-                      <text x={x + 20} y={y - 16} textAnchor="middle" fontSize="11" fontWeight="bold" fill="#fff">
-                        {i + 1}
-                      </text>
-                    </g>
-                  );
-                })}
-                <text x="210" y="346" textAnchor="middle" fontSize="12" fill="hsl(var(--muted-foreground))">
-                  Comece no centro e escreva girando para fora ↻
-                </text>
-              </svg>
-            </div>
-
-            <div className="space-y-2">
-              <div className="rounded-2xl border bg-card p-3">
-                <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-2">
-                  Como desenhar na folha
-                </p>
-                <ol className="text-sm space-y-1.5 list-decimal list-inside text-muted-foreground">
-                  <li>Desenhe uma espiral grande na folha sulfite, começando no centro.</li>
-                  <li>Marque {stations.length} paradas ao longo da linha, do centro para fora.</li>
-                  <li>Em cada parada, desenhe a figura da carta e escreva esse trecho da história.</li>
-                  <li>Siga escrevendo acompanhando a curva da espiral até a borda.</li>
-                </ol>
-              </div>
-              {stations.map((st, i) => (
-                <div key={st.titulo} className="rounded-xl border bg-card p-3 flex gap-3 items-start">
-                  <span
-                    className="w-7 h-7 shrink-0 rounded-full text-xs font-bold text-white flex items-center justify-center"
-                    style={{ background: st.color }}
-                  >
-                    {i + 1}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold">
-                      {st.titulo} {chosenCards[i] ? `· ${chosenCards[i].emoji} ${chosenCards[i].label}` : ""}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{st.prompt}</p>
-                  </div>
-                </div>
-              ))}
+          /* Modelo da espiral em folha A4 */
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                Modelo da espiral: desenhe assim na folha sulfite e escreva a história acompanhando a linha, do centro para fora.
+              </p>
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" className="flex-1" onClick={() => sync({ phase: "cartas" })}>
-                  <ChevronLeft className="w-4 h-4 mr-1" /> Voltar às cartas
+                <Button size="sm" variant="outline" onClick={() => sync({ phase: "cartas" })}>
+                  <ChevronLeft className="w-4 h-4 mr-1" /> Cartas
                 </Button>
-                <Button size="sm" variant="outline" className="flex-1" onClick={novoBaralho}>
+                <Button size="sm" variant="outline" onClick={novoBaralho}>
                   <RotateCcw className="w-4 h-4 mr-1" /> Recomeçar
                 </Button>
               </div>
             </div>
+
+            <div className="mx-auto w-full max-w-[560px]">
+              <div className="rounded-xl border bg-card p-2 shadow-sm">
+                <svg viewBox={`0 0 ${SHEET_W} ${SHEET_H}`} className="w-full h-auto rounded-lg" style={{ aspectRatio: "210 / 297" }}>
+                  <defs>
+                    <linearGradient id="he-spiral" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stopColor="#3A86FF" />
+                      <stop offset="50%" stopColor="#06D6A0" />
+                      <stop offset="100%" stopColor="#9B5DE5" />
+                    </linearGradient>
+                  </defs>
+                  <rect x="0" y="0" width={SHEET_W} height={SHEET_H} rx="3" fill="hsl(var(--background))" stroke="hsl(var(--border))" strokeWidth="0.6" />
+                  <path d={spiralPath()} fill="none" stroke="url(#he-spiral)" strokeWidth="1.6" strokeLinecap="round" />
+                  {chosenCards.map((card, i) => {
+                    const t = chosenCards.length === 1 ? 0 : i / (chosenCards.length - 1);
+                    const [x, y] = spiralPoint(t);
+                    return (
+                      <g key={card.id}>
+                        <circle cx={x} cy={y} r="11" fill="hsl(var(--card))" stroke="hsl(var(--primary))" strokeWidth="1.2" />
+                        <text x={x} y={y + 4.5} textAnchor="middle" fontSize="12">{card.emoji}</text>
+                      </g>
+                    );
+                  })}
+                  <circle cx={CX} cy={CY} r="2" fill="hsl(var(--primary))" />
+                </svg>
+              </div>
+              <p className="mt-2 text-center text-[11px] text-muted-foreground">
+                Folha A4 · comece no centro ↻
+              </p>
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-2">
+              {chosenCards.map((c) => (
+                <span key={c.id} className="flex items-center gap-1.5 rounded-full border bg-card px-3 py-1 text-xs font-semibold">
+                  <span className="text-base">{c.emoji}</span> {c.label}
+                </span>
+              ))}
+            </div>
           </div>
         )}
+
       </div>
 
       {showHelp && (
