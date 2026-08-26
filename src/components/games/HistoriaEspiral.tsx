@@ -68,13 +68,80 @@ const DECK: Card[] = [
   { id: "caixa", emoji: "🎁", label: "Caixa fechada", cat: "Objetos" },
   { id: "escada", emoji: "🪜", label: "Escada", cat: "Objetos" },
   { id: "barco", emoji: "⛵", label: "Barco", cat: "Objetos" },
-];
-
-const STATIONS = [
-  { titulo: "Começo", prompt: "Quem é? Onde está? Como tudo começou?", color: "#3A86FF" },
-  { titulo: "Acontece algo", prompt: "O que muda na história? O que aparece?", color: "#06D6A0" },
-  { titulo: "Complica", prompt: "Qual é o problema, o medo ou a dificuldade?", color: "#F77F00" },
-  { titulo: "Desfecho", prompt: "Como termina? O que ficou de aprendizado?", color: "#9B5DE5" },
+  // Mais natureza
+  { id: "deserto", emoji: "🏜️", label: "Deserto", cat: "Natureza" },
+  { id: "neve", emoji: "❄️", label: "Neve", cat: "Natureza" },
+  { id: "vulcao", emoji: "🌋", label: "Vulcão", cat: "Natureza" },
+  { id: "cachoeira", emoji: "💧", label: "Cachoeira", cat: "Natureza" },
+  { id: "sol", emoji: "☀️", label: "Sol forte", cat: "Natureza" },
+  { id: "vento", emoji: "🌪️", label: "Redemoinho", cat: "Natureza" },
+  { id: "flor", emoji: "🌻", label: "Flor", cat: "Natureza" },
+  { id: "estrelas", emoji: "✨", label: "Estrelas", cat: "Natureza" },
+  { id: "ilha", emoji: "🏝️", label: "Ilha", cat: "Natureza" },
+  { id: "caverna", emoji: "🕳️", label: "Buraco escuro", cat: "Natureza" },
+  // Mais animais
+  { id: "cavalo", emoji: "🐴", label: "Cavalo", cat: "Animais" },
+  { id: "coelho", emoji: "🐰", label: "Coelho", cat: "Animais" },
+  { id: "urso", emoji: "🐻", label: "Urso", cat: "Animais" },
+  { id: "cobra", emoji: "🐍", label: "Cobra", cat: "Animais" },
+  { id: "coruja", emoji: "🦉", label: "Coruja", cat: "Animais" },
+  { id: "aranha", emoji: "🕷️", label: "Aranha", cat: "Animais" },
+  { id: "elefante", emoji: "🐘", label: "Elefante", cat: "Animais" },
+  { id: "macaco", emoji: "🐵", label: "Macaco", cat: "Animais" },
+  { id: "tubarao", emoji: "🦈", label: "Tubarão", cat: "Animais" },
+  { id: "formiga", emoji: "🐜", label: "Formiga", cat: "Animais" },
+  { id: "dragao", emoji: "🐉", label: "Dragão", cat: "Animais" },
+  { id: "unicornio", emoji: "🦄", label: "Unicórnio", cat: "Animais" },
+  // Mais pessoas
+  { id: "avo-homem", emoji: "👴", label: "Avô", cat: "Pessoas" },
+  { id: "medica", emoji: "🧑‍⚕️", label: "Médica", cat: "Pessoas" },
+  { id: "policial", emoji: "👮", label: "Policial", cat: "Pessoas" },
+  { id: "heroi", emoji: "🦸", label: "Herói", cat: "Pessoas" },
+  { id: "vilao", emoji: "🦹", label: "Vilão", cat: "Pessoas" },
+  { id: "palhaco", emoji: "🤡", label: "Palhaço", cat: "Pessoas" },
+  { id: "rei", emoji: "🤴", label: "Rei", cat: "Pessoas" },
+  { id: "rainha", emoji: "👸", label: "Rainha", cat: "Pessoas" },
+  { id: "bruxa", emoji: "🧙", label: "Bruxo(a)", cat: "Pessoas" },
+  { id: "bombeiro", emoji: "🧑‍🚒", label: "Bombeiro", cat: "Pessoas" },
+  { id: "bebe-pet", emoji: "🐾", label: "Pegadas", cat: "Pessoas" },
+  // Mais situações
+  { id: "grito", emoji: "😱", label: "Susto", cat: "Situações" },
+  { id: "briga-irmaos", emoji: "🤼", label: "Briga", cat: "Situações" },
+  { id: "presente", emoji: "🎂", label: "Aniversário", cat: "Situações" },
+  { id: "viagem", emoji: "✈️", label: "Viagem", cat: "Situações" },
+  { id: "perdido", emoji: "🧭", label: "Estar perdido", cat: "Situações" },
+  { id: "sonho", emoji: "💭", label: "Sonho", cat: "Situações" },
+  { id: "pesadelo", emoji: "😴", label: "Pesadelo", cat: "Situações" },
+  { id: "silencio", emoji: "🔇", label: "Silêncio", cat: "Situações" },
+  { id: "corrida", emoji: "🏃", label: "Fugir/correr", cat: "Situações" },
+  { id: "esconder", emoji: "🙈", label: "Se esconder", cat: "Situações" },
+  { id: "chuva-casa", emoji: "☔", label: "Dia de chuva", cat: "Situações" },
+  { id: "musica", emoji: "🎵", label: "Música", cat: "Situações" },
+  { id: "comida", emoji: "🍲", label: "Refeição junto", cat: "Situações" },
+  { id: "telefone", emoji: "📞", label: "Telefonema", cat: "Situações" },
+  { id: "hospital2", emoji: "🚑", label: "Ambulância", cat: "Situações" },
+  { id: "esporte", emoji: "⚽", label: "Jogo de bola", cat: "Situações" },
+  // Mais lugares e objetos
+  { id: "castelo", emoji: "🏰", label: "Castelo", cat: "Lugares" },
+  { id: "cidade", emoji: "🏙️", label: "Cidade", cat: "Lugares" },
+  { id: "fazenda", emoji: "🚜", label: "Fazenda", cat: "Lugares" },
+  { id: "igreja", emoji: "⛪", label: "Igreja", cat: "Lugares" },
+  { id: "circo", emoji: "🎪", label: "Circo", cat: "Lugares" },
+  { id: "trem", emoji: "🚂", label: "Trem", cat: "Lugares" },
+  { id: "quarto", emoji: "🛏️", label: "Quarto", cat: "Lugares" },
+  { id: "labirinto", emoji: "🌀", label: "Labirinto", cat: "Lugares" },
+  { id: "livro", emoji: "📖", label: "Livro", cat: "Objetos" },
+  { id: "guarda-chuva", emoji: "🌂", label: "Guarda-chuva", cat: "Objetos" },
+  { id: "lanterna", emoji: "🔦", label: "Lanterna", cat: "Objetos" },
+  { id: "mochila", emoji: "🎒", label: "Mochila", cat: "Objetos" },
+  { id: "coracao", emoji: "❤️", label: "Coração", cat: "Objetos" },
+  { id: "corda", emoji: "🪢", label: "Corda", cat: "Objetos" },
+  { id: "mapa", emoji: "🗺️", label: "Mapa", cat: "Objetos" },
+  { id: "balao", emoji: "🎈", label: "Balão", cat: "Objetos" },
+  { id: "bicicleta", emoji: "🚲", label: "Bicicleta", cat: "Objetos" },
+  { id: "ursinho", emoji: "🧸", label: "Ursinho", cat: "Objetos" },
+  { id: "camera", emoji: "📷", label: "Foto antiga", cat: "Objetos" },
+  { id: "muro", emoji: "🧱", label: "Muro", cat: "Objetos" },
 ];
 
 const CARD_COUNT = 12;
@@ -92,21 +159,30 @@ const drawIds = () => shuffle(DECK).slice(0, CARD_COUNT).map((c) => c.id);
 
 const byId = (id: string) => DECK.find((c) => c.id === id)!;
 
+/** Folha A4 retrato em unidades SVG (mm). */
+const SHEET_W = 210;
+const SHEET_H = 297;
+const CX = SHEET_W / 2;
+const CY = SHEET_H / 2;
+const TURNS = 4;
+const R_MAX = 128;
+
 /** Ponto na espiral (arquimediana), do centro para fora. */
-const spiralPoint = (t: number, cx: number, cy: number) => {
-  const angle = t * Math.PI * 3.2;
-  const r = 22 + t * 130;
-  return [cx + r * Math.cos(angle), cy + r * Math.sin(angle)] as const;
+const spiralPoint = (t: number) => {
+  const angle = t * Math.PI * 2 * TURNS;
+  const r = 10 + t * (R_MAX - 10);
+  return [CX + r * Math.cos(angle), CY + r * Math.sin(angle) * 1.28] as const;
 };
 
-const spiralPath = (cx: number, cy: number) => {
+const spiralPath = () => {
   let d = "";
-  for (let i = 0; i <= 240; i++) {
-    const [x, y] = spiralPoint(i / 240, cx, cy);
-    d += `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)} `;
+  for (let i = 0; i <= 600; i++) {
+    const [x, y] = spiralPoint(i / 600);
+    d += `${i === 0 ? "M" : "L"}${x.toFixed(2)},${y.toFixed(2)} `;
   }
   return d;
 };
+
 
 export default function HistoriaEspiral({ room }: Props) {
   const [deckIds, setDeckIds] = useState<string[]>(() => drawIds());
@@ -159,7 +235,6 @@ export default function HistoriaEspiral({ room }: Props) {
   const novoBaralho = () => sync({ deckIds: drawIds(), flipped: [], chosen: [], phase: "cartas" });
 
   const chosenCards = useMemo(() => chosen.map(byId), [chosen]);
-  const stations = STATIONS.slice(0, Math.max(3, chosenCards.length || 3));
 
   return (
     <div className="relative min-h-full p-2 sm:p-4">
@@ -171,7 +246,7 @@ export default function HistoriaEspiral({ room }: Props) {
               🌀 História em Espiral
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              Vire as cartas, escolha 3 ou 4 e conte a história seguindo a espiral na folha.
+              Vire as cartas, escolha 3 ou 4 e crie sua própria história seguindo a espiral na folha.
             </p>
           </div>
           <div className="flex items-center gap-1.5">
@@ -261,81 +336,62 @@ export default function HistoriaEspiral({ room }: Props) {
             </div>
           </>
         ) : (
-          /* Modelo da espiral */
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-            <div className="rounded-2xl border bg-card p-2 sm:p-4">
-              <svg viewBox="0 0 420 360" className="w-full h-auto">
-                <defs>
-                  <linearGradient id="he-spiral" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stopColor="#3A86FF" />
-                    <stop offset="50%" stopColor="#06D6A0" />
-                    <stop offset="100%" stopColor="#9B5DE5" />
-                  </linearGradient>
-                </defs>
-                <rect x="4" y="4" width="412" height="352" rx="14" fill="hsl(var(--muted))" opacity="0.35" />
-                <path d={spiralPath(210, 180)} fill="none" stroke="url(#he-spiral)" strokeWidth="6" strokeLinecap="round" opacity="0.85" />
-                {stations.map((st, i) => {
-                  const t = stations.length === 1 ? 0 : i / (stations.length - 1);
-                  const [x, y] = spiralPoint(t, 210, 180);
-                  const card = chosenCards[i];
-                  return (
-                    <g key={st.titulo}>
-                      <circle cx={x} cy={y} r="26" fill="hsl(var(--card))" stroke={st.color} strokeWidth="4" />
-                      <text x={x} y={y + 8} textAnchor="middle" fontSize="24">
-                        {card ? card.emoji : "✏️"}
-                      </text>
-                      <circle cx={x + 20} cy={y - 20} r="10" fill={st.color} />
-                      <text x={x + 20} y={y - 16} textAnchor="middle" fontSize="11" fontWeight="bold" fill="#fff">
-                        {i + 1}
-                      </text>
-                    </g>
-                  );
-                })}
-                <text x="210" y="346" textAnchor="middle" fontSize="12" fill="hsl(var(--muted-foreground))">
-                  Comece no centro e escreva girando para fora ↻
-                </text>
-              </svg>
-            </div>
-
-            <div className="space-y-2">
-              <div className="rounded-2xl border bg-card p-3">
-                <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-2">
-                  Como desenhar na folha
-                </p>
-                <ol className="text-sm space-y-1.5 list-decimal list-inside text-muted-foreground">
-                  <li>Desenhe uma espiral grande na folha sulfite, começando no centro.</li>
-                  <li>Marque {stations.length} paradas ao longo da linha, do centro para fora.</li>
-                  <li>Em cada parada, desenhe a figura da carta e escreva esse trecho da história.</li>
-                  <li>Siga escrevendo acompanhando a curva da espiral até a borda.</li>
-                </ol>
-              </div>
-              {stations.map((st, i) => (
-                <div key={st.titulo} className="rounded-xl border bg-card p-3 flex gap-3 items-start">
-                  <span
-                    className="w-7 h-7 shrink-0 rounded-full text-xs font-bold text-white flex items-center justify-center"
-                    style={{ background: st.color }}
-                  >
-                    {i + 1}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold">
-                      {st.titulo} {chosenCards[i] ? `· ${chosenCards[i].emoji} ${chosenCards[i].label}` : ""}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{st.prompt}</p>
-                  </div>
-                </div>
-              ))}
+          /* Modelo da espiral em folha A4 */
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                Modelo da espiral: desenhe assim na folha sulfite e escreva a história acompanhando a linha, do centro para fora.
+              </p>
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" className="flex-1" onClick={() => sync({ phase: "cartas" })}>
-                  <ChevronLeft className="w-4 h-4 mr-1" /> Voltar às cartas
+                <Button size="sm" variant="outline" onClick={() => sync({ phase: "cartas" })}>
+                  <ChevronLeft className="w-4 h-4 mr-1" /> Cartas
                 </Button>
-                <Button size="sm" variant="outline" className="flex-1" onClick={novoBaralho}>
+                <Button size="sm" variant="outline" onClick={novoBaralho}>
                   <RotateCcw className="w-4 h-4 mr-1" /> Recomeçar
                 </Button>
               </div>
             </div>
+
+            <div className="mx-auto w-full max-w-[560px]">
+              <div className="rounded-xl border bg-card p-2 shadow-sm">
+                <svg viewBox={`0 0 ${SHEET_W} ${SHEET_H}`} className="w-full h-auto rounded-lg" style={{ aspectRatio: "210 / 297" }}>
+                  <defs>
+                    <linearGradient id="he-spiral" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stopColor="#3A86FF" />
+                      <stop offset="50%" stopColor="#06D6A0" />
+                      <stop offset="100%" stopColor="#9B5DE5" />
+                    </linearGradient>
+                  </defs>
+                  <rect x="0" y="0" width={SHEET_W} height={SHEET_H} rx="3" fill="hsl(var(--background))" stroke="hsl(var(--border))" strokeWidth="0.6" />
+                  <path d={spiralPath()} fill="none" stroke="url(#he-spiral)" strokeWidth="1.6" strokeLinecap="round" />
+                  {chosenCards.map((card, i) => {
+                    const t = chosenCards.length === 1 ? 0 : i / (chosenCards.length - 1);
+                    const [x, y] = spiralPoint(t);
+                    return (
+                      <g key={card.id}>
+                        <circle cx={x} cy={y} r="11" fill="hsl(var(--card))" stroke="hsl(var(--primary))" strokeWidth="1.2" />
+                        <text x={x} y={y + 4.5} textAnchor="middle" fontSize="12">{card.emoji}</text>
+                      </g>
+                    );
+                  })}
+                  <circle cx={CX} cy={CY} r="2" fill="hsl(var(--primary))" />
+                </svg>
+              </div>
+              <p className="mt-2 text-center text-[11px] text-muted-foreground">
+                Folha A4 · comece no centro ↻
+              </p>
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-2">
+              {chosenCards.map((c) => (
+                <span key={c.id} className="flex items-center gap-1.5 rounded-full border bg-card px-3 py-1 text-xs font-semibold">
+                  <span className="text-base">{c.emoji}</span> {c.label}
+                </span>
+              ))}
+            </div>
           </div>
         )}
+
       </div>
 
       {showHelp && (
@@ -350,7 +406,7 @@ export default function HistoriaEspiral({ room }: Props) {
             <div className="rounded-xl border bg-card p-3 text-sm space-y-2">
               <p><strong>1. Virar cartas:</strong> clique numa carta para revelar a figura, ou use "Sortear carta".</p>
               <p><strong>2. Escolher:</strong> clique de novo na carta revelada para escolhê-la (3 ou 4 cartas).</p>
-              <p><strong>3. Espiral:</strong> o modelo mostra a ordem das paradas. O paciente desenha a espiral na folha sulfite e escreve a história ali.</p>
+              <p><strong>3. Espiral:</strong> o modelo serve só para mostrar o formato da espiral. O paciente desenha a espiral na folha sulfite e escreve a história dele ali, do centro para fora — a trama, os personagens e o final são inteiramente dele.</p>
               <p><strong>Clínico:</strong> observe quais figuras ele evita, quem aparece como personagem, como resolve o conflito e qual o desfecho — projeções úteis para vínculo familiar, medos e recursos de enfrentamento.</p>
             </div>
           </div>
