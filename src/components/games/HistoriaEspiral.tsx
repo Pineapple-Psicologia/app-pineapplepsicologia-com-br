@@ -235,7 +235,6 @@ export default function HistoriaEspiral({ room }: Props) {
   const novoBaralho = () => sync({ deckIds: drawIds(), flipped: [], chosen: [], phase: "cartas" });
 
   const chosenCards = useMemo(() => chosen.map(byId), [chosen]);
-  const stations = STATIONS.slice(0, Math.max(3, chosenCards.length || 3));
 
   return (
     <div className="relative min-h-full p-2 sm:p-4">
@@ -247,7 +246,7 @@ export default function HistoriaEspiral({ room }: Props) {
               🌀 História em Espiral
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              Vire as cartas, escolha 3 ou 4 e conte a história seguindo a espiral na folha.
+              Vire as cartas, escolha 3 ou 4 e crie sua própria história seguindo a espiral na folha.
             </p>
           </div>
           <div className="flex items-center gap-1.5">
@@ -407,7 +406,7 @@ export default function HistoriaEspiral({ room }: Props) {
             <div className="rounded-xl border bg-card p-3 text-sm space-y-2">
               <p><strong>1. Virar cartas:</strong> clique numa carta para revelar a figura, ou use "Sortear carta".</p>
               <p><strong>2. Escolher:</strong> clique de novo na carta revelada para escolhê-la (3 ou 4 cartas).</p>
-              <p><strong>3. Espiral:</strong> o modelo mostra a ordem das paradas. O paciente desenha a espiral na folha sulfite e escreve a história ali.</p>
+              <p><strong>3. Espiral:</strong> o modelo serve só para mostrar o formato da espiral. O paciente desenha a espiral na folha sulfite e escreve a história dele ali, do centro para fora — a trama, os personagens e o final são inteiramente dele.</p>
               <p><strong>Clínico:</strong> observe quais figuras ele evita, quem aparece como personagem, como resolve o conflito e qual o desfecho — projeções úteis para vínculo familiar, medos e recursos de enfrentamento.</p>
             </div>
           </div>
