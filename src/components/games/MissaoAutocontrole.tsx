@@ -284,7 +284,7 @@ export default function MissaoAutocontrole({ room }: Props) {
             </div>
 
             <div className="space-y-2.5">
-              {scenario.opcoes.map((op, i) => {
+              {orderedOptions.map((op, i) => {
                 const revealed = picked !== null;
                 const isPicked = picked === i;
                 return (
