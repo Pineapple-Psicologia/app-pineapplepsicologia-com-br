@@ -122,6 +122,16 @@ export const GAMES: GameMeta[] = [
     available: true,
   },
   {
+    id: "missao-autocontrole",
+    title: "Missão Autocontrole",
+    emoji: "🚀",
+    description:
+      "Treino de controle de impulsos com a técnica P.A.R.A. (Parar, Afastar, Respirar, Agir) e missões com dilemas reais do dia a dia. Ideal para TOD.",
+    ageRange: "10–15 anos",
+    approach: "TCC · controle de impulsos · TOD",
+    available: true,
+  },
+  {
     id: "balanca" as GameId,
     title: "Balança da Evidência",
     emoji: "⚖️",

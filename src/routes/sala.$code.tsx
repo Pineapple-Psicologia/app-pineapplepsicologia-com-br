@@ -16,6 +16,7 @@ import Ancoragem54321 from "@/components/games/Ancoragem54321";
 import FolhasNoRio from "@/components/games/FolhasNoRio";
 import BussolaValores from "@/components/games/BussolaValores";
 import MinhaCasa from "@/components/games/MinhaCasa";
+import MissaoAutocontrole from "@/components/games/MissaoAutocontrole";
 
 import { Copy, Check, ArrowLeft, Wifi, WifiOff, Download } from "lucide-react";
 import { toast } from "sonner";
