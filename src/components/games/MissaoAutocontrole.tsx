@@ -99,6 +99,19 @@ const SCENARIOS: Scenario[] = [
 
 type Phase = "intro" | "treino" | "cenarios" | "fim";
 
+function shuffleArray<T>(arr: T[]): T[] {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+function buildShuffledOrders(): number[][] {
+  return SCENARIOS.map((s) => shuffleArray(s.opcoes.map((_, i) => i)));
+}
+
 export default function MissaoAutocontrole({ room }: Props) {
   const [phase, setPhase] = useState<Phase>("intro");
   const [stepIdx, setStepIdx] = useState(0);
@@ -107,8 +120,10 @@ export default function MissaoAutocontrole({ room }: Props) {
   const [score, setScore] = useState(0);
   const [showHelp, setShowHelp] = useState(false);
   const [breathCount, setBreathCount] = useState(0);
+  const [orders, setOrders] = useState<number[][]>(() => buildShuffledOrders());
 
   const scenario = SCENARIOS[scenarioIdx];
+  const orderedOptions = orders[scenarioIdx]?.map((idx) => scenario.opcoes[idx]) ?? scenario.opcoes;
 
   useEffect(() => {
     return room.on((m) => {
@@ -116,20 +131,29 @@ export default function MissaoAutocontrole({ room }: Props) {
         const s = m.payload;
         setPhase(s.phase); setStepIdx(s.stepIdx); setScenarioIdx(s.scenarioIdx);
         setPicked(s.picked); setScore(s.score); setBreathCount(s.breathCount ?? 0);
+        if (Array.isArray(s.orders) && s.orders.length === SCENARIOS.length) {
+          setOrders(s.orders);
+        }
       }
     });
   }, [room]);
 
-  const sync = (patch: Partial<{ phase: Phase; stepIdx: number; scenarioIdx: number; picked: number | null; score: number; breathCount: number }>) => {
-    const s = { phase, stepIdx, scenarioIdx, picked, score, breathCount, ...patch };
+  const sync = (patch: Partial<{ phase: Phase; stepIdx: number; scenarioIdx: number; picked: number | null; score: number; breathCount: number; orders?: number[][] }>) => {
+    const nextOrders = patch.orders ?? orders;
+    const s = { phase, stepIdx, scenarioIdx, picked, score, breathCount, orders: nextOrders, ...patch };
     setPhase(s.phase); setStepIdx(s.stepIdx); setScenarioIdx(s.scenarioIdx);
-    setPicked(s.picked); setScore(s.score); setBreathCount(s.breathCount);
+    setPicked(s.picked); setScore(s.score); setBreathCount(s.breathCount); setOrders(s.orders);
     room.send("ma:state", s);
+  };
+
+  const startScenarios = () => {
+    const freshOrders = buildShuffledOrders();
+    sync({ phase: "cenarios", scenarioIdx: 0, picked: null, orders: freshOrders });
   };
 
   const pickOption = (i: number) => {
     if (picked !== null) return;
-    const ok = scenario.opcoes[i].boa;
+    const ok = orderedOptions[i].boa;
     sync({ picked: i, score: ok ? score + 10 : score });
     if (ok) toast.success("+10 pontos de autocontrole! ⭐");
   };
@@ -229,7 +253,7 @@ export default function MissaoAutocontrole({ room }: Props) {
                     style={{ backgroundColor: step.color }}
                     disabled={step.id === "respirar" && breathCount < 3}
                     onClick={() => {
-                      if (stepIdx + 1 >= STEPS.length) sync({ phase: "cenarios", scenarioIdx: 0, picked: null });
+                      if (stepIdx + 1 >= STEPS.length) startScenarios();
                       else sync({ stepIdx: stepIdx + 1 });
                     }}
                   >
@@ -260,7 +284,7 @@ export default function MissaoAutocontrole({ room }: Props) {
             </div>
 
             <div className="space-y-2.5">
-              {scenario.opcoes.map((op, i) => {
+              {orderedOptions.map((op, i) => {
                 const revealed = picked !== null;
                 const isPicked = picked === i;
                 return (
