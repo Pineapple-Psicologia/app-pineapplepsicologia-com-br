@@ -1,4 +1,4 @@
-export type GameId = "whiteboard" | "termometro" | "detetive" | "detetive-tabuleiro" | "detetive-aventura" | "triangulo" | "entre-lentes" | "ancoragem" | "folhas-no-rio" | "bussola" | "minha-casa" | "missao-autocontrole";
+export type GameId = "whiteboard" | "termometro" | "detetive" | "detetive-tabuleiro" | "detetive-aventura" | "triangulo" | "entre-lentes" | "ancoragem" | "folhas-no-rio" | "bussola" | "minha-casa" | "missao-autocontrole" | "historia-espiral";
 
 export type GameMeta = {
   id: GameId;
@@ -129,6 +129,16 @@ export const GAMES: GameMeta[] = [
       "Treino de controle de impulsos com a técnica P.A.R.A. (Parar, Afastar, Respirar, Agir) e missões com dilemas reais do dia a dia. Ideal para TOD.",
     ageRange: "10–15 anos",
     approach: "TCC · controle de impulsos · TOD",
+    available: true,
+  },
+  {
+    id: "historia-espiral",
+    title: "História em Espiral",
+    emoji: "🌀",
+    description:
+      "Baralho de figuras variadas (natureza, animais, pai, mãe, situações). Vire as cartas, escolha 3 ou 4 e siga o modelo de espiral para escrever a história na folha.",
+    ageRange: "7–16 anos",
+    approach: "Lúdico projetivo · narrativa",
     available: true,
   },
   {

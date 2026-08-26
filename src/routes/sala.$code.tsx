@@ -17,6 +17,7 @@ import FolhasNoRio from "@/components/games/FolhasNoRio";
 import BussolaValores from "@/components/games/BussolaValores";
 import MinhaCasa from "@/components/games/MinhaCasa";
 import MissaoAutocontrole from "@/components/games/MissaoAutocontrole";
+import HistoriaEspiral from "@/components/games/HistoriaEspiral";
 
 import { Copy, Check, ArrowLeft, Wifi, WifiOff, Download } from "lucide-react";
 import { toast } from "sonner";
@@ -24,7 +25,7 @@ import { getGame } from "@/lib/games";
 import { downloadElementAsPdf } from "@/lib/downloadPdf";
 import { useAuth } from "@/hooks/use-auth";
 
-const GAMES = ["whiteboard", "termometro", "detetive", "detetive-tabuleiro", "detetive-aventura", "triangulo", "entre-lentes", "ancoragem", "folhas-no-rio", "bussola", "minha-casa", "missao-autocontrole"] as const;
+const GAMES = ["whiteboard", "termometro", "detetive", "detetive-tabuleiro", "detetive-aventura", "triangulo", "entre-lentes", "ancoragem", "folhas-no-rio", "bussola", "minha-casa", "missao-autocontrole", "historia-espiral"] as const;
 
 const searchSchema = z.object({
   role: z.enum(["psi", "paciente"]).catch("paciente").default("paciente"),
@@ -161,6 +162,8 @@ function SalaPage() {
             <MinhaCasa room={room} />
           ) : game === "missao-autocontrole" ? (
             <MissaoAutocontrole room={room} />
+          ) : game === "historia-espiral" ? (
+            <HistoriaEspiral room={room} />
           ) : (
             <Whiteboard room={room} role={role} />
           )}
