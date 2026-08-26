@@ -1,4 +1,4 @@
-export type GameId = "whiteboard" | "termometro" | "detetive" | "detetive-tabuleiro" | "detetive-aventura" | "triangulo" | "entre-lentes" | "ancoragem" | "folhas-no-rio" | "bussola" | "minha-casa";
+export type GameId = "whiteboard" | "termometro" | "detetive" | "detetive-tabuleiro" | "detetive-aventura" | "triangulo" | "entre-lentes" | "ancoragem" | "folhas-no-rio" | "bussola" | "minha-casa" | "missao-autocontrole";
 
 export type GameMeta = {
   id: GameId;

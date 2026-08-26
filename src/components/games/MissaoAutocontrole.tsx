@@ -100,7 +100,6 @@ const SCENARIOS: Scenario[] = [
 type Phase = "intro" | "treino" | "cenarios" | "fim";
 
 export default function MissaoAutocontrole({ room }: Props) {
-  const isPsi = (room as any).role === "psi" || true; // room não expõe role; ações locais sincronizam via broadcast
   const [phase, setPhase] = useState<Phase>("intro");
   const [stepIdx, setStepIdx] = useState(0);
   const [scenarioIdx, setScenarioIdx] = useState(0);
