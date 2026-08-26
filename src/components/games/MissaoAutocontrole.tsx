@@ -253,7 +253,7 @@ export default function MissaoAutocontrole({ room }: Props) {
                     style={{ backgroundColor: step.color }}
                     disabled={step.id === "respirar" && breathCount < 3}
                     onClick={() => {
-                      if (stepIdx + 1 >= STEPS.length) sync({ phase: "cenarios", scenarioIdx: 0, picked: null });
+                      if (stepIdx + 1 >= STEPS.length) startScenarios();
                       else sync({ stepIdx: stepIdx + 1 });
                     }}
                   >
