@@ -37,7 +37,7 @@ type Props = {
 };
 type SceneProps = Props & { lowPower: boolean };
 type ViewMode = "overview" | "walk";
-type NavigationInput = { targetX: number; targetZ: number; moving: boolean; lookX: number; lookY: number };
+type NavigationInput = { targetX: number; targetZ: number; moving: boolean; lookX: number; lookY: number; localInput: number };
 
 
 type DragKind = "item" | "cover" | "note" | "sticker";
@@ -841,6 +841,7 @@ function WalkCamera({ navigation, resetSignal, enabled, remoteCamera, onCamera }
     const strafe = (keys.current.has("KeyD") || keys.current.has("ArrowRight") ? 1 : 0)
       - (keys.current.has("KeyA") || keys.current.has("ArrowLeft") ? 1 : 0);
     if (hadLook || forward !== 0 || strafe !== 0) lastLocalInput.current = now;
+    if (navigation.current.localInput > lastLocalInput.current) lastLocalInput.current = navigation.current.localInput;
     if (Math.abs(forward) > 0.02 || Math.abs(strafe) > 0.02) {
       const length = Math.hypot(forward, strafe) || 1;
       const speed = 3.25 * dt;
@@ -1139,6 +1140,7 @@ function Scene({ props, mode, navigation, resetSignal, garden }: {
             if (pointer.moved) {
               navigation.current.lookX += dx;
               navigation.current.lookY += dy;
+              navigation.current.localInput = performance.now();
               invalidate();
             }
           }}
@@ -1149,6 +1151,7 @@ function Scene({ props, mode, navigation, resetSignal, garden }: {
               navigation.current.targetX = THREE.MathUtils.clamp(event.point.x, -7.6, 7.6);
               navigation.current.targetZ = THREE.MathUtils.clamp(event.point.z, -5.6, 20.4);
               navigation.current.moving = true;
+              navigation.current.localInput = performance.now();
             }
             scenePointer.current = null;
             (event.target as Element).releasePointerCapture?.(event.pointerId);
@@ -1282,7 +1285,7 @@ export default function MinhaCasa3D(props: Props) {
   const [mode, setMode] = useState<ViewMode>("walk");
   const [resetSignal, setResetSignal] = useState(0);
   const [garden, setGarden] = useState<GardenStyle>("florido");
-  const navigation = useRef<NavigationInput>({ targetX: 0, targetZ: 19.2, moving: false, lookX: 0, lookY: 0 });
+  const navigation = useRef<NavigationInput>({ targetX: 0, targetZ: 19.2, moving: false, lookX: 0, lookY: 0, localInput: 0 });
 
 
   useEffect(() => {
