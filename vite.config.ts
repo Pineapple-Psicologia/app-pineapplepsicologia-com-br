@@ -5,5 +5,25 @@
 //     error logger plugins, and sandbox detection (port/host/strictPort).
 // You can pass additional config via defineConfig({ vite: { ... } }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import type { Plugin } from "vite";
 
-export default defineConfig();
+function keepEditorMarkersOutOfThreeScenes(): Plugin {
+  return {
+    name: "strip-editor-markers-from-three-scenes",
+    enforce: "post",
+    transform(code, id) {
+      if (!id.includes("/src/components/games/") || !code.includes("data-tsd-source")) return null;
+      if (!code.includes("@react-three/fiber") && !id.endsWith("MinhaCasa3D.tsx") && !id.endsWith("DetetiveBoard3D.tsx")) return null;
+
+      return {
+        code: code
+          .replace(/"data-tsd-source":\s*"[^"]*",\s*/g, "")
+          .replace(/,\s*"data-tsd-source":\s*"[^"]*"/g, "")
+          .replace(/"data-tsd-source":\s*"[^"]*"/g, ""),
+        map: null,
+      };
+    },
+  };
+}
+
+export default defineConfig({ plugins: [keepEditorMarkersOutOfThreeScenes()] });
