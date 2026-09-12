@@ -526,6 +526,18 @@ function FrontGarden({ lowPower }: { lowPower: boolean }) {
           <mesh position={[0, 0.66, 0]} castShadow><sphereGeometry args={[0.18, 12, 8]} /><meshStandardMaterial color={["#df716b", "#f0c65f", "#cf7aa2"][index % 3]} roughness={0.9} /></mesh>
         </group>
       ))}
+      {[-2.9, 2.9].map((x, index) => (
+        <group key={x} position={[x, 0, 7.1]}>
+          <mesh position={[0, 0.52, 0]} castShadow><sphereGeometry args={[0.72, 16, 12]} /><meshStandardMaterial color={index ? "#5f9f60" : "#569a5c"} roughness={0.92} /></mesh>
+          {!lowPower && [-0.42, 0, 0.42].map((dx, i) => (
+            <mesh key={dx} position={[dx, 0.95 - i * 0.12, 0.5]} castShadow>
+              <sphereGeometry args={[0.14, 10, 8]} />
+              <meshStandardMaterial color={["#ef7f9a", "#f3c45f", "#e8697a"][i]} roughness={0.85} />
+            </mesh>
+          ))}
+        </group>
+      ))}
+
       <RoundedBox args={[3.2, 0.18, 1.45]} radius={0.08} position={[0, 0.02, 6.55]} receiveShadow>
         <meshStandardMaterial color="#d7b68e" roughness={0.9} />
       </RoundedBox>
