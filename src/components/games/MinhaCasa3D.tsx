@@ -1,4 +1,4 @@
-import { memo, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, Suspense, useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject, type PointerEvent as ReactPointerEvent } from "react";
 import { Canvas, type ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 import { Billboard, Environment, Html, Lightformer, OrbitControls, RoundedBox, Text, useTexture } from "@react-three/drei";
 import { DoorOpen, Eye, Footprints, RotateCcw } from "lucide-react";
@@ -401,8 +401,8 @@ const isPassage = (x: number, z: number) => {
 };
 
 function WalkCamera({ moveInput, lookInput, resetSignal, enabled }: {
-  moveInput: React.MutableRefObject<MoveInput>;
-  lookInput: React.MutableRefObject<MoveInput>;
+  moveInput: MutableRefObject<MoveInput>;
+  lookInput: MutableRefObject<MoveInput>;
   resetSignal: number;
   enabled: boolean;
 }) {
@@ -456,6 +456,16 @@ function WalkCamera({ moveInput, lookInput, resetSignal, enabled }: {
     camera.rotation.set(pitch.current, yaw.current, 0);
     invalidate();
   });
+  return null;
+}
+
+function OverviewCamera() {
+  const { camera, invalidate } = useThree();
+  useEffect(() => {
+    camera.position.set(13.5, 15.2, 17.5);
+    camera.lookAt(0, 0.65, 0);
+    invalidate();
+  }, [camera, invalidate]);
   return null;
 }
 
@@ -523,7 +533,13 @@ const CharacterFigure = memo(function CharacterFigure({ item, definition, select
   );
 });
 
-function Scene({ props }: { props: SceneProps }) {
+function Scene({ props, mode, moveInput, lookInput, resetSignal }: {
+  props: SceneProps;
+  mode: ViewMode;
+  moveInput: MutableRefObject<MoveInput>;
+  lookInput: MutableRefObject<MoveInput>;
+  resetSignal: number;
+}) {
   const drag = useRef<DragState>(null);
   const [controlsEnabled, setControlsEnabled] = useState(true);
   const groundPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), []);
@@ -601,8 +617,12 @@ function Scene({ props }: { props: SceneProps }) {
         {!props.lowPower && <Lightformer intensity={1} color="#f5b77d" position={[-7, 2, 0]} rotation-y={Math.PI / 2} scale={[8, 4, 1]} />}
       </Environment>
 
-      <CameraEntrance />
-      <Dollhouse />
+      {mode === "walk" ? (
+        <WalkCamera moveInput={moveInput} lookInput={lookInput} resetSignal={resetSignal} enabled={controlsEnabled} />
+      ) : (
+        <OverviewCamera />
+      )}
+      <Dollhouse mode={mode} />
 
       <mesh
         position={[0, 0.17, 0]}
@@ -693,22 +713,59 @@ function Scene({ props }: { props: SceneProps }) {
         </Billboard>
       ))}
 
-      <OrbitControls
-        enabled={controlsEnabled}
-        enablePan={false}
-        enableRotate
-        enableZoom
-        minDistance={11}
-        maxDistance={30}
-        minPolarAngle={0.5}
-        maxPolarAngle={1.15}
-        minAzimuthAngle={-1.1}
-        maxAzimuthAngle={1.1}
-        target={[0, 0.65, 0]}
-        touches={{ ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_ROTATE }}
-        onChange={() => invalidate()}
-      />
+      {mode === "overview" && (
+        <OrbitControls
+          enabled={controlsEnabled}
+          enablePan={false}
+          enableRotate
+          enableZoom
+          minDistance={11}
+          maxDistance={30}
+          minPolarAngle={0.5}
+          maxPolarAngle={1.15}
+          minAzimuthAngle={-1.1}
+          maxAzimuthAngle={1.1}
+          target={[0, 0.65, 0]}
+          touches={{ ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_ROTATE }}
+          onChange={() => invalidate()}
+        />
+      )}
     </>
+  );
+}
+
+function TouchStick({ valueRef, label, className }: { valueRef: MutableRefObject<MoveInput>; label: string; className: string }) {
+  const origin = useRef({ x: 0, y: 0 });
+  const [knob, setKnob] = useState({ x: 0, y: 0 });
+  const update = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const dx = THREE.MathUtils.clamp((event.clientX - origin.current.x) / 42, -1, 1);
+    const dy = THREE.MathUtils.clamp((event.clientY - origin.current.y) / 42, -1, 1);
+    valueRef.current = { x: dx, y: dy };
+    setKnob({ x: dx * 24, y: dy * 24 });
+  };
+  const stop = (event: ReactPointerEvent<HTMLDivElement>) => {
+    valueRef.current = { x: 0, y: 0 };
+    setKnob({ x: 0, y: 0 });
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
+  };
+  return (
+    <div
+      role="application"
+      aria-label={label}
+      className={`absolute bottom-4 z-20 grid h-24 w-24 touch-none select-none place-items-center rounded-full border-2 border-background/60 bg-foreground/20 shadow-lg backdrop-blur-sm ${className}`}
+      onPointerDown={(event) => {
+        origin.current = { x: event.clientX, y: event.clientY };
+        event.currentTarget.setPointerCapture(event.pointerId);
+      }}
+      onPointerMove={(event) => {
+        if (event.currentTarget.hasPointerCapture(event.pointerId)) update(event);
+      }}
+      onPointerUp={stop}
+      onPointerCancel={stop}
+    >
+      <div className="pointer-events-none absolute text-[10px] font-bold uppercase text-background/90">{label}</div>
+      <div className="pointer-events-none h-11 w-11 rounded-full border border-background/70 bg-background/75 shadow-md" style={{ transform: `translate(${knob.x}px, ${knob.y}px)` }} />
+    </div>
   );
 }
 
@@ -722,6 +779,10 @@ function Fallback() {
 
 export default function MinhaCasa3D(props: Props) {
   const [lowPower, setLowPower] = useState(false);
+  const [mode, setMode] = useState<ViewMode>("walk");
+  const [resetSignal, setResetSignal] = useState(0);
+  const moveInput = useRef<MoveInput>({ x: 0, y: 0 });
+  const lookInput = useRef<MoveInput>({ x: 0, y: 0 });
 
   useEffect(() => {
     const coarse = window.matchMedia("(pointer: coarse)");
@@ -738,16 +799,50 @@ export default function MinhaCasa3D(props: Props) {
 
   return (
     <Game3DGuard fallback={<Fallback />}>
-      <Canvas
-        shadows={!lowPower}
-        dpr={lowPower ? 1 : [1, 1.25]}
-        frameloop="demand"
-        camera={{ position: [0, 2.5, 13.5], fov: 42 }}
-        gl={{ antialias: !lowPower, alpha: false, powerPreference: "high-performance" }}
-        onPointerMissed={() => props.onSelect(null)}
-      >
-        <Scene props={{ ...props, lowPower }} />
-      </Canvas>
+      <div className="relative h-full w-full bg-secondary">
+        <Canvas
+          key={mode}
+          shadows={!lowPower}
+          dpr={lowPower ? 1 : [1, 1.25]}
+          frameloop={mode === "walk" ? "always" : "demand"}
+          camera={{ position: mode === "walk" ? [0, 1.65, 10.4] : [13.5, 15.2, 17.5], fov: mode === "walk" ? 62 : 42, near: 0.08, far: 60 }}
+          gl={{ antialias: !lowPower, alpha: false, powerPreference: "high-performance" }}
+          onPointerMissed={() => props.onSelect(null)}
+        >
+          <Scene props={{ ...props, lowPower }} mode={mode} moveInput={moveInput} lookInput={lookInput} resetSignal={resetSignal} />
+        </Canvas>
+
+        <div className="absolute left-3 top-3 z-20 flex gap-2">
+          <Button
+            size="sm"
+            variant={mode === "walk" ? "default" : "secondary"}
+            onClick={() => setMode((current) => current === "walk" ? "overview" : "walk")}
+            className="shadow-lg"
+          >
+            {mode === "walk" ? <Eye className="h-4 w-4" /> : <DoorOpen className="h-4 w-4" />}
+            {mode === "walk" ? "Visão geral" : "Entrar na casa"}
+          </Button>
+          {mode === "walk" && (
+            <Button size="icon" variant="secondary" onClick={() => setResetSignal((value) => value + 1)} title="Voltar à porta" className="shadow-lg">
+              <RotateCcw className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+
+        {mode === "walk" && (
+          <>
+            <div className="pointer-events-none absolute left-1/2 top-1/2 z-10 h-4 w-4 -translate-x-1/2 -translate-y-1/2">
+              <span className="absolute left-1/2 top-0 h-4 w-px -translate-x-1/2 bg-background/70" />
+              <span className="absolute left-0 top-1/2 h-px w-4 -translate-y-1/2 bg-background/70" />
+            </div>
+            <TouchStick valueRef={moveInput} label="Andar" className="left-4" />
+            <TouchStick valueRef={lookInput} label="Olhar" className="right-4" />
+            <div className="pointer-events-none absolute bottom-2 left-1/2 z-10 hidden -translate-x-1/2 items-center gap-1 rounded-full bg-foreground/35 px-3 py-1 text-[11px] font-semibold text-background backdrop-blur-sm md:flex">
+              <Footprints className="h-3.5 w-3.5" /> WASD ou setas para andar
+            </div>
+          </>
+        )}
+      </div>
     </Game3DGuard>
   );
 }
