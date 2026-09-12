@@ -1309,7 +1309,11 @@ export default function MinhaCasa3D(props: Props) {
   useEffect(() => {
     const coarse = window.matchMedia("(pointer: coarse)");
     const narrow = window.matchMedia("(max-width: 1024px)");
-    const update = () => setLowPower(coarse.matches || narrow.matches);
+    const update = () => {
+      const low = coarse.matches || narrow.matches;
+      setLowPower(low);
+      setDpr(low ? 0.85 : 1.25);
+    };
     update();
     coarse.addEventListener("change", update);
     narrow.addEventListener("change", update);
