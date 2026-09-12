@@ -613,7 +613,7 @@ const Dollhouse = memo(function Dollhouse({ mode, lowPower }: { mode: ViewMode; 
       <RoomLabel position={[-5.2, 0.13, 5.7]}>ESTUDO</RoomLabel>
       <RoomLabel position={[0, 0.13, 5.7]}>CONVIVÊNCIA</RoomLabel>
       <RoomLabel position={[5.2, 0.13, 5.7]}>ENTRADA</RoomLabel>
-      <CeilingAndRoof visible={mode === "walk"} />
+      <CeilingAndRoof visible={mode === "walk"} lowPower={lowPower} />
     </group>
   );
 });
