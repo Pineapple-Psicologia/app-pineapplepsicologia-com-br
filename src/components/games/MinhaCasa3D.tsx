@@ -469,7 +469,7 @@ function RoomLabel({ children, position }: { children: string; position: [number
 function RoofSlope({ z, depth, angle, lowPower }: { z: number; depth: number; angle: number; lowPower: boolean }) {
   const tiles = lowPower ? [] : Array.from({ length: 21 }, (_, index) => -8.2 + index * 0.82);
   return (
-    <group position={[0, 3.78, z]} rotation-x={angle}>
+    <group position={[0, 4.08, z]} rotation-x={angle}>
       <mesh castShadow receiveShadow>
         <boxGeometry args={[17.6, 0.2, depth]} />
         <meshStandardMaterial color="#c9694f" roughness={0.82} />
@@ -494,7 +494,7 @@ function CeilingAndRoof({ visible, lowPower }: { visible: boolean; lowPower: boo
       </mesh>
       <RoofSlope z={3.85} depth={7.9} angle={0.163} lowPower={lowPower} />
       <RoofSlope z={-3.5} depth={7.1} angle={-0.178} lowPower={lowPower} />
-      <mesh position={[0, 4.48, 0]} rotation-z={Math.PI / 2} castShadow>
+      <mesh position={[0, 4.78, 0]} rotation-z={Math.PI / 2} castShadow>
         <cylinderGeometry args={[0.2, 0.2, 17.6, 10]} />
         <meshStandardMaterial color="#b95a43" roughness={0.8} />
       </mesh>
@@ -612,8 +612,8 @@ const Dollhouse = memo(function Dollhouse({ mode, lowPower }: { mode: ViewMode; 
       <Window position={[5.15, 1.65, -5.88]} />
       <Window position={[-7.88, 1.65, 1.2]} rotation={Math.PI / 2} />
       <Window position={[7.88, 1.65, 1.2]} rotation={Math.PI / 2} />
-      <Window position={[-5.2, 1.65, 6.12]} rotation={Math.PI} />
-      <Window position={[5.2, 1.65, 6.12]} rotation={Math.PI} />
+      <Window position={[-5.2, 1.65, 6.12]} />
+      <Window position={[5.2, 1.65, 6.12]} />
 
 
       <RoomLabel position={[-5.2, 0.13, -1.3]}>SALA</RoomLabel>
