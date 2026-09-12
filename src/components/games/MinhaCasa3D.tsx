@@ -14,6 +14,8 @@ export type CasaNote = { id: string; x: number; y: number; w: number; h: number;
 export type CasaSticker = { id: string; x: number; y: number; scale: number; emoji: string };
 export type CasaCharacter = { id: string; label: string; img: string; isPet?: boolean };
 
+export type CasaCamera = { x: number; z: number; yaw: number; pitch: number; targetX: number; targetZ: number; moving: boolean; t: number };
+
 type Props = {
   items: CasaPlaced[];
   covers: CasaCover[];
@@ -22,6 +24,10 @@ type Props = {
   characters: CasaCharacter[];
   mood: CasaMood;
   selectedId: string | null;
+  garden?: GardenStyle;
+  onGardenChange?: (garden: GardenStyle) => void;
+  remoteCamera?: MutableRefObject<CasaCamera | null>;
+  onCamera?: (camera: CasaCamera) => void;
   onSelect: (id: string | null) => void;
   onMoveItem: (id: string, x: number, y: number) => void;
   onMoveCover: (id: string, x: number, y: number) => void;
@@ -32,6 +38,7 @@ type Props = {
 type SceneProps = Props & { lowPower: boolean };
 type ViewMode = "overview" | "walk";
 type NavigationInput = { targetX: number; targetZ: number; moving: boolean; lookX: number; lookY: number };
+
 
 type DragKind = "item" | "cover" | "note" | "sticker";
 type DragState = { id: string; kind: DragKind } | null;
