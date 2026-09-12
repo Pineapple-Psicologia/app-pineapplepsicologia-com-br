@@ -1262,8 +1262,24 @@ export default function MinhaCasa3D(props: Props) {
            gl={{ antialias: !lowPower, alpha: false, powerPreference: lowPower ? "default" : "high-performance", failIfMajorPerformanceCaveat: false, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: lowPower ? 1.02 : 1.08 }}
           onPointerMissed={() => props.onSelect(null)}
         >
-          <Scene props={{ ...props, lowPower }} mode={mode} navigation={navigation} resetSignal={resetSignal} />
+          <Scene props={{ ...props, lowPower }} mode={mode} navigation={navigation} resetSignal={resetSignal} garden={garden} />
         </Canvas>
+
+        <div className="absolute right-3 top-3 z-20 flex gap-1 rounded-full bg-card/85 p-1 shadow-lg backdrop-blur-sm">
+          {([["florido", "Florido"], ["sereno", "Sereno"], ["outono", "Outono"]] as [GardenStyle, string][]).map(([value, label]) => (
+            <Button
+              key={value}
+              size="sm"
+              variant={garden === value ? "default" : "ghost"}
+              className="h-7 rounded-full px-3 text-xs"
+              onClick={() => setGarden(value)}
+            >
+              {label}
+            </Button>
+          ))}
+        </div>
+
+
 
         <div className="absolute left-3 top-3 z-20 flex gap-2">
           <Button
