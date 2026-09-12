@@ -1325,7 +1325,7 @@ export default function MinhaCasa3D(props: Props) {
           key={mode}
           fallback={<Fallback />}
           shadows={!lowPower}
-          dpr={lowPower ? 1 : [1, 1.25]}
+          dpr={dpr}
           frameloop={mode === "walk" ? "always" : "demand"}
           camera={{ position: mode === "walk" ? [0, 2.15, 19.2] : [13.5, 15.2, 17.5], fov: mode === "walk" ? 52 : 42, near: 0.08, far: 60 }}
            gl={{ antialias: !lowPower, alpha: false, powerPreference: lowPower ? "default" : "high-performance", failIfMajorPerformanceCaveat: false, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: lowPower ? 1.02 : 1.08 }}
