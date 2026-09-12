@@ -11,7 +11,7 @@
 - [ ] Transformar 5-4-3-2-1 Ancoragem
 - [ ] Transformar Folhas no Rio
 - [ ] Transformar Bússola de Valores
-- [ ] Transformar Minha Casa
+- [x] Transformar Minha Casa
 - [ ] Transformar Missão Autocontrole
 - [ ] Transformar História em Espiral
 - [ ] Validar regras, sincronização, PDF e telas em retrato/paisagem
