@@ -14,6 +14,8 @@ export type CasaNote = { id: string; x: number; y: number; w: number; h: number;
 export type CasaSticker = { id: string; x: number; y: number; scale: number; emoji: string };
 export type CasaCharacter = { id: string; label: string; img: string; isPet?: boolean };
 
+export type CasaCamera = { x: number; z: number; yaw: number; pitch: number; targetX: number; targetZ: number; moving: boolean; t: number };
+
 type Props = {
   items: CasaPlaced[];
   covers: CasaCover[];
@@ -22,6 +24,10 @@ type Props = {
   characters: CasaCharacter[];
   mood: CasaMood;
   selectedId: string | null;
+  garden?: GardenStyle;
+  onGardenChange?: (garden: GardenStyle) => void;
+  remoteCamera?: MutableRefObject<CasaCamera | null>;
+  onCamera?: (camera: CasaCamera) => void;
   onSelect: (id: string | null) => void;
   onMoveItem: (id: string, x: number, y: number) => void;
   onMoveCover: (id: string, x: number, y: number) => void;
@@ -31,7 +37,8 @@ type Props = {
 };
 type SceneProps = Props & { lowPower: boolean };
 type ViewMode = "overview" | "walk";
-type NavigationInput = { targetX: number; targetZ: number; moving: boolean; lookX: number; lookY: number };
+type NavigationInput = { targetX: number; targetZ: number; moving: boolean; lookX: number; lookY: number; localInput: number };
+
 
 type DragKind = "item" | "cover" | "note" | "sticker";
 type DragState = { id: string; kind: DragKind } | null;
@@ -780,11 +787,14 @@ const isPassage = (x: number, z: number) => {
   return true;
 };
 
-function WalkCamera({ navigation, resetSignal, enabled }: {
+function WalkCamera({ navigation, resetSignal, enabled, remoteCamera, onCamera }: {
   navigation: MutableRefObject<NavigationInput>;
   resetSignal: number;
   enabled: boolean;
+  remoteCamera?: MutableRefObject<CasaCamera | null>;
+  onCamera?: (camera: CasaCamera) => void;
 }) {
+
   const { camera, invalidate } = useThree();
   const keys = useRef(new Set<string>());
   const position = useRef(new THREE.Vector3(0, 2.15, 19.2));
@@ -813,9 +823,15 @@ function WalkCamera({ navigation, resetSignal, enabled }: {
     invalidate();
   }, [invalidate, resetSignal]);
 
+  const lastLocalInput = useRef(0);
+  const appliedRemote = useRef(0);
+  const lastSent = useRef(0);
+
   useFrame((_, rawDelta) => {
     if (!enabled) return;
     const dt = Math.min(rawDelta, 0.05);
+    const now = performance.now();
+    const hadLook = navigation.current.lookX !== 0 || navigation.current.lookY !== 0;
     yaw.current -= navigation.current.lookX * 0.0045;
     pitch.current = THREE.MathUtils.clamp(pitch.current - navigation.current.lookY * 0.0035, -0.62, 0.55);
     navigation.current.lookX = 0;
@@ -824,6 +840,8 @@ function WalkCamera({ navigation, resetSignal, enabled }: {
       - (keys.current.has("KeyS") || keys.current.has("ArrowDown") ? 1 : 0);
     const strafe = (keys.current.has("KeyD") || keys.current.has("ArrowRight") ? 1 : 0)
       - (keys.current.has("KeyA") || keys.current.has("ArrowLeft") ? 1 : 0);
+    if (hadLook || forward !== 0 || strafe !== 0) lastLocalInput.current = now;
+    if (navigation.current.localInput > lastLocalInput.current) lastLocalInput.current = navigation.current.localInput;
     if (Math.abs(forward) > 0.02 || Math.abs(strafe) > 0.02) {
       const length = Math.hypot(forward, strafe) || 1;
       const speed = 3.25 * dt;
@@ -833,6 +851,23 @@ function WalkCamera({ navigation, resetSignal, enabled }: {
       if (isPassage(current.x + dx, current.z)) current.x += dx;
       if (isPassage(current.x, current.z + dz)) current.z += dz;
     }
+
+    // aplica a câmera do parceiro quando não há interação local recente
+    const remote = remoteCamera?.current;
+    if (remote && remote.t > appliedRemote.current && now - lastLocalInput.current > 700) {
+      appliedRemote.current = remote.t;
+      navigation.current.targetX = remote.targetX;
+      navigation.current.targetZ = remote.targetZ;
+      navigation.current.moving = remote.moving;
+      yaw.current = THREE.MathUtils.lerp(yaw.current, remote.yaw, 0.4);
+      pitch.current = THREE.MathUtils.lerp(pitch.current, remote.pitch, 0.4);
+      const far = Math.hypot(remote.x - position.current.x, remote.z - position.current.z);
+      if (far > 2.5) {
+        position.current.x = remote.x;
+        position.current.z = remote.z;
+      }
+    }
+
     if (navigation.current.moving) {
       const current = position.current;
       const dx = navigation.current.targetX - current.x;
@@ -854,8 +889,23 @@ function WalkCamera({ navigation, resetSignal, enabled }: {
     camera.position.copy(position.current);
     camera.rotation.order = "YXZ";
     camera.rotation.set(pitch.current, yaw.current, 0);
+
+    if (onCamera && now - lastSent.current > 120 && now - lastLocalInput.current < 2500) {
+      lastSent.current = now;
+      onCamera({
+        x: position.current.x,
+        z: position.current.z,
+        yaw: yaw.current,
+        pitch: pitch.current,
+        targetX: navigation.current.targetX,
+        targetZ: navigation.current.targetZ,
+        moving: navigation.current.moving,
+        t: Date.now(),
+      });
+    }
     invalidate();
   });
+
   return null;
 }
 
@@ -1050,7 +1100,7 @@ function Scene({ props, mode, navigation, resetSignal, garden }: {
       <directionalLight position={[6, 6, -9]} intensity={props.mood === "noite" ? 0.35 : 0.6} color="#ffd9b0" />
 
       {mode === "walk" ? (
-        <WalkCamera navigation={navigation} resetSignal={resetSignal} enabled={controlsEnabled} />
+        <WalkCamera navigation={navigation} resetSignal={resetSignal} enabled={controlsEnabled} remoteCamera={props.remoteCamera} onCamera={props.onCamera} />
       ) : (
         <OverviewCamera />
       )}
@@ -1090,6 +1140,7 @@ function Scene({ props, mode, navigation, resetSignal, garden }: {
             if (pointer.moved) {
               navigation.current.lookX += dx;
               navigation.current.lookY += dy;
+              navigation.current.localInput = performance.now();
               invalidate();
             }
           }}
@@ -1100,6 +1151,7 @@ function Scene({ props, mode, navigation, resetSignal, garden }: {
               navigation.current.targetX = THREE.MathUtils.clamp(event.point.x, -7.6, 7.6);
               navigation.current.targetZ = THREE.MathUtils.clamp(event.point.z, -5.6, 20.4);
               navigation.current.moving = true;
+              navigation.current.localInput = performance.now();
             }
             scenePointer.current = null;
             (event.target as Element).releasePointerCapture?.(event.pointerId);
@@ -1232,8 +1284,13 @@ export default function MinhaCasa3D(props: Props) {
   const [lowPower, setLowPower] = useState(false);
   const [mode, setMode] = useState<ViewMode>("walk");
   const [resetSignal, setResetSignal] = useState(0);
-  const [garden, setGarden] = useState<GardenStyle>("florido");
-  const navigation = useRef<NavigationInput>({ targetX: 0, targetZ: 19.2, moving: false, lookX: 0, lookY: 0 });
+  const [localGarden, setLocalGarden] = useState<GardenStyle>("florido");
+  const garden = props.garden ?? localGarden;
+  const setGarden = (value: GardenStyle) => {
+    setLocalGarden(value);
+    props.onGardenChange?.(value);
+  };
+  const navigation = useRef<NavigationInput>({ targetX: 0, targetZ: 19.2, moving: false, lookX: 0, lookY: 0, localInput: 0 });
 
 
   useEffect(() => {
