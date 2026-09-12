@@ -12,6 +12,7 @@
 - [ ] Transformar Folhas no Rio
 - [ ] Transformar Bússola de Valores
 - [x] Transformar Minha Casa
+- [x] Otimizar Minha Casa 3D para movimentação simultânea em celular e tablet
 - [ ] Transformar Missão Autocontrole
 - [ ] Transformar História em Espiral
 - [ ] Validar regras, sincronização, PDF e telas em retrato/paisagem
