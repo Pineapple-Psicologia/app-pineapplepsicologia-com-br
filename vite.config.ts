@@ -16,7 +16,9 @@ function keepEditorMarkersOutOfThreeScenes(): Plugin {
       if (!code.includes("@react-three/fiber") && !id.endsWith("MinhaCasa3D.tsx") && !id.endsWith("DetetiveBoard3D.tsx")) return null;
 
       return {
-        code: code.replace(/,?\s*"data-tsd-source":\s*"[^"]*"/g, ""),
+        code: code
+          .replace(/"data-tsd-source":\s*"[^"]*",\s*/g, "")
+          .replace(/,\s*"data-tsd-source":\s*"[^"]*"/g, ""),
         map: null,
       };
     },
