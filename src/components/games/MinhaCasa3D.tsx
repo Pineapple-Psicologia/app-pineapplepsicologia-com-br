@@ -466,7 +466,25 @@ function RoomLabel({ children, position }: { children: string; position: [number
   return <Text position={position} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.28} color="#7b6a58" anchorX="center" anchorY="middle">{children}</Text>;
 }
 
-function CeilingAndRoof({ visible }: { visible: boolean }) {
+function RoofSlope({ z, depth, angle, lowPower }: { z: number; depth: number; angle: number; lowPower: boolean }) {
+  const tiles = lowPower ? [] : Array.from({ length: 21 }, (_, index) => -8.2 + index * 0.82);
+  return (
+    <group position={[0, 3.78, z]} rotation-x={angle}>
+      <mesh castShadow receiveShadow>
+        <boxGeometry args={[17.6, 0.2, depth]} />
+        <meshStandardMaterial color="#c9694f" roughness={0.82} />
+      </mesh>
+      {tiles.map((x) => (
+        <mesh key={x} position={[x, 0.14, 0]} rotation-x={Math.PI / 2} castShadow>
+          <cylinderGeometry args={[0.11, 0.11, depth, 8, 1, true]} />
+          <meshStandardMaterial color="#d97a58" roughness={0.75} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+function CeilingAndRoof({ visible, lowPower }: { visible: boolean; lowPower: boolean }) {
   if (!visible) return null;
   return (
     <group>
@@ -474,19 +492,16 @@ function CeilingAndRoof({ visible }: { visible: boolean }) {
         <boxGeometry args={[16.35, 0.16, 12.35]} />
         <meshStandardMaterial color="#fff7e9" roughness={0.9} side={THREE.DoubleSide} />
       </mesh>
-      <group position={[0, 4.42, 0]}>
-        <mesh position={[-4.15, 0, 0]} rotation-z={-0.35} castShadow>
-          <boxGeometry args={[8.85, 0.24, 13.1]} />
-          <meshStandardMaterial color="#b95346" roughness={0.78} />
-        </mesh>
-        <mesh position={[4.15, 0, 0]} rotation-z={0.35} castShadow>
-          <boxGeometry args={[8.85, 0.24, 13.1]} />
-          <meshStandardMaterial color="#b95346" roughness={0.78} />
-        </mesh>
-      </group>
+      <RoofSlope z={3.85} depth={7.9} angle={0.163} lowPower={lowPower} />
+      <RoofSlope z={-3.5} depth={7.1} angle={-0.178} lowPower={lowPower} />
+      <mesh position={[0, 4.48, 0]} rotation-z={Math.PI / 2} castShadow>
+        <cylinderGeometry args={[0.2, 0.2, 17.6, 10]} />
+        <meshStandardMaterial color="#b95a43" roughness={0.8} />
+      </mesh>
     </group>
   );
 }
+
 
 function FrontGarden({ lowPower }: { lowPower: boolean }) {
   return (
