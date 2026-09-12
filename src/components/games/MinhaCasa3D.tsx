@@ -909,6 +909,17 @@ function WalkCamera({ navigation, resetSignal, enabled, remoteCamera, onCamera }
   return null;
 }
 
+// sombras estáticas: recalcula só quando a cena muda, não a cada quadro
+function ShadowBudget({ trigger }: { trigger: unknown }) {
+  const { gl, invalidate } = useThree();
+  useEffect(() => {
+    gl.shadowMap.autoUpdate = false;
+    gl.shadowMap.needsUpdate = true;
+    invalidate();
+  }, [gl, invalidate, trigger]);
+  return null;
+}
+
 function OverviewCamera() {
   const { camera, invalidate } = useThree();
   useEffect(() => {
