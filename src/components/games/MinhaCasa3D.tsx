@@ -1,5 +1,5 @@
 import { Suspense, useMemo, useRef, useState } from "react";
-import { Canvas, type ThreeEvent, useFrame } from "@react-three/fiber";
+import { Canvas, type ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 import { Billboard, Environment, Html, Lightformer, OrbitControls, RoundedBox, Text } from "@react-three/drei";
 import * as THREE from "three";
 import Game3DGuard from "./Game3DGuard";
@@ -30,8 +30,8 @@ type Props = {
 type DragKind = "item" | "cover" | "note" | "sticker";
 type DragState = { id: string; kind: DragKind } | null;
 
-const ROOM_W = 12;
-const ROOM_D = 8;
+const ROOM_W = 16;
+const ROOM_D = 12;
 const toWorldX = (x: number) => (x - 0.5) * ROOM_W;
 const toWorldZ = (y: number) => (y - 0.5) * ROOM_D;
 const toNormalizedX = (x: number) => THREE.MathUtils.clamp(x / ROOM_W + 0.5, 0.03, 0.97);
@@ -54,16 +54,47 @@ const EMOTION_COLORS: Record<string, string> = {
   ansioso: "#a855f7",
 };
 
-function RoomFloor({ position, color, rug }: { position: [number, number, number]; color: string; rug: string }) {
+function RoomFloor({ position, size, color, rug }: { position: [number, number, number]; size: [number, number]; color: string; rug?: string }) {
   return (
     <group position={position}>
-      <RoundedBox args={[3.82, 0.16, 3.82]} radius={0.08} smoothness={3} receiveShadow>
+      <RoundedBox args={[size[0] - 0.12, 0.16, size[1] - 0.12]} radius={0.06} smoothness={3} receiveShadow>
         <meshStandardMaterial color={color} roughness={0.82} />
       </RoundedBox>
-      <mesh position={[0, 0.1, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <circleGeometry args={[1.08, 32]} />
-        <meshStandardMaterial color={rug} roughness={0.9} />
-      </mesh>
+      {rug && (
+        <mesh position={[0, 0.1, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+          <circleGeometry args={[Math.min(size[0], size[1]) * 0.28, 32]} />
+          <meshStandardMaterial color={rug} roughness={0.92} />
+        </mesh>
+      )}
+    </group>
+  );
+}
+
+function Wall({ position, size, color = "#f7f0e5" }: { position: [number, number, number]; size: [number, number, number]; color?: string }) {
+  return (
+    <RoundedBox args={size} radius={0.035} smoothness={3} position={position} castShadow receiveShadow>
+      <meshStandardMaterial color={color} roughness={0.8} />
+    </RoundedBox>
+  );
+}
+
+function Doorway({ x, z, rotation = 0 }: { x: number; z: number; rotation?: number }) {
+  return (
+    <group position={[x, 0, z]} rotation-y={rotation}>
+      <mesh position={[-0.72, 1.15, 0]} castShadow><boxGeometry args={[0.13, 2.3, 0.2]} /><meshStandardMaterial color="#9a6845" /></mesh>
+      <mesh position={[0.72, 1.15, 0]} castShadow><boxGeometry args={[0.13, 2.3, 0.2]} /><meshStandardMaterial color="#9a6845" /></mesh>
+      <mesh position={[0, 2.24, 0]} castShadow><boxGeometry args={[1.55, 0.14, 0.2]} /><meshStandardMaterial color="#9a6845" /></mesh>
+    </group>
+  );
+}
+
+function Window({ position, rotation = 0 }: { position: [number, number, number]; rotation?: number }) {
+  return (
+    <group position={position} rotation-y={rotation}>
+      <mesh><boxGeometry args={[1.8, 1.25, 0.08]} /><meshStandardMaterial color="#87cce1" roughness={0.2} metalness={0.05} /></mesh>
+      <mesh position={[0, 0, 0.06]}><boxGeometry args={[0.08, 1.3, 0.08]} /><meshStandardMaterial color="#f8f1e8" /></mesh>
+      <mesh position={[0, 0, 0.06]}><boxGeometry args={[1.85, 0.08, 0.08]} /><meshStandardMaterial color="#f8f1e8" /></mesh>
+      <mesh position={[0, -0.72, 0.08]} castShadow><boxGeometry args={[2, 0.13, 0.3]} /><meshStandardMaterial color="#d4b492" /></mesh>
     </group>
   );
 }
@@ -117,6 +148,68 @@ function Table({ position }: { position: [number, number, number] }) {
   );
 }
 
+function DiningSet({ position }: { position: [number, number, number] }) {
+  return (
+    <group position={position}>
+      <RoundedBox args={[2.35, 0.18, 1.25]} radius={0.1} position={[0, 0.78, 0]} castShadow>
+        <meshStandardMaterial color="#aa7148" roughness={0.55} />
+      </RoundedBox>
+      {[[-0.82, 0, -0.92], [0.82, 0, -0.92], [-0.82, 0, 0.92], [0.82, 0, 0.92]].map((p, index) => (
+        <group key={index} position={p as [number, number, number]}>
+          <RoundedBox args={[0.58, 0.13, 0.58]} radius={0.08} position={[0, 0.48, 0]} castShadow><meshStandardMaterial color="#6f8e78" /></RoundedBox>
+          <RoundedBox args={[0.58, 0.7, 0.12]} radius={0.06} position={[0, 0.77, p[2] < 0 ? -0.23 : 0.23]} castShadow><meshStandardMaterial color="#6f8e78" /></RoundedBox>
+        </group>
+      ))}
+    </group>
+  );
+}
+
+function Kitchen({ position }: { position: [number, number, number] }) {
+  return (
+    <group position={position}>
+      <RoundedBox args={[3.25, 0.95, 0.65]} radius={0.08} position={[0, 0.5, -0.82]} castShadow><meshStandardMaterial color="#d8e1d4" roughness={0.65} /></RoundedBox>
+      <RoundedBox args={[1.15, 2.25, 0.7]} radius={0.08} position={[-1.25, 1.13, 0.25]} castShadow><meshStandardMaterial color="#e5e8e4" metalness={0.08} roughness={0.3} /></RoundedBox>
+      <mesh position={[0.55, 1.02, -0.84]}><boxGeometry args={[0.8, 0.04, 0.45]} /><meshStandardMaterial color="#303b3a" metalness={0.35} roughness={0.22} /></mesh>
+      {[0.3, 0.8].map((x) => <mesh key={x} position={[x, 1.06, -0.84]} rotation-x={-Math.PI / 2}><circleGeometry args={[0.13, 18]} /><meshStandardMaterial color="#111817" /></mesh>)}
+      <mesh position={[-0.35, 1.02, -0.84]}><boxGeometry args={[0.72, 0.05, 0.42]} /><meshStandardMaterial color="#79aeb6" metalness={0.25} roughness={0.25} /></mesh>
+    </group>
+  );
+}
+
+function Bookshelf({ position, rotation = 0 }: { position: [number, number, number]; rotation?: number }) {
+  const books = ["#d2675d", "#ddb45e", "#648a91", "#7d6a9c", "#72a36f"];
+  return (
+    <group position={position} rotation-y={rotation}>
+      <RoundedBox args={[1.65, 2.15, 0.42]} radius={0.06} position={[0, 1.08, 0]} castShadow><meshStandardMaterial color="#9b6848" roughness={0.7} /></RoundedBox>
+      <mesh position={[0, 1.1, 0.24]}><boxGeometry args={[1.42, 1.86, 0.08]} /><meshStandardMaterial color="#f0dfc5" /></mesh>
+      {[0.52, 1.08, 1.64].map((y) => <mesh key={y} position={[0, y, 0.31]}><boxGeometry args={[1.46, 0.09, 0.42]} /><meshStandardMaterial color="#8b583a" /></mesh>)}
+      {books.map((color, index) => <mesh key={color} position={[-0.52 + index * 0.25, 0.78, 0.38]}><boxGeometry args={[0.18, 0.42 + (index % 2) * 0.12, 0.18]} /><meshStandardMaterial color={color} /></mesh>)}
+    </group>
+  );
+}
+
+function Bathroom({ position }: { position: [number, number, number] }) {
+  return (
+    <group position={position}>
+      <RoundedBox args={[1.45, 0.52, 0.72]} radius={0.22} position={[-0.65, 0.36, 0]} castShadow><meshStandardMaterial color="#edf4f2" roughness={0.32} /></RoundedBox>
+      <mesh position={[-0.65, 0.68, 0]} rotation-x={-Math.PI / 2}><torusGeometry args={[0.47, 0.05, 12, 24, Math.PI]} /><meshStandardMaterial color="#d4e7e5" /></mesh>
+      <RoundedBox args={[0.62, 0.68, 0.62]} radius={0.16} position={[0.72, 0.42, 0]} castShadow><meshStandardMaterial color="#f6f8f7" /></RoundedBox>
+      <mesh position={[0.72, 0.85, 0]}><cylinderGeometry args={[0.2, 0.28, 0.12, 20]} /><meshStandardMaterial color="#a7d1d3" /></mesh>
+    </group>
+  );
+}
+
+function Desk({ position }: { position: [number, number, number] }) {
+  return (
+    <group position={position}>
+      <RoundedBox args={[1.8, 0.14, 0.75]} radius={0.06} position={[0, 0.75, 0]} castShadow><meshStandardMaterial color="#c78e5d" /></RoundedBox>
+      <mesh position={[0, 1.18, -0.1]}><boxGeometry args={[0.92, 0.58, 0.08]} /><meshStandardMaterial color="#394f58" metalness={0.2} roughness={0.25} /></mesh>
+      <mesh position={[0, 1.18, -0.04]}><planeGeometry args={[0.72, 0.4]} /><meshBasicMaterial color="#8ac7d4" /></mesh>
+      <RoundedBox args={[0.75, 0.16, 0.72]} radius={0.08} position={[0, 0.42, 0.85]} castShadow><meshStandardMaterial color="#d4876a" /></RoundedBox>
+    </group>
+  );
+}
+
 function Plant({ position }: { position: [number, number, number] }) {
   return (
     <group position={position}>
@@ -137,46 +230,100 @@ function Plant({ position }: { position: [number, number, number] }) {
   );
 }
 
+function RoomLabel({ children, position }: { children: string; position: [number, number, number] }) {
+  return <Text position={position} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.28} color="#7b6a58" anchorX="center" anchorY="middle">{children}</Text>;
+}
+
 function Dollhouse() {
   return (
     <group>
-      <RoomFloor position={[-4, 0, -2]} color="#f4d9b1" rug="#dc8f83" />
-      <RoomFloor position={[0, 0, -2]} color="#d9e9c6" rug="#e6b956" />
-      <RoomFloor position={[4, 0, -2]} color="#d7e8f3" rug="#729ebc" />
-      <RoomFloor position={[-4, 0, 2]} color="#f2dce7" rug="#ca82a8" />
-      <RoomFloor position={[0, 0, 2]} color="#efe5bb" rug="#82aa7b" />
-      <RoomFloor position={[4, 0, 2]} color="#ddd8ee" rug="#9d82bd" />
+      <RoomFloor position={[-5.25, 0, -3.5]} size={[5.5, 5]} color="#d7c09c" rug="#bd705e" />
+      <RoomFloor position={[0, 0, -3.5]} size={[5, 5]} color="#d9c6a4" rug="#d4aa51" />
+      <RoomFloor position={[5.25, 0, -3.5]} size={[5.5, 5]} color="#c8ad86" />
+      <RoomFloor position={[-5.25, 0, 1.25]} size={[5.5, 4.5]} color="#d8c0b0" rug="#b8799b" />
+      <RoomFloor position={[0, 0, 1.25]} size={[5, 4.5]} color="#c7b99b" rug="#6f9581" />
+      <RoomFloor position={[5.25, 0, 1.25]} size={[5.5, 4.5]} color="#bfc8c4" rug="#6f92a6" />
+      <RoomFloor position={[-5.25, 0, 4.85]} size={[5.5, 2.7]} color="#b8a98d" />
+      <RoomFloor position={[0, 0, 4.85]} size={[5, 2.7]} color="#c9b893" rug="#b87858" />
+      <RoomFloor position={[5.25, 0, 4.85]} size={[5.5, 2.7]} color="#b5c0b1" />
 
-      <Sofa position={[-4.1, 0.08, -2.5]} color="#cb6e5d" />
-      <Table position={[0, 0.08, -2]} />
-      <Bed position={[4, 0.08, -2]} color="#69a7c7" />
-      <Bed position={[-4, 0.08, 2]} color="#d184a9" />
-      <Sofa position={[0, 0.08, 2.45]} color="#819b68" />
-      <Table position={[4, 0.08, 2]} />
-      <Plant position={[-1.45, 0.08, -3.25]} />
-      <Plant position={[5.35, 0.08, 3.25]} />
+      <Sofa position={[-5.1, 0.08, -4.2]} color="#b85f52" />
+      <Table position={[-5.1, 0.08, -2.7]} />
+      <DiningSet position={[0, 0.08, -3.45]} />
+      <Kitchen position={[5.25, 0.08, -3.45]} />
+      <Bed position={[-5.2, 0.08, 1.2]} color="#c37c99" />
+      <Bed position={[0, 0.08, 1.2]} color="#688fac" />
+      <Bathroom position={[5.15, 0.08, 1.25]} />
+      <Bookshelf position={[-6.65, 0.08, 5.3]} rotation={Math.PI / 2} />
+      <Desk position={[-4.6, 0.08, 4.95]} />
+      <Sofa position={[0, 0.08, 5.1]} color="#718e75" />
+      <Table position={[0, 0.08, 4.25]} />
+      <Plant position={[-7.15, 0.08, -5.1]} />
+      <Plant position={[2.05, 0.08, -5.1]} />
+      <Plant position={[7.15, 0.08, 5.2]} />
 
-      {[-6, -2, 2, 6].map((x) => (
-        <RoundedBox key={`back-${x}`} args={[0.1, 1.45, 4]} radius={0.03} position={[x, 0.76, -2]} castShadow receiveShadow>
-          <meshStandardMaterial color="#fff8e9" roughness={0.82} />
-        </RoundedBox>
-      ))}
-      {[-6, -2, 2, 6].map((x) => (
-        <RoundedBox key={`front-${x}`} args={[0.1, 0.52, 4]} radius={0.03} position={[x, 0.3, 2]} castShadow receiveShadow>
-          <meshStandardMaterial color="#fff8e9" roughness={0.82} />
-        </RoundedBox>
-      ))}
-      <RoundedBox args={[12.1, 1.45, 0.1]} radius={0.03} position={[0, 0.76, -4]} castShadow receiveShadow>
-        <meshStandardMaterial color="#fff8e9" roughness={0.82} />
-      </RoundedBox>
-      <RoundedBox args={[12.1, 0.48, 0.1]} radius={0.03} position={[0, 0.28, 4]} castShadow receiveShadow>
-        <meshStandardMaterial color="#fff8e9" roughness={0.82} />
-      </RoundedBox>
-      <RoundedBox args={[12, 0.75, 0.08]} radius={0.03} position={[0, 0.42, 0]} castShadow receiveShadow>
-        <meshStandardMaterial color="#fff8e9" roughness={0.82} />
-      </RoundedBox>
+      <Wall position={[0, 1.45, -6]} size={[16.2, 2.9, 0.18]} />
+      <Wall position={[-8, 1.45, 0]} size={[0.18, 2.9, 12]} />
+      <Wall position={[8, 1.45, 0]} size={[0.18, 2.9, 12]} />
+      <Wall position={[-5.2, 1.45, 6]} size={[5.6, 2.9, 0.18]} />
+      <Wall position={[5.2, 1.45, 6]} size={[5.6, 2.9, 0.18]} />
+      <Wall position={[0, 2.55, 6]} size={[4.8, 0.7, 0.18]} />
+      <Doorway x={0} z={6} />
+
+      <Wall position={[-2.55, 1.45, -3.5]} size={[0.16, 2.9, 2.25]} />
+      <Wall position={[-2.55, 1.45, 1.2]} size={[0.16, 2.9, 2]} />
+      <Doorway x={-2.55} z={-0.95} rotation={Math.PI / 2} />
+      <Wall position={[2.55, 1.45, -3.5]} size={[0.16, 2.9, 2.25]} />
+      <Wall position={[2.55, 1.45, 1.2]} size={[0.16, 2.9, 2]} />
+      <Doorway x={2.55} z={-0.95} rotation={Math.PI / 2} />
+      <Wall position={[0, 1.45, -0.95]} size={[2.4, 2.9, 0.16]} />
+      <Wall position={[-5.3, 1.45, -0.95]} size={[2.4, 2.9, 0.16]} />
+      <Wall position={[5.3, 1.45, -0.95]} size={[2.4, 2.9, 0.16]} />
+      <Doorway x={-3.9} z={-0.95} />
+      <Doorway x={1.35} z={-0.95} />
+      <Doorway x={6.7} z={-0.95} />
+      <Wall position={[-5.3, 1.45, 3.55]} size={[2.4, 2.9, 0.16]} />
+      <Wall position={[0, 1.45, 3.55]} size={[2.4, 2.9, 0.16]} />
+      <Wall position={[5.3, 1.45, 3.55]} size={[2.4, 2.9, 0.16]} />
+      <Doorway x={-3.9} z={3.55} />
+      <Doorway x={1.35} z={3.55} />
+      <Doorway x={6.7} z={3.55} />
+
+      <Window position={[-5.1, 1.65, -5.88]} />
+      <Window position={[0, 1.65, -5.88]} />
+      <Window position={[5.15, 1.65, -5.88]} />
+      <Window position={[-7.88, 1.65, 1.2]} rotation={Math.PI / 2} />
+      <Window position={[7.88, 1.65, 1.2]} rotation={Math.PI / 2} />
+
+      <RoomLabel position={[-5.2, 0.13, -1.3]}>SALA</RoomLabel>
+      <RoomLabel position={[0, 0.13, -1.3]}>JANTAR</RoomLabel>
+      <RoomLabel position={[5.2, 0.13, -1.3]}>COZINHA</RoomLabel>
+      <RoomLabel position={[-5.2, 0.13, 3.2]}>QUARTO</RoomLabel>
+      <RoomLabel position={[0, 0.13, 3.2]}>QUARTO</RoomLabel>
+      <RoomLabel position={[5.2, 0.13, 3.2]}>BANHEIRO</RoomLabel>
+      <RoomLabel position={[-5.2, 0.13, 5.7]}>ESTUDO</RoomLabel>
+      <RoomLabel position={[0, 0.13, 5.7]}>CONVIVÊNCIA</RoomLabel>
+      <RoomLabel position={[5.2, 0.13, 5.7]}>ENTRADA</RoomLabel>
     </group>
   );
+}
+
+function CameraEntrance() {
+  const { camera } = useThree();
+  const progress = useRef(0);
+  const start = useMemo(() => new THREE.Vector3(0, 2.5, 13.5), []);
+  const finish = useMemo(() => new THREE.Vector3(13.5, 15.2, 17.5), []);
+  const look = useMemo(() => new THREE.Vector3(0, 0.6, 0), []);
+
+  useFrame((_, rawDelta) => {
+    if (progress.current >= 1) return;
+    progress.current = Math.min(1, progress.current + Math.min(rawDelta, 0.05) * 0.28);
+    const eased = 1 - Math.pow(1 - progress.current, 3);
+    camera.position.lerpVectors(start, finish, eased);
+    camera.lookAt(look);
+  });
+
+  return null;
 }
 
 function CharacterFigure({ item, definition, selected, onStart, onMove, onEnd }: {
@@ -282,6 +429,7 @@ function Scene({ props }: { props: Props }) {
         <Lightformer intensity={1} color="#f5b77d" position={[-7, 2, 0]} rotation-y={Math.PI / 2} scale={[8, 4, 1]} />
       </Environment>
 
+      <CameraEntrance />
       <Dollhouse />
 
       <mesh
@@ -376,11 +524,15 @@ function Scene({ props }: { props: Props }) {
       <OrbitControls
         enabled={controlsEnabled}
         enablePan={false}
-        enableRotate={false}
+        enableRotate
         enableZoom
-        minDistance={10}
-        maxDistance={22}
-        target={[0, 0.5, 0]}
+        minDistance={11}
+        maxDistance={30}
+        minPolarAngle={0.5}
+        maxPolarAngle={1.15}
+        minAzimuthAngle={-1.1}
+        maxAzimuthAngle={1.1}
+        target={[0, 0.65, 0]}
         touches={{ ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_ROTATE }}
       />
     </>
@@ -401,7 +553,7 @@ export default function MinhaCasa3D(props: Props) {
       <Canvas
         shadows
         dpr={[1, 1.35]}
-        camera={{ position: [9.8, 10.8, 12.5], fov: 38 }}
+        camera={{ position: [0, 2.5, 13.5], fov: 42 }}
         gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
         onPointerMissed={() => props.onSelect(null)}
       >
