@@ -63,12 +63,12 @@ function RoomFloor({ position, size, color, rug }: { position: [number, number, 
   return (
     <group position={position}>
       <RoundedBox args={[size[0] - 0.12, 0.16, size[1] - 0.12]} radius={0.06} smoothness={3} receiveShadow>
-        <meshStandardMaterial color={color} roughness={0.82} />
+        <meshPhysicalMaterial color={color} roughness={0.72} clearcoat={0.12} clearcoatRoughness={0.82} />
       </RoundedBox>
       {rug && (
         <mesh position={[0, 0.1, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
           <circleGeometry args={[Math.min(size[0], size[1]) * 0.28, 32]} />
-          <meshStandardMaterial color={rug} roughness={0.92} />
+          <meshStandardMaterial color={rug} roughness={0.96} />
         </mesh>
       )}
     </group>
@@ -78,7 +78,7 @@ function RoomFloor({ position, size, color, rug }: { position: [number, number, 
 function Wall({ position, size, color = "#f7f0e5" }: { position: [number, number, number]; size: [number, number, number]; color?: string }) {
   return (
     <RoundedBox args={size} radius={0.035} smoothness={3} position={position} castShadow receiveShadow>
-      <meshStandardMaterial color={color} roughness={0.8} />
+      <meshStandardMaterial color={color} roughness={0.76} />
     </RoundedBox>
   );
 }
@@ -106,7 +106,7 @@ function Doorway({ x, z, rotation = 0, front = false }: { x: number; z: number; 
       {front && (
         <group ref={door} position={[-0.66, 0, -0.08]}>
           <RoundedBox args={[1.32, 2.14, 0.12]} radius={0.05} smoothness={3} position={[0.66, 1.08, 0]} castShadow>
-            <meshStandardMaterial color="#4f8b86" roughness={0.55} />
+            <meshPhysicalMaterial color="#4f8b86" roughness={0.38} clearcoat={0.38} clearcoatRoughness={0.32} />
           </RoundedBox>
           <mesh position={[1.12, 1.05, -0.1]}><sphereGeometry args={[0.07, 12, 8]} /><meshStandardMaterial color="#f3c55e" metalness={0.6} roughness={0.25} /></mesh>
         </group>
@@ -118,7 +118,7 @@ function Doorway({ x, z, rotation = 0, front = false }: { x: number; z: number; 
 function Window({ position, rotation = 0 }: { position: [number, number, number]; rotation?: number }) {
   return (
     <group position={position} rotation-y={rotation}>
-      <mesh><boxGeometry args={[1.8, 1.25, 0.08]} /><meshStandardMaterial color="#87cce1" roughness={0.2} metalness={0.05} /></mesh>
+      <mesh><boxGeometry args={[1.8, 1.25, 0.08]} /><meshPhysicalMaterial color="#9fd9e8" roughness={0.12} metalness={0.02} transmission={0.08} clearcoat={0.5} emissive="#73b6c8" emissiveIntensity={0.08} /></mesh>
       <mesh position={[0, 0, 0.06]}><boxGeometry args={[0.08, 1.3, 0.08]} /><meshStandardMaterial color="#f8f1e8" /></mesh>
       <mesh position={[0, 0, 0.06]}><boxGeometry args={[1.85, 0.08, 0.08]} /><meshStandardMaterial color="#f8f1e8" /></mesh>
       <mesh position={[0, -0.72, 0.08]} castShadow><boxGeometry args={[2, 0.13, 0.3]} /><meshStandardMaterial color="#d4b492" /></mesh>
@@ -130,16 +130,22 @@ function Sofa({ position, color }: { position: [number, number, number]; color: 
   return (
     <group position={position}>
       <RoundedBox args={[1.8, 0.42, 0.72]} radius={0.16} smoothness={4} position={[0, 0.33, 0]} castShadow>
-        <meshStandardMaterial color={color} roughness={0.72} />
+        <meshPhysicalMaterial color={color} roughness={0.76} sheen={0.45} sheenColor={color} />
       </RoundedBox>
       <RoundedBox args={[1.72, 0.72, 0.22]} radius={0.12} smoothness={4} position={[0, 0.72, 0.26]} castShadow>
-        <meshStandardMaterial color={color} roughness={0.72} />
+        <meshPhysicalMaterial color={color} roughness={0.76} sheen={0.45} sheenColor={color} />
       </RoundedBox>
       {[-0.92, 0.92].map((x) => (
         <RoundedBox key={x} args={[0.2, 0.55, 0.72]} radius={0.09} position={[x, 0.48, 0]} castShadow>
-          <meshStandardMaterial color={color} roughness={0.72} />
+          <meshPhysicalMaterial color={color} roughness={0.76} sheen={0.45} sheenColor={color} />
         </RoundedBox>
       ))}
+      <RoundedBox args={[0.62, 0.3, 0.16]} radius={0.1} smoothness={3} position={[-0.43, 0.72, 0.4]} rotation-z={0.08} castShadow>
+        <meshPhysicalMaterial color="#f4c86d" roughness={0.82} sheen={0.35} />
+      </RoundedBox>
+      <RoundedBox args={[0.62, 0.3, 0.16]} radius={0.1} smoothness={3} position={[0.43, 0.72, 0.4]} rotation-z={-0.08} castShadow>
+        <meshPhysicalMaterial color="#78a8a0" roughness={0.82} sheen={0.35} />
+      </RoundedBox>
     </group>
   );
 }
@@ -151,7 +157,7 @@ function Bed({ position, color }: { position: [number, number, number]; color: s
         <meshStandardMaterial color="#f8e8d4" roughness={0.8} />
       </RoundedBox>
       <RoundedBox args={[1.45, 0.16, 1.45]} radius={0.1} position={[0, 0.49, 0.22]} castShadow>
-        <meshStandardMaterial color={color} roughness={0.86} />
+        <meshPhysicalMaterial color={color} roughness={0.82} sheen={0.5} sheenColor={color} />
       </RoundedBox>
       <RoundedBox args={[1.28, 0.14, 0.42]} radius={0.12} position={[0, 0.54, -0.62]} castShadow>
         <meshStandardMaterial color="#fffaf0" roughness={0.9} />
@@ -257,6 +263,71 @@ function Plant({ position }: { position: [number, number, number] }) {
   );
 }
 
+function WallPicture({ position, rotation = 0, color = "#e98a67" }: { position: [number, number, number]; rotation?: number; color?: string }) {
+  return (
+    <group position={position} rotation-y={rotation}>
+      <RoundedBox args={[1.05, 0.78, 0.1]} radius={0.06} smoothness={3} castShadow>
+        <meshStandardMaterial color="#a86f46" roughness={0.62} />
+      </RoundedBox>
+      <mesh position={[0, 0, 0.065]}>
+        <planeGeometry args={[0.83, 0.57]} />
+        <meshStandardMaterial color={color} roughness={0.8} emissive={color} emissiveIntensity={0.04} />
+      </mesh>
+      <mesh position={[-0.16, 0.02, 0.075]}>
+        <circleGeometry args={[0.15, 18]} />
+        <meshStandardMaterial color="#f8d681" roughness={0.75} />
+      </mesh>
+    </group>
+  );
+}
+
+function FloorLamp({ position, lowPower }: { position: [number, number, number]; lowPower: boolean }) {
+  return (
+    <group position={position}>
+      <mesh position={[0, 0.08, 0]} castShadow><cylinderGeometry args={[0.28, 0.34, 0.16, 16]} /><meshStandardMaterial color="#815c49" roughness={0.6} /></mesh>
+      <mesh position={[0, 0.9, 0]} castShadow><cylinderGeometry args={[0.045, 0.055, 1.65, 10]} /><meshStandardMaterial color="#b88555" metalness={0.25} roughness={0.45} /></mesh>
+      <mesh position={[0, 1.72, 0]} castShadow><coneGeometry args={[0.42, 0.58, 18, 1, true]} /><meshStandardMaterial color="#f2b85b" roughness={0.68} emissive="#ffb65d" emissiveIntensity={0.35} side={THREE.DoubleSide} /></mesh>
+      {!lowPower && <pointLight position={[0, 1.55, 0]} color="#ffbd70" intensity={1.2} distance={4.8} decay={2} />}
+    </group>
+  );
+}
+
+function Pendant({ position, lowPower }: { position: [number, number, number]; lowPower: boolean }) {
+  return (
+    <group position={position}>
+      <mesh position={[0, 0.38, 0]}><cylinderGeometry args={[0.025, 0.025, 0.75, 8]} /><meshStandardMaterial color="#76594a" roughness={0.5} /></mesh>
+      <mesh position={[0, -0.05, 0]} castShadow><sphereGeometry args={[0.2, 16, 10]} /><meshStandardMaterial color="#ffd58a" roughness={0.3} emissive="#ffb45e" emissiveIntensity={0.75} /></mesh>
+      <mesh position={[0, 0.03, 0]} castShadow><coneGeometry args={[0.5, 0.42, 18, 1, true]} /><meshStandardMaterial color="#e7a75f" roughness={0.65} side={THREE.DoubleSide} /></mesh>
+      {!lowPower && <pointLight position={[0, -0.18, 0]} color="#ffc27c" intensity={0.9} distance={4.5} decay={2} />}
+    </group>
+  );
+}
+
+function DecorativeDetails({ lowPower }: { lowPower: boolean }) {
+  return (
+    <group>
+      <WallPicture position={[-5.15, 1.72, -5.78]} color="#e57f68" />
+      <WallPicture position={[0, 1.72, -5.78]} color="#6aa6a2" />
+      <WallPicture position={[5.1, 1.72, -5.78]} color="#e8b85d" />
+      <FloorLamp position={[-6.85, 0.08, -2.35]} lowPower={lowPower} />
+      <FloorLamp position={[1.85, 0.08, 5.15]} lowPower={lowPower} />
+      <Pendant position={[0, 2.45, -3.45]} lowPower={lowPower} />
+      {!lowPower && <Pendant position={[5.25, 2.42, -3.45]} lowPower={false} />}
+      <group position={[0, 0.68, -3.45]}>
+        <mesh castShadow><sphereGeometry args={[0.25, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2]} /><meshStandardMaterial color="#e4b96b" roughness={0.65} /></mesh>
+        {[-0.13, 0.02, 0.16].map((x, index) => <mesh key={x} position={[x, 0.16 + index * 0.03, 0]} castShadow><sphereGeometry args={[0.1, 12, 8]} /><meshStandardMaterial color={index === 1 ? "#7aa561" : "#dc7656"} roughness={0.75} /></mesh>)}
+      </group>
+      {!lowPower && (
+        <>
+          <Plant position={[-2.05, 0.08, 2.95]} />
+          <Plant position={[2.05, 0.08, 2.95]} />
+          <RoundedBox args={[1.2, 0.08, 0.7]} radius={0.04} position={[5.1, 0.24, 4.7]} receiveShadow><meshStandardMaterial color="#79a79e" roughness={0.9} /></RoundedBox>
+        </>
+      )}
+    </group>
+  );
+}
+
 function RoomLabel({ children, position }: { children: string; position: [number, number, number] }) {
   return <Text position={position} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.28} color="#7b6a58" anchorX="center" anchorY="middle">{children}</Text>;
 }
@@ -283,7 +354,7 @@ function CeilingAndRoof({ visible }: { visible: boolean }) {
   );
 }
 
-function FrontGarden() {
+function FrontGarden({ lowPower }: { lowPower: boolean }) {
   return (
     <group>
       <mesh position={[0, -0.11, 9.8]} receiveShadow>
@@ -305,14 +376,16 @@ function FrontGarden() {
       </RoundedBox>
       {[-1.55, 1.55].map((x) => <mesh key={x} position={[x, 1.28, 6.68]} castShadow><cylinderGeometry args={[0.13, 0.17, 2.55, 16]} /><meshStandardMaterial color="#f6ead8" /></mesh>)}
       <mesh position={[0, 2.5, 6.65]} castShadow><boxGeometry args={[3.8, 0.18, 1.8]} /><meshStandardMaterial color="#f6ead8" /></mesh>
+      <mesh position={[0, 2.16, 6.78]} castShadow><sphereGeometry args={[0.2, 16, 10]} /><meshStandardMaterial color="#ffd58a" emissive="#ffb45e" emissiveIntensity={0.65} roughness={0.3} /></mesh>
+      {!lowPower && <pointLight position={[0, 2.1, 7]} color="#ffc477" intensity={1.1} distance={4.5} decay={2} />}
     </group>
   );
 }
 
-const Dollhouse = memo(function Dollhouse({ mode }: { mode: ViewMode }) {
+const Dollhouse = memo(function Dollhouse({ mode, lowPower }: { mode: ViewMode; lowPower: boolean }) {
   return (
     <group>
-      <FrontGarden />
+      <FrontGarden lowPower={lowPower} />
       <RoomFloor position={[-5.25, 0, -3.5]} size={[5.5, 5]} color="#d7c09c" rug="#bd705e" />
       <RoomFloor position={[0, 0, -3.5]} size={[5, 5]} color="#d9c6a4" rug="#d4aa51" />
       <RoomFloor position={[5.25, 0, -3.5]} size={[5.5, 5]} color="#c8ad86" />
@@ -337,6 +410,7 @@ const Dollhouse = memo(function Dollhouse({ mode }: { mode: ViewMode }) {
       <Plant position={[-7.15, 0.08, -5.1]} />
       <Plant position={[2.05, 0.08, -5.1]} />
       <Plant position={[7.15, 0.08, 5.2]} />
+      <DecorativeDetails lowPower={lowPower} />
 
       <Wall position={[0, 1.45, -6]} size={[16.2, 2.9, 0.18]} />
       <Wall position={[-8, 1.45, 0]} size={[0.18, 2.9, 12]} />
@@ -592,26 +666,27 @@ function Scene({ props, mode, moveInput, lookInput, resetSignal }: {
     (e.target as Element).releasePointerCapture?.(e.pointerId);
   };
 
-  const ambience = props.mood === "noite" ? 0.38 : props.mood === "calmo" ? 0.72 : 0.88;
-  const background = props.mood === "noite" ? "#26304d" : props.mood === "calmo" ? "#b9dced" : props.mood === "aconchego" ? "#f2c58d" : "#bde3ed";
+  const ambience = props.mood === "noite" ? 0.48 : props.mood === "calmo" ? 0.74 : 0.82;
+  const background = props.mood === "noite" ? "#2d3554" : props.mood === "calmo" ? "#b9dced" : props.mood === "aconchego" ? "#edbd82" : "#bde3ed";
 
   return (
     <>
       <color attach="background" args={[background]} />
       <fog attach="fog" args={[background, 20, 34]} />
-      <ambientLight intensity={ambience} />
-      <hemisphereLight args={[props.mood === "noite" ? "#7788b8" : "#d8f4ff", "#806d53", ambience]} />
+      <ambientLight intensity={ambience * 0.72} color={props.mood === "noite" ? "#aab6df" : "#fff3df"} />
+      <hemisphereLight args={[props.mood === "noite" ? "#7f91c7" : "#dff6ff", "#8b7356", ambience]} />
       <directionalLight
         position={[-7, 12, 8]}
-        intensity={props.mood === "noite" ? 0.65 : 1.45}
+        intensity={props.mood === "noite" ? 0.72 : 1.55}
         castShadow={!props.lowPower}
         shadow-mapSize={[512, 512]}
         shadow-camera-left={-10}
         shadow-camera-right={10}
         shadow-camera-top={8}
         shadow-camera-bottom={-8}
+        shadow-bias={-0.0003}
       />
-      <pointLight position={[0, 4, 0]} color={props.mood === "aconchego" ? "#ffb45e" : "#fff1ca"} intensity={props.mood === "noite" ? 7 : 3} distance={17} />
+      <pointLight position={[0, 4.2, 1]} color={props.mood === "calmo" ? "#d7ecff" : "#ffc47a"} intensity={props.mood === "noite" ? 5.5 : 3.4} distance={18} decay={2} />
       <Environment resolution={props.lowPower ? 32 : 64}>
         <Lightformer intensity={2} position={[0, 7, 2]} scale={[12, 12, 1]} />
         {!props.lowPower && <Lightformer intensity={1} color="#f5b77d" position={[-7, 2, 0]} rotation-y={Math.PI / 2} scale={[8, 4, 1]} />}
@@ -622,7 +697,7 @@ function Scene({ props, mode, moveInput, lookInput, resetSignal }: {
       ) : (
         <OverviewCamera />
       )}
-      <Dollhouse mode={mode} />
+      <Dollhouse mode={mode} lowPower={props.lowPower} />
 
       <mesh
         position={[0, 0.17, 0]}
@@ -806,7 +881,7 @@ export default function MinhaCasa3D(props: Props) {
           dpr={lowPower ? 1 : [1, 1.25]}
           frameloop={mode === "walk" ? "always" : "demand"}
           camera={{ position: mode === "walk" ? [0, 1.65, 13.2] : [13.5, 15.2, 17.5], fov: mode === "walk" ? 62 : 42, near: 0.08, far: 60 }}
-          gl={{ antialias: !lowPower, alpha: false, powerPreference: "high-performance" }}
+           gl={{ antialias: !lowPower, alpha: false, powerPreference: "high-performance", toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: lowPower ? 1.02 : 1.08 }}
           onPointerMissed={() => props.onSelect(null)}
         >
           <Scene props={{ ...props, lowPower }} mode={mode} moveInput={moveInput} lookInput={lookInput} resetSignal={resetSignal} />
