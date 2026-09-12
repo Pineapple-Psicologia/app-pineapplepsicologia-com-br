@@ -1,10 +1,10 @@
 # Roadmap — jogos em 3D
 
-- [ ] Criar base 3D compartilhada, acessível e otimizada para celular, tablet e computador
+- [x] Criar base 3D compartilhada, acessível e otimizada para celular, tablet e computador
 - [ ] Transformar Quadro Livre
 - [ ] Transformar Termômetro das Emoções
 - [ ] Transformar Detetive de Pensamentos
-- [ ] Transformar Detetive: Mapa de Investigação
+- [x] Transformar Detetive: Mapa de Investigação
 - [ ] Transformar Detetive: Aventura Investigativa
 - [ ] Transformar Ciclo Cognitivo
 - [ ] Transformar Entre Lentes

@@ -18,6 +18,10 @@ export const Route = createFileRoute("/")({
         content:
           "Estante de jogos terapêuticos colaborativos para psicólogas infantojuvenis usarem em sessões online.",
       },
+      { property: "og:title", content: "Mundo Pine — Jogos terapêuticos online" },
+      { property: "og:description", content: "Jogos terapêuticos colaborativos para psicólogas, crianças e adolescentes." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Home,
