@@ -1100,7 +1100,7 @@ function Scene({ props, mode, navigation, resetSignal, garden }: {
       <directionalLight position={[6, 6, -9]} intensity={props.mood === "noite" ? 0.35 : 0.6} color="#ffd9b0" />
 
       {mode === "walk" ? (
-        <WalkCamera navigation={navigation} resetSignal={resetSignal} enabled={controlsEnabled} />
+        <WalkCamera navigation={navigation} resetSignal={resetSignal} enabled={controlsEnabled} remoteCamera={props.remoteCamera} onCamera={props.onCamera} />
       ) : (
         <OverviewCamera />
       )}
@@ -1284,7 +1284,12 @@ export default function MinhaCasa3D(props: Props) {
   const [lowPower, setLowPower] = useState(false);
   const [mode, setMode] = useState<ViewMode>("walk");
   const [resetSignal, setResetSignal] = useState(0);
-  const [garden, setGarden] = useState<GardenStyle>("florido");
+  const [localGarden, setLocalGarden] = useState<GardenStyle>("florido");
+  const garden = props.garden ?? localGarden;
+  const setGarden = (value: GardenStyle) => {
+    setLocalGarden(value);
+    props.onGardenChange?.(value);
+  };
   const navigation = useRef<NavigationInput>({ targetX: 0, targetZ: 19.2, moving: false, lookX: 0, lookY: 0, localInput: 0 });
 
 
