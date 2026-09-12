@@ -3,6 +3,8 @@ import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { RotateCcw, Check, ChevronRight, Dices, Sparkles, Trophy, History, Award, HelpCircle, X } from "lucide-react";
+import DetetiveBoard3D from "./DetetiveBoard3D";
+import Game3DGuard from "./Game3DGuard";
 
 import sceneBg from "@/assets/scene-detetive-tabuleiro.jpg";
 
@@ -454,153 +456,27 @@ export default function DetetiveTabuleiro({ room }: Props) {
         </div>
       )}
 
-      {/* Tabuleiro 2D estilo Pixar + Painel "Como jogar" */}
+      {/* Tabuleiro 3D + Painel "Como jogar" */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-3 min-h-[260px]">
         {/* Tabuleiro */}
         <div
-          className="relative rounded-2xl sm:rounded-3xl border-2 sm:border-4 border-amber-900/30 p-2 sm:p-3 shadow-2xl overflow-hidden h-[58vh] min-h-[340px] sm:h-auto sm:min-h-[360px] sm:aspect-auto"
-          style={{
-            background:
-              "radial-gradient(ellipse at 30% 20%, #fef3c7 0%, transparent 55%), radial-gradient(ellipse at 75% 80%, #fed7aa 0%, transparent 60%), linear-gradient(135deg, #bae6fd 0%, #a7f3d0 45%, #fde68a 100%)",
-          }}
+          className="relative rounded-2xl sm:rounded-3xl border-2 sm:border-4 border-amber-900/30 shadow-2xl overflow-hidden h-[58vh] min-h-[340px] sm:h-auto sm:min-h-[420px] bg-gradient-to-b from-sky-200 via-emerald-100 to-amber-100"
         >
-          {/* Nuvens fofas estilo Pixar */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div className="absolute top-[8%] left-[12%] w-16 h-8 bg-white/70 rounded-full blur-[2px]" />
-            <div className="absolute top-[6%] left-[18%] w-10 h-6 bg-white/80 rounded-full blur-[2px]" />
-            <div className="absolute top-[14%] right-[15%] w-20 h-9 bg-white/70 rounded-full blur-[2px]" />
-            <div className="absolute top-[12%] right-[22%] w-12 h-7 bg-white/80 rounded-full blur-[2px]" />
-            {/* Colinas ao fundo */}
-            <svg className="absolute bottom-0 left-0 w-full h-[40%]" viewBox="0 0 100 40" preserveAspectRatio="none">
-              <ellipse cx="20" cy="42" rx="35" ry="18" fill="#86efac" opacity="0.55" />
-              <ellipse cx="65" cy="44" rx="40" ry="20" fill="#6ee7b7" opacity="0.5" />
-              <ellipse cx="90" cy="42" rx="25" ry="15" fill="#5eead4" opacity="0.5" />
-            </svg>
-            {/* Sol brilhante */}
-            <div className="absolute top-3 right-4 w-12 h-12 rounded-full bg-gradient-to-br from-yellow-200 to-orange-300 shadow-[0_0_40px_rgba(251,191,36,0.6)] opacity-90" />
-          </div>
-
-          <div className="absolute top-2 left-3 text-[10px] uppercase font-black tracking-wider text-amber-900 z-10 bg-white/70 rounded-full px-2 py-0.5 shadow">
+          <div className="absolute top-2 left-3 text-[10px] uppercase font-black tracking-wider text-amber-900 z-10 bg-card/85 rounded-full px-2 py-0.5 shadow pointer-events-none">
             🗺️ Mapa da Investigação · Casa {state.currentIdx + 1}/{LOCATIONS.length}
           </div>
-
-          <div className="relative w-full h-full min-h-[260px]">
-            {/* Caminho conectando as casas */}
-            <svg
-              className="absolute inset-0 w-full h-full pointer-events-none"
-              viewBox="0 0 100 100"
-              preserveAspectRatio="none"
-            >
-              <defs>
-                <linearGradient id="pathGrad" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stopColor="#fbbf24" />
-                  <stop offset="100%" stopColor="#f97316" />
-                </linearGradient>
-                <filter id="pathGlow">
-                  <feGaussianBlur stdDeviation="1.2" result="b" />
-                  <feMerge>
-                    <feMergeNode in="b" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-              </defs>
-              {/* Sombra do caminho */}
-              <path
-                d={LOCATIONS.map((l, i) => `${i === 0 ? "M" : "L"} ${l.x} ${l.y + 0.8}`).join(" ")}
-                fill="none"
-                stroke="rgba(120,53,15,0.25)"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                vectorEffect="non-scaling-stroke"
-                style={{ strokeWidth: "8px" }}
+          <div className="relative w-full h-full min-h-[340px]">
+            <Game3DGuard fallback={<div className="grid h-full place-items-center p-6 text-center text-sm font-bold text-muted-foreground">Este aparelho não conseguiu abrir o cenário 3D.</div>}>
+              <DetetiveBoard3D
+                locations={LOCATIONS}
+                currentIdx={state.currentIdx}
+                completed={state.completed}
+                onSelect={(id) => {
+                  if (isPsi) openLocation(id as LocationId);
+                  else toast.info("Só o mestre (psi) abre as casas — peça pra ele tocar daí.");
+                }}
               />
-              {/* Caminho principal */}
-              <path
-                d={LOCATIONS.map((l, i) => `${i === 0 ? "M" : "L"} ${l.x} ${l.y}`).join(" ")}
-                fill="none"
-                stroke="url(#pathGrad)"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                filter="url(#pathGlow)"
-                vectorEffect="non-scaling-stroke"
-                style={{ strokeWidth: "6px" }}
-              />
-              {/* Linha pontilhada decorativa por cima */}
-              <path
-                d={LOCATIONS.map((l, i) => `${i === 0 ? "M" : "L"} ${l.x} ${l.y}`).join(" ")}
-                fill="none"
-                stroke="white"
-                strokeDasharray="2 3"
-                strokeLinecap="round"
-                vectorEffect="non-scaling-stroke"
-                style={{ strokeWidth: "1.5px" }}
-                opacity="0.9"
-              />
-            </svg>
-
-            {/* Casas (tiles) estilo Pixar */}
-            {LOCATIONS.map((l, idx) => {
-              const done = state.completed.includes(l.id);
-              const current = idx === state.currentIdx;
-              const disabled = !isPsi;
-              return (
-                <button
-                  key={l.id}
-                  type="button"
-                  onClick={() => {
-                    if (isPsi) openLocation(l.id);
-                    else toast.info("Só o mestre (psi) abre as casas — peça pra ele tocar daí.");
-                  }}
-                  title={`${idx + 1}. ${l.name} — ${l.hint}`}
-                  style={{ left: `${l.x}%`, top: `${l.y}%` }}
-                  className={`absolute -translate-x-1/2 -translate-y-1/2 group flex flex-col items-center gap-1 transition-transform z-10 cursor-pointer ${
-                    isPsi ? "hover:scale-110 active:scale-95" : "active:scale-95"
-                  }`}
-                >
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-0.5 w-8 h-1.5 bg-black/25 rounded-full blur-[2px]" />
-                  <div
-                    className={`relative text-2xl sm:text-2xl w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center border-[3px] transition-all ${l.tw} ${
-                      current
-                        ? "border-white ring-4 ring-yellow-300 scale-110 shadow-[0_0_25px_rgba(251,191,36,0.7)]"
-                        : done
-                        ? "border-emerald-300 opacity-95"
-                        : "border-white shadow-xl"
-                    }`}
-                    style={{
-                      backgroundImage:
-                        "radial-gradient(circle at 30% 25%, rgba(255,255,255,0.7), transparent 50%)",
-                      boxShadow: current ? undefined : "0 6px 14px -2px rgba(0,0,0,0.35), inset 0 -3px 6px rgba(0,0,0,0.18), inset 0 2px 3px rgba(255,255,255,0.6)",
-                    }}
-                  >
-                    <span className="drop-shadow-sm">{l.emoji}</span>
-                    {done && (
-                      <span className="absolute -top-1 -right-1 bg-emerald-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-md font-black">
-                        ✓
-                      </span>
-                    )}
-                    <span className="absolute -bottom-1 -left-1 bg-gradient-to-br from-amber-700 to-amber-900 text-amber-50 text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-amber-50 shadow-md">
-                      {idx + 1}
-                    </span>
-                  </div>
-                  <div
-                    className={`hidden sm:block text-[10px] font-black text-amber-950 bg-white/95 rounded-full px-2 py-0.5 leading-tight whitespace-nowrap shadow-md border-2 max-w-none truncate ${
-                      current ? "border-amber-500" : "border-amber-900/20"
-                    }`}
-                  >
-                    {l.name}
-                  </div>
-                </button>
-              );
-            })}
-
-            {/* Peão do detetive na casa atual */}
-            <div
-              style={{ left: `${currentLoc.x}%`, top: `${currentLoc.y}%` }}
-              className="absolute -translate-x-1/2 -translate-y-[160%] pointer-events-none z-20 animate-bounce"
-            >
-              <div className="text-3xl sm:text-4xl drop-shadow-[0_4px_4px_rgba(0,0,0,0.4)]">🕵️</div>
-              <div className="w-4 h-1.5 bg-black/40 rounded-full mx-auto blur-[2px] -mt-1" />
-            </div>
+            </Game3DGuard>
           </div>
         </div>
 
@@ -619,7 +495,7 @@ export default function DetetiveTabuleiro({ room }: Props) {
             {[
               { n: 1, t: "Escolha uma casa", d: "A psi clica na próxima casa do mapa para abrir aquele desafio." },
               { n: 2, t: "Responda junto", d: "Cada casa traz uma pergunta (cena, emoção, corpo, pensamento, distorções...)." },
-              { n: 3, t: "Use o dado se travar", d: "Role o dado 🎲 pra ganhar uma dica. Cada dica reduz alguns pontos da casa." },
+              { n: 3, t: "Use o dado se travar", d: "Role o dado 🎲 pra ganhar uma dica. As dicas não reduzem pontos." },
               { n: 4, t: "Ganhe pontos e medalhas", d: "Casas completas viram ✓ verdes, somam pontos e desbloqueiam medalhas 🏅." },
               { n: 5, t: "Encerre o caso", d: "Na última casa, o pensamento original vira uma versão mais justa. Cerimônia! 🏆" },
             ].map((s) => (
