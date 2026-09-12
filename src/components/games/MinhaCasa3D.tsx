@@ -1,6 +1,6 @@
 import { memo, Suspense, useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import { Canvas, type ThreeEvent, useFrame, useThree } from "@react-three/fiber";
-import { Billboard, Environment, Html, Lightformer, OrbitControls, RoundedBox, Text, useTexture } from "@react-three/drei";
+import { Billboard, Environment, Html, Lightformer, OrbitControls, PerformanceMonitor, RoundedBox, Text, useTexture } from "@react-three/drei";
 import { DoorOpen, Eye, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import casaAvoLoading from "@/assets/casa-avo-loading.jpg";
@@ -890,7 +890,7 @@ function WalkCamera({ navigation, resetSignal, enabled, remoteCamera, onCamera }
     camera.rotation.order = "YXZ";
     camera.rotation.set(pitch.current, yaw.current, 0);
 
-    if (onCamera && now - lastSent.current > 120 && now - lastLocalInput.current < 2500) {
+    if (onCamera && now - lastSent.current > 220 && now - lastLocalInput.current < 2500) {
       lastSent.current = now;
       onCamera({
         x: position.current.x,
@@ -906,6 +906,17 @@ function WalkCamera({ navigation, resetSignal, enabled, remoteCamera, onCamera }
     invalidate();
   });
 
+  return null;
+}
+
+// sombras estáticas: recalcula só quando a cena muda, não a cada quadro
+function ShadowBudget({ trigger }: { trigger: unknown }) {
+  const { gl, invalidate } = useThree();
+  useEffect(() => {
+    gl.shadowMap.autoUpdate = false;
+    gl.shadowMap.needsUpdate = true;
+    invalidate();
+  }, [gl, invalidate, trigger]);
   return null;
 }
 
@@ -1075,6 +1086,7 @@ function Scene({ props, mode, navigation, resetSignal, garden }: {
 
   return (
     <>
+      <ShadowBudget trigger={`${props.mood}-${mode}-${garden}-${props.lowPower}`} />
       <color attach="background" args={[background]} />
       <fog attach="fog" args={[background, 20, 34]} />
       <ambientLight intensity={ambience * 0.72} color={props.mood === "noite" ? "#aab6df" : "#fff3df"} />
@@ -1282,6 +1294,7 @@ function Fallback() {
 
 export default function MinhaCasa3D(props: Props) {
   const [lowPower, setLowPower] = useState(false);
+  const [dpr, setDpr] = useState(1);
   const [mode, setMode] = useState<ViewMode>("walk");
   const [resetSignal, setResetSignal] = useState(0);
   const [localGarden, setLocalGarden] = useState<GardenStyle>("florido");
@@ -1296,7 +1309,11 @@ export default function MinhaCasa3D(props: Props) {
   useEffect(() => {
     const coarse = window.matchMedia("(pointer: coarse)");
     const narrow = window.matchMedia("(max-width: 1024px)");
-    const update = () => setLowPower(coarse.matches || narrow.matches);
+    const update = () => {
+      const low = coarse.matches || narrow.matches;
+      setLowPower(low);
+      setDpr(low ? 0.85 : 1.25);
+    };
     update();
     coarse.addEventListener("change", update);
     narrow.addEventListener("change", update);
@@ -1313,12 +1330,19 @@ export default function MinhaCasa3D(props: Props) {
           key={mode}
           fallback={<Fallback />}
           shadows={!lowPower}
-          dpr={lowPower ? 1 : [1, 1.25]}
+          dpr={dpr}
           frameloop={mode === "walk" ? "always" : "demand"}
           camera={{ position: mode === "walk" ? [0, 2.15, 19.2] : [13.5, 15.2, 17.5], fov: mode === "walk" ? 52 : 42, near: 0.08, far: 60 }}
            gl={{ antialias: !lowPower, alpha: false, powerPreference: lowPower ? "default" : "high-performance", failIfMajorPerformanceCaveat: false, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: lowPower ? 1.02 : 1.08 }}
           onPointerMissed={() => props.onSelect(null)}
         >
+          <PerformanceMonitor
+            ms={220}
+            iterations={4}
+            threshold={0.7}
+            onDecline={() => setDpr((current) => Math.max(0.62, Number((current - 0.2).toFixed(2))))}
+            onIncline={() => setDpr((current) => Math.min(lowPower ? 1 : 1.25, Number((current + 0.15).toFixed(2))))}
+          />
           <Scene props={{ ...props, lowPower }} mode={mode} navigation={navigation} resetSignal={resetSignal} garden={garden} />
         </Canvas>
 
