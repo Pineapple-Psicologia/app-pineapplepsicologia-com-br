@@ -687,10 +687,11 @@ function InteriorTrim() {
   );
 }
 
-const Dollhouse = memo(function Dollhouse({ mode, lowPower }: { mode: ViewMode; lowPower: boolean }) {
+const Dollhouse = memo(function Dollhouse({ mode, lowPower, garden }: { mode: ViewMode; lowPower: boolean; garden: GardenStyle }) {
   return (
     <group>
-      <FrontGarden lowPower={lowPower} />
+      <FrontGarden lowPower={lowPower} style={garden} />
+
       <RoomFloor position={[-5.25, 0, -3.5]} size={[5.5, 5]} color="#cfa678" />
       <RoomFloor position={[0, 0, -3.5]} size={[5, 5]} color="#d6b789" />
       <RoomFloor position={[5.25, 0, -3.5]} size={[5.5, 5]} color="#c59c70" />
@@ -932,12 +933,40 @@ const CharacterFigure = memo(function CharacterFigure({ item, definition, select
   );
 });
 
-function Scene({ props, mode, navigation, resetSignal }: {
+function MoveMarker({ navigation }: { navigation: MutableRefObject<NavigationInput> }) {
+  const marker = useRef<THREE.Group>(null);
+  useFrame((state) => {
+    const group = marker.current;
+    if (!group) return;
+    const nav = navigation.current;
+    group.visible = nav.moving;
+    if (!nav.moving) return;
+    group.position.set(nav.targetX, 0.21, nav.targetZ);
+    const pulse = 1 + Math.sin(state.clock.elapsedTime * 6) * 0.14;
+    group.scale.setScalar(pulse);
+  });
+  return (
+    <group ref={marker} visible={false}>
+      <mesh rotation-x={-Math.PI / 2}>
+        <ringGeometry args={[0.34, 0.48, 36]} />
+        <meshBasicMaterial color="#ffd58a" transparent opacity={0.92} depthWrite={false} toneMapped={false} />
+      </mesh>
+      <mesh rotation-x={-Math.PI / 2} position={[0, -0.005, 0]}>
+        <circleGeometry args={[0.34, 32]} />
+        <meshBasicMaterial color="#ffb45e" transparent opacity={0.3} depthWrite={false} toneMapped={false} />
+      </mesh>
+    </group>
+  );
+}
+
+function Scene({ props, mode, navigation, resetSignal, garden }: {
   props: SceneProps;
   mode: ViewMode;
   navigation: MutableRefObject<NavigationInput>;
   resetSignal: number;
+  garden: GardenStyle;
 }) {
+
   const drag = useRef<DragState>(null);
   const [controlsEnabled, setControlsEnabled] = useState(true);
   const groundPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), []);
