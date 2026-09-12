@@ -353,9 +353,12 @@ const CharacterFigure = memo(function CharacterFigure({ item, definition, select
 
   useFrame((_, rawDelta) => {
     if (!group.current) return;
-    if (!selected && Math.abs(group.current.scale.x - 1) < 0.002) return;
-    const delta = Math.min(rawDelta, 0.05);
     const target = selected ? 1.04 : 1;
+    if (Math.abs(group.current.scale.x - target) < 0.002) {
+      group.current.scale.setScalar(target);
+      return;
+    }
+    const delta = Math.min(rawDelta, 0.05);
     group.current.scale.setScalar(THREE.MathUtils.lerp(group.current.scale.x, target, 1 - Math.exp(-9 * delta)));
     invalidate();
   });
