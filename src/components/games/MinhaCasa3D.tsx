@@ -600,6 +600,9 @@ const Dollhouse = memo(function Dollhouse({ mode, lowPower }: { mode: ViewMode; 
       <Window position={[5.15, 1.65, -5.88]} />
       <Window position={[-7.88, 1.65, 1.2]} rotation={Math.PI / 2} />
       <Window position={[7.88, 1.65, 1.2]} rotation={Math.PI / 2} />
+      <Window position={[-5.2, 1.65, 6.12]} rotation={Math.PI} />
+      <Window position={[5.2, 1.65, 6.12]} rotation={Math.PI} />
+
 
       <RoomLabel position={[-5.2, 0.13, -1.3]}>SALA</RoomLabel>
       <RoomLabel position={[0, 0.13, -1.3]}>JANTAR</RoomLabel>
