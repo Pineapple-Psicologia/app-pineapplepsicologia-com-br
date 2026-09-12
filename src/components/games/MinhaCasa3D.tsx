@@ -122,6 +122,13 @@ function Window({ position, rotation = 0 }: { position: [number, number, number]
       <mesh position={[0, 0, 0.06]}><boxGeometry args={[0.08, 1.3, 0.08]} /><meshStandardMaterial color="#f8f1e8" /></mesh>
       <mesh position={[0, 0, 0.06]}><boxGeometry args={[1.85, 0.08, 0.08]} /><meshStandardMaterial color="#f8f1e8" /></mesh>
       <mesh position={[0, -0.72, 0.08]} castShadow><boxGeometry args={[2, 0.13, 0.3]} /><meshStandardMaterial color="#d4b492" /></mesh>
+      <RoundedBox args={[0.42, 1.5, 0.09]} radius={0.08} smoothness={3} position={[-1.02, -0.05, 0.14]} castShadow>
+        <meshPhysicalMaterial color="#e9b7a2" roughness={0.9} sheen={0.42} sheenColor="#fff0da" />
+      </RoundedBox>
+      <RoundedBox args={[0.42, 1.5, 0.09]} radius={0.08} smoothness={3} position={[1.02, -0.05, 0.14]} castShadow>
+        <meshPhysicalMaterial color="#e9b7a2" roughness={0.9} sheen={0.42} sheenColor="#fff0da" />
+      </RoundedBox>
+      <mesh position={[0, 0.78, 0.16]}><cylinderGeometry args={[0.035, 0.035, 2.5, 10]} /><meshStandardMaterial color="#9a6845" roughness={0.55} /></mesh>
     </group>
   );
 }
@@ -159,6 +166,11 @@ function Bed({ position, color }: { position: [number, number, number]; color: s
       <RoundedBox args={[1.45, 0.16, 1.45]} radius={0.1} position={[0, 0.49, 0.22]} castShadow>
         <meshPhysicalMaterial color={color} roughness={0.82} sheen={0.5} sheenColor={color} />
       </RoundedBox>
+      {[-0.42, 0, 0.42].map((x, index) => (
+        <RoundedBox key={x} args={[0.36, 0.05, 1.2]} radius={0.025} position={[x, 0.59, 0.25]} castShadow>
+          <meshStandardMaterial color={["#e9b95f", "#73a58b", "#d77867"][index]} roughness={0.92} />
+        </RoundedBox>
+      ))}
       <RoundedBox args={[1.28, 0.14, 0.42]} radius={0.12} position={[0, 0.54, -0.62]} castShadow>
         <meshStandardMaterial color="#fffaf0" roughness={0.9} />
       </RoundedBox>
@@ -263,6 +275,127 @@ function Plant({ position }: { position: [number, number, number] }) {
   );
 }
 
+function CrochetRug({ position, color = "#c66058", scale = 1 }: { position: [number, number, number]; color?: string; scale?: number }) {
+  return (
+    <group position={position} scale={scale}>
+      {[0.92, 0.7, 0.47, 0.24].map((radius, index) => (
+        <mesh key={radius} position={[0, index * 0.004, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+          <ringGeometry args={[radius - 0.09, radius, 32]} />
+          <meshStandardMaterial color={index % 2 ? "#f1d68c" : color} roughness={0.98} side={THREE.DoubleSide} />
+        </mesh>
+      ))}
+      {Array.from({ length: 12 }, (_, index) => {
+        const angle = (index / 12) * Math.PI * 2;
+        return (
+          <mesh key={angle} position={[Math.cos(angle) * 1.02, 0, Math.sin(angle) * 1.02]} rotation={[-Math.PI / 2, 0, 0]}>
+            <circleGeometry args={[0.12, 10]} />
+            <meshStandardMaterial color={color} roughness={1} />
+          </mesh>
+        );
+      })}
+    </group>
+  );
+}
+
+function RockingChair({ position, rotation = 0 }: { position: [number, number, number]; rotation?: number }) {
+  return (
+    <group position={position} rotation-y={rotation}>
+      {[-0.34, 0.34].map((x) => (
+        <group key={x} position-x={x}>
+          <mesh position={[0, 0.12, 0]} rotation-x={Math.PI / 2}><torusGeometry args={[0.58, 0.055, 8, 22, Math.PI]} /><meshStandardMaterial color="#875535" roughness={0.7} /></mesh>
+          <mesh position={[0, 0.58, -0.28]} rotation-x={-0.1}><cylinderGeometry args={[0.045, 0.055, 1.15, 10]} /><meshStandardMaterial color="#9b6640" /></mesh>
+          <mesh position={[0, 0.58, 0.28]} rotation-x={0.1}><cylinderGeometry args={[0.045, 0.055, 1.15, 10]} /><meshStandardMaterial color="#9b6640" /></mesh>
+        </group>
+      ))}
+      <RoundedBox args={[0.82, 0.16, 0.72]} radius={0.08} position={[0, 0.66, 0]} rotation-x={-0.08} castShadow><meshStandardMaterial color="#b87955" roughness={0.75} /></RoundedBox>
+      <RoundedBox args={[0.8, 0.95, 0.14]} radius={0.07} position={[0, 1.08, 0.3]} rotation-x={-0.16} castShadow><meshStandardMaterial color="#a96d48" roughness={0.78} /></RoundedBox>
+      <RoundedBox args={[0.7, 0.5, 0.09]} radius={0.07} position={[0, 1.1, 0.39]} rotation-x={-0.16} castShadow><meshPhysicalMaterial color="#d8a7a3" roughness={0.9} sheen={0.55} sheenColor="#fff0df" /></RoundedBox>
+    </group>
+  );
+}
+
+function GrandmotherClock({ position }: { position: [number, number, number] }) {
+  return (
+    <group position={position}>
+      <RoundedBox args={[0.72, 1.75, 0.28]} radius={0.12} smoothness={4} position={[0, 0.88, 0]} castShadow><meshStandardMaterial color="#8b593b" roughness={0.68} /></RoundedBox>
+      <mesh position={[0, 1.28, 0.17]}><circleGeometry args={[0.27, 24]} /><meshStandardMaterial color="#f5e4b9" roughness={0.75} /></mesh>
+      <mesh position={[0, 1.28, 0.19]} rotation-z={-0.65}><boxGeometry args={[0.035, 0.22, 0.025]} /><meshStandardMaterial color="#594231" /></mesh>
+      <mesh position={[0, 1.28, 0.2]} rotation-z={0.9}><boxGeometry args={[0.025, 0.15, 0.025]} /><meshStandardMaterial color="#594231" /></mesh>
+      <mesh position={[0, 0.62, 0.18]}><sphereGeometry args={[0.12, 14, 10]} /><meshStandardMaterial color="#d4ad55" metalness={0.55} roughness={0.3} /></mesh>
+      <mesh position={[0, 0.88, 0.17]}><cylinderGeometry args={[0.018, 0.018, 0.45, 8]} /><meshStandardMaterial color="#d4ad55" metalness={0.5} roughness={0.3} /></mesh>
+    </group>
+  );
+}
+
+function MemoryFrames({ position }: { position: [number, number, number] }) {
+  const frames = [
+    { x: -0.62, y: 0.06, color: "#d27668" },
+    { x: 0, y: 0.16, color: "#6f9d8a" },
+    { x: 0.62, y: 0, color: "#d9ab58" },
+  ];
+  return (
+    <group position={position}>
+      {frames.map((frame) => (
+        <group key={frame.x} position={[frame.x, frame.y, 0]}>
+          <RoundedBox args={[0.52, 0.64, 0.09]} radius={0.05} castShadow><meshStandardMaterial color="#9a6845" roughness={0.72} /></RoundedBox>
+          <mesh position={[0, 0, 0.06]}><planeGeometry args={[0.4, 0.5]} /><meshStandardMaterial color="#f4e5c6" roughness={0.88} /></mesh>
+          <mesh position={[0, 0.08, 0.07]}><circleGeometry args={[0.1, 16]} /><meshStandardMaterial color={frame.color} /></mesh>
+          <mesh position={[0, -0.14, 0.07]}><capsuleGeometry args={[0.1, 0.13, 3, 8]} /><meshStandardMaterial color={frame.color} /></mesh>
+        </group>
+      ))}
+    </group>
+  );
+}
+
+function KitchenMemories({ lowPower }: { lowPower: boolean }) {
+  return (
+    <group>
+      <group position={[0, 0.74, -3.45]}>
+        <mesh position={[0, 0.13, 0]} castShadow><cylinderGeometry args={[0.52, 0.58, 0.16, 28]} /><meshStandardMaterial color="#f1ce78" roughness={0.82} /></mesh>
+        <mesh position={[0, 0.25, 0]} castShadow><cylinderGeometry args={[0.36, 0.43, 0.12, 28]} /><meshStandardMaterial color="#bd704e" roughness={0.88} /></mesh>
+        <mesh position={[0, 0.34, 0]} castShadow><sphereGeometry args={[0.05, 12, 8]} /><meshStandardMaterial color="#d8efe0" /></mesh>
+      </group>
+      <group position={[5.8, 1.2, -4.28]}>
+        <mesh castShadow><sphereGeometry args={[0.25, 18, 12, 0, Math.PI * 2, 0, Math.PI / 1.75]} /><meshPhysicalMaterial color="#79a99e" roughness={0.5} clearcoat={0.28} /></mesh>
+        <mesh position={[0.31, 0.02, 0]} rotation-z={Math.PI / 2}><torusGeometry args={[0.16, 0.035, 8, 16, Math.PI * 1.3]} /><meshStandardMaterial color="#79a99e" /></mesh>
+        <mesh position={[-0.25, 0.16, 0]} rotation-z={-0.55}><coneGeometry args={[0.08, 0.36, 12]} /><meshStandardMaterial color="#79a99e" /></mesh>
+      </group>
+      {!lowPower && (
+        <group position={[4.55, 1.16, -4.28]}>
+          {[-0.24, 0, 0.24].map((x, index) => <mesh key={x} position-x={x}><cylinderGeometry args={[0.1, 0.09, 0.3, 14]} /><meshPhysicalMaterial color={["#df8068", "#f1cf78", "#72a18c"][index]} roughness={0.58} clearcoat={0.18} /></mesh>)}
+        </group>
+      )}
+    </group>
+  );
+}
+
+function GrandmaDecor({ lowPower }: { lowPower: boolean }) {
+  return (
+    <group>
+      <CrochetRug position={[-5.1, 0.19, -3.05]} color="#c76158" scale={0.9} />
+      <CrochetRug position={[0, 0.19, 4.8]} color="#6f9b82" scale={0.72} />
+      <RockingChair position={[-6.65, 0.08, -2.55]} rotation={0.48} />
+      <GrandmotherClock position={[-7.72, 0.08, -1.75]} />
+      <MemoryFrames position={[-5.1, 1.78, -5.76]} />
+      <KitchenMemories lowPower={lowPower} />
+      {!lowPower && (
+        <>
+          <group position={[0.78, 1.08, -3.15]}>
+            <mesh castShadow><cylinderGeometry args={[0.09, 0.12, 0.25, 14]} /><meshStandardMaterial color="#f4e6c8" roughness={0.8} /></mesh>
+            <mesh position={[0, 0.24, 0]} castShadow><sphereGeometry args={[0.18, 14, 10]} /><meshStandardMaterial color="#db7868" roughness={0.85} /></mesh>
+          </group>
+          <group position={[0.05, 0.82, 4.2]}>
+            <mesh castShadow><boxGeometry args={[0.7, 0.42, 0.3]} /><meshStandardMaterial color="#7f533d" roughness={0.66} /></mesh>
+            <mesh position={[0, 0.06, 0.17]}><planeGeometry args={[0.47, 0.2]} /><meshStandardMaterial color="#e8c377" emissive="#d59f4e" emissiveIntensity={0.08} /></mesh>
+            <mesh position={[-0.23, -0.13, 0.18]}><circleGeometry args={[0.045, 12]} /><meshStandardMaterial color="#ddc491" /></mesh>
+            <mesh position={[0.23, -0.13, 0.18]}><circleGeometry args={[0.045, 12]} /><meshStandardMaterial color="#ddc491" /></mesh>
+          </group>
+        </>
+      )}
+    </group>
+  );
+}
+
 function WallPicture({ position, rotation = 0, color = "#e98a67" }: { position: [number, number, number]; rotation?: number; color?: string }) {
   return (
     <group position={position} rotation-y={rotation}>
@@ -309,7 +442,7 @@ function DecorativeDetails({ lowPower }: { lowPower: boolean }) {
       <WallPicture position={[-5.15, 1.72, -5.78]} color="#e57f68" />
       <WallPicture position={[0, 1.72, -5.78]} color="#6aa6a2" />
       <WallPicture position={[5.1, 1.72, -5.78]} color="#e8b85d" />
-      <FloorLamp position={[-6.85, 0.08, -2.35]} lowPower={lowPower} />
+      <FloorLamp position={[-7.05, 0.08, -5.05]} lowPower={lowPower} />
       <FloorLamp position={[1.85, 0.08, 5.15]} lowPower={lowPower} />
       <Pendant position={[0, 2.45, -3.45]} lowPower={lowPower} />
       {!lowPower && <Pendant position={[5.25, 2.42, -3.45]} lowPower={false} />}
@@ -371,6 +504,12 @@ function FrontGarden({ lowPower }: { lowPower: boolean }) {
           <mesh position={[0, 0.72, 0]} castShadow><sphereGeometry args={[0.48, 14, 10]} /><meshStandardMaterial color={index % 2 ? "#63a567" : "#4f8f62"} roughness={0.9} /></mesh>
         </group>
       ))}
+      {[-7, -6.45, -3.8, 3.8, 6.45, 7].map((x, index) => (
+        <group key={x} position={[x, 0, 7 + (index % 2) * 0.38]}>
+          <mesh position={[0, 0.32, 0]}><cylinderGeometry args={[0.025, 0.035, 0.62, 7]} /><meshStandardMaterial color="#4d8454" roughness={0.95} /></mesh>
+          <mesh position={[0, 0.66, 0]} castShadow><sphereGeometry args={[0.18, 12, 8]} /><meshStandardMaterial color={["#df716b", "#f0c65f", "#cf7aa2"][index % 3]} roughness={0.9} /></mesh>
+        </group>
+      ))}
       <RoundedBox args={[3.2, 0.18, 1.45]} radius={0.08} position={[0, 0.02, 6.55]} receiveShadow>
         <meshStandardMaterial color="#d7b68e" roughness={0.9} />
       </RoundedBox>
@@ -386,17 +525,17 @@ const Dollhouse = memo(function Dollhouse({ mode, lowPower }: { mode: ViewMode; 
   return (
     <group>
       <FrontGarden lowPower={lowPower} />
-      <RoomFloor position={[-5.25, 0, -3.5]} size={[5.5, 5]} color="#d7c09c" rug="#bd705e" />
-      <RoomFloor position={[0, 0, -3.5]} size={[5, 5]} color="#d9c6a4" rug="#d4aa51" />
-      <RoomFloor position={[5.25, 0, -3.5]} size={[5.5, 5]} color="#c8ad86" />
-      <RoomFloor position={[-5.25, 0, 1.25]} size={[5.5, 4.5]} color="#d8c0b0" rug="#b8799b" />
-      <RoomFloor position={[0, 0, 1.25]} size={[5, 4.5]} color="#c7b99b" rug="#6f9581" />
+      <RoomFloor position={[-5.25, 0, -3.5]} size={[5.5, 5]} color="#cfa678" />
+      <RoomFloor position={[0, 0, -3.5]} size={[5, 5]} color="#d6b789" />
+      <RoomFloor position={[5.25, 0, -3.5]} size={[5.5, 5]} color="#c59c70" />
+      <RoomFloor position={[-5.25, 0, 1.25]} size={[5.5, 4.5]} color="#d7b69f" rug="#b8799b" />
+      <RoomFloor position={[0, 0, 1.25]} size={[5, 4.5]} color="#c7af8c" rug="#6f9581" />
       <RoomFloor position={[5.25, 0, 1.25]} size={[5.5, 4.5]} color="#bfc8c4" rug="#6f92a6" />
       <RoomFloor position={[-5.25, 0, 4.85]} size={[5.5, 2.7]} color="#b8a98d" />
       <RoomFloor position={[0, 0, 4.85]} size={[5, 2.7]} color="#c9b893" rug="#b87858" />
       <RoomFloor position={[5.25, 0, 4.85]} size={[5.5, 2.7]} color="#b5c0b1" />
 
-      <Sofa position={[-5.1, 0.08, -4.2]} color="#b85f52" />
+      <Sofa position={[-5.1, 0.08, -4.2]} color="#b95f52" />
       <Table position={[-5.1, 0.08, -2.7]} />
       <DiningSet position={[0, 0.08, -3.45]} />
       <Kitchen position={[5.25, 0.08, -3.45]} />
@@ -411,10 +550,11 @@ const Dollhouse = memo(function Dollhouse({ mode, lowPower }: { mode: ViewMode; 
       <Plant position={[2.05, 0.08, -5.1]} />
       <Plant position={[7.15, 0.08, 5.2]} />
       <DecorativeDetails lowPower={lowPower} />
+      <GrandmaDecor lowPower={lowPower} />
 
-      <Wall position={[0, 1.45, -6]} size={[16.2, 2.9, 0.18]} />
-      <Wall position={[-8, 1.45, 0]} size={[0.18, 2.9, 12]} />
-      <Wall position={[8, 1.45, 0]} size={[0.18, 2.9, 12]} />
+      <Wall position={[0, 1.45, -6]} size={[16.2, 2.9, 0.18]} color="#f5dfc4" />
+      <Wall position={[-8, 1.45, 0]} size={[0.18, 2.9, 12]} color="#f0d8bd" />
+      <Wall position={[8, 1.45, 0]} size={[0.18, 2.9, 12]} color="#f0d8bd" />
       <Wall position={[-5.2, 1.45, 6]} size={[5.6, 2.9, 0.18]} />
       <Wall position={[5.2, 1.45, 6]} size={[5.6, 2.9, 0.18]} />
       <Wall position={[0, 2.55, 6]} size={[4.8, 0.7, 0.18]} />
