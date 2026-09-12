@@ -1,6 +1,6 @@
-import { Suspense, useMemo, useRef, useState } from "react";
+import { memo, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, type ThreeEvent, useFrame, useThree } from "@react-three/fiber";
-import { Billboard, Environment, Html, Lightformer, OrbitControls, RoundedBox, Text } from "@react-three/drei";
+import { Billboard, Environment, Html, Lightformer, OrbitControls, RoundedBox, Text, useTexture } from "@react-three/drei";
 import * as THREE from "three";
 import Game3DGuard from "./Game3DGuard";
 
@@ -25,6 +25,7 @@ type Props = {
   onMoveNote: (id: string, x: number, y: number) => void;
   onMoveSticker: (id: string, x: number, y: number) => void;
   onChangeNote: (id: string, text: string) => void;
+  lowPower: boolean;
 };
 
 type DragKind = "item" | "cover" | "note" | "sticker";
@@ -234,7 +235,7 @@ function RoomLabel({ children, position }: { children: string; position: [number
   return <Text position={position} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.28} color="#7b6a58" anchorX="center" anchorY="middle">{children}</Text>;
 }
 
-function Dollhouse() {
+const Dollhouse = memo(function Dollhouse() {
   return (
     <group>
       <RoomFloor position={[-5.25, 0, -3.5]} size={[5.5, 5]} color="#d7c09c" rug="#bd705e" />
@@ -306,10 +307,10 @@ function Dollhouse() {
       <RoomLabel position={[5.2, 0.13, 5.7]}>ENTRADA</RoomLabel>
     </group>
   );
-}
+});
 
 function CameraEntrance() {
-  const { camera } = useThree();
+  const { camera, invalidate } = useThree();
   const progress = useRef(0);
   const start = useMemo(() => new THREE.Vector3(0, 2.5, 13.5), []);
   const finish = useMemo(() => new THREE.Vector3(13.5, 15.2, 17.5), []);
@@ -321,12 +322,13 @@ function CameraEntrance() {
     const eased = 1 - Math.pow(1 - progress.current, 3);
     camera.position.lerpVectors(start, finish, eased);
     camera.lookAt(look);
+    if (progress.current < 1) invalidate();
   });
 
   return null;
 }
 
-function CharacterFigure({ item, definition, selected, onStart, onMove, onEnd }: {
+const CharacterFigure = memo(function CharacterFigure({ item, definition, selected, onStart, onMove, onEnd }: {
   item: CasaPlaced;
   definition: CasaCharacter;
   selected: boolean;
@@ -334,21 +336,28 @@ function CharacterFigure({ item, definition, selected, onStart, onMove, onEnd }:
   onMove: (e: ThreeEvent<PointerEvent>) => void;
   onEnd: (e: ThreeEvent<PointerEvent>) => void;
 }) {
-  const texture = useMemo(() => new THREE.TextureLoader().load(definition.img, (loaded) => {
-    loaded.colorSpace = THREE.SRGBColorSpace;
-    loaded.needsUpdate = true;
-  }), [definition.img]);
+  const texture = useTexture(definition.img);
   const group = useRef<THREE.Group>(null);
+  const { invalidate } = useThree();
   const height = (definition.isPet ? 1.05 : 1.75) * item.scale;
   const width = height * (definition.isPet ? 1.1 : 0.68);
   const glow = EMOTION_COLORS[item.emotion] ?? EMOTION_COLORS.neutro;
 
-  useFrame(({ clock }, rawDelta) => {
+  useEffect(() => {
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.generateMipmaps = true;
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    texture.needsUpdate = true;
+    invalidate();
+  }, [invalidate, texture]);
+
+  useFrame((_, rawDelta) => {
     if (!group.current) return;
+    if (!selected && Math.abs(group.current.scale.x - 1) < 0.002) return;
     const delta = Math.min(rawDelta, 0.05);
     const target = selected ? 1.04 : 1;
-    group.current.scale.lerp(new THREE.Vector3(target, target, target), 1 - Math.exp(-9 * delta));
-    group.current.position.y = Math.sin(clock.elapsedTime * 2 + item.x * 8) * 0.025;
+    group.current.scale.setScalar(THREE.MathUtils.lerp(group.current.scale.x, target, 1 - Math.exp(-9 * delta)));
+    invalidate();
   });
 
   return (
@@ -378,19 +387,32 @@ function CharacterFigure({ item, definition, selected, onStart, onMove, onEnd }:
       </Billboard>
     </group>
   );
-}
+});
 
 function Scene({ props }: { props: Props }) {
   const drag = useRef<DragState>(null);
   const [controlsEnabled, setControlsEnabled] = useState(true);
   const groundPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), []);
   const point = useMemo(() => new THREE.Vector3(), []);
+  const characterMap = useMemo(() => new Map(props.characters.map((character) => [character.id, character])), [props.characters]);
+  const lastMoveAt = useRef(0);
+  const pendingMove = useRef<{ drag: Exclude<DragState, null>; x: number; y: number } | null>(null);
+  const { invalidate } = useThree();
+
+  const commitMove = useCallback((current: Exclude<DragState, null>, x: number, y: number) => {
+    if (current.kind === "item") props.onMoveItem(current.id, x, y);
+    if (current.kind === "cover") props.onMoveCover(current.id, x, y);
+    if (current.kind === "note") props.onMoveNote(current.id, x, y);
+    if (current.kind === "sticker") props.onMoveSticker(current.id, x, y);
+    invalidate();
+  }, [invalidate, props]);
 
   const startDrag = (kind: DragKind, id: string, e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
     drag.current = { kind, id };
     setControlsEnabled(false);
     props.onSelect(id);
+    invalidate();
     (e.target as Element).setPointerCapture?.(e.pointerId);
   };
 
@@ -400,16 +422,23 @@ function Scene({ props }: { props: Props }) {
     const x = toNormalizedX(point.x);
     const y = toNormalizedY(point.z);
     const current = drag.current;
-    if (current.kind === "item") props.onMoveItem(current.id, x, y);
-    if (current.kind === "cover") props.onMoveCover(current.id, x, y);
-    if (current.kind === "note") props.onMoveNote(current.id, x, y);
-    if (current.kind === "sticker") props.onMoveSticker(current.id, x, y);
+    pendingMove.current = { drag: current, x, y };
+    const now = performance.now();
+    if (now - lastMoveAt.current >= 40) {
+      lastMoveAt.current = now;
+      commitMove(current, x, y);
+      pendingMove.current = null;
+    }
   };
 
   const endDrag = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
+    const pending = pendingMove.current;
+    if (pending) commitMove(pending.drag, pending.x, pending.y);
+    pendingMove.current = null;
     drag.current = null;
     setControlsEnabled(true);
+    invalidate();
     (e.target as Element).releasePointerCapture?.(e.pointerId);
   };
 
@@ -422,11 +451,20 @@ function Scene({ props }: { props: Props }) {
       <fog attach="fog" args={[background, 20, 34]} />
       <ambientLight intensity={ambience} />
       <hemisphereLight args={[props.mood === "noite" ? "#7788b8" : "#d8f4ff", "#806d53", ambience]} />
-      <directionalLight position={[-7, 12, 8]} intensity={props.mood === "noite" ? 0.65 : 1.45} castShadow shadow-mapSize={[1024, 1024]} />
+      <directionalLight
+        position={[-7, 12, 8]}
+        intensity={props.mood === "noite" ? 0.65 : 1.45}
+        castShadow={!props.lowPower}
+        shadow-mapSize={[512, 512]}
+        shadow-camera-left={-10}
+        shadow-camera-right={10}
+        shadow-camera-top={8}
+        shadow-camera-bottom={-8}
+      />
       <pointLight position={[0, 4, 0]} color={props.mood === "aconchego" ? "#ffb45e" : "#fff1ca"} intensity={props.mood === "noite" ? 7 : 3} distance={17} />
-      <Environment resolution={64}>
+      <Environment resolution={props.lowPower ? 32 : 64}>
         <Lightformer intensity={2} position={[0, 7, 2]} scale={[12, 12, 1]} />
-        <Lightformer intensity={1} color="#f5b77d" position={[-7, 2, 0]} rotation-y={Math.PI / 2} scale={[8, 4, 1]} />
+        {!props.lowPower && <Lightformer intensity={1} color="#f5b77d" position={[-7, 2, 0]} rotation-y={Math.PI / 2} scale={[8, 4, 1]} />}
       </Environment>
 
       <CameraEntrance />
@@ -445,7 +483,7 @@ function Scene({ props }: { props: Props }) {
 
       <Suspense fallback={null}>
         {props.items.map((item) => {
-          const definition = props.characters.find((character) => character.id === item.charId);
+          const definition = characterMap.get(item.charId);
           if (!definition) return null;
           return (
             <CharacterFigure
@@ -534,6 +572,7 @@ function Scene({ props }: { props: Props }) {
         maxAzimuthAngle={1.1}
         target={[0, 0.65, 0]}
         touches={{ ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_ROTATE }}
+        onChange={invalidate}
       />
     </>
   );
@@ -548,16 +587,32 @@ function Fallback() {
 }
 
 export default function MinhaCasa3D(props: Props) {
+  const [lowPower, setLowPower] = useState(false);
+
+  useEffect(() => {
+    const coarse = window.matchMedia("(pointer: coarse)");
+    const narrow = window.matchMedia("(max-width: 1024px)");
+    const update = () => setLowPower(coarse.matches || narrow.matches);
+    update();
+    coarse.addEventListener("change", update);
+    narrow.addEventListener("change", update);
+    return () => {
+      coarse.removeEventListener("change", update);
+      narrow.removeEventListener("change", update);
+    };
+  }, []);
+
   return (
     <Game3DGuard fallback={<Fallback />}>
       <Canvas
-        shadows
-        dpr={[1, 1.35]}
+        shadows={!lowPower}
+        dpr={lowPower ? 1 : [1, 1.25]}
+        frameloop="demand"
         camera={{ position: [0, 2.5, 13.5], fov: 42 }}
-        gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
+        gl={{ antialias: !lowPower, alpha: false, powerPreference: "high-performance" }}
         onPointerMissed={() => props.onSelect(null)}
       >
-        <Scene props={props} />
+        <Scene props={{ ...props, lowPower }} />
       </Canvas>
     </Game3DGuard>
   );

@@ -184,6 +184,7 @@ const EMOJI_GROUPS: { label: string; items: { emoji: string; name: string }[] }[
 ];
 
 type State = { items: Placed[]; mood: Mood; covers: Cover[]; notes: Note[]; stickers: Sticker[] };
+type MovePayload = { kind: "item" | "cover" | "note" | "sticker"; id: string; x: number; y: number };
 const DEFAULT_STATE: State = { items: [], mood: "dia", covers: [], notes: [], stickers: [] };
 const uid = () => Math.random().toString(36).slice(2, 9);
 
@@ -204,6 +205,15 @@ export default function MinhaCasa({ room }: Props) {
         const p = m.payload as Partial<State>;
         remoteRef.current = true;
         setState({ ...DEFAULT_STATE, ...p, covers: p.covers ?? [], notes: p.notes ?? [], stickers: p.stickers ?? [] });
+      } else if (m.type === "casa:move") {
+        const move = m.payload as MovePayload;
+        remoteRef.current = true;
+        setState((current) => {
+          if (move.kind === "item") return { ...current, items: current.items.map((item) => item.id === move.id ? { ...item, x: move.x, y: move.y } : item) };
+          if (move.kind === "cover") return { ...current, covers: current.covers.map((cover) => cover.id === move.id ? { ...cover, x: move.x, y: move.y } : cover) };
+          if (move.kind === "note") return { ...current, notes: current.notes.map((note) => note.id === move.id ? { ...note, x: move.x, y: move.y } : note) };
+          return { ...current, stickers: current.stickers.map((sticker) => sticker.id === move.id ? { ...sticker, x: move.x, y: move.y } : sticker) };
+        });
       }
     });
   }, [room]);
@@ -221,7 +231,7 @@ export default function MinhaCasa({ room }: Props) {
         room.send?.("casa:state", pendingStateRef.current);
         pendingStateRef.current = null;
       }
-    }, 80);
+    }, 140);
   }, [state, room]);
 
   useEffect(() => () => {
@@ -295,6 +305,17 @@ export default function MinhaCasa({ room }: Props) {
   };
   const updateSticker = (id: string, patch: Partial<Sticker>) => {
     setState((s) => ({ ...s, stickers: s.stickers.map((st) => st.id === id ? { ...st, ...patch } : st) }));
+  };
+
+  const moveShared = (move: MovePayload) => {
+    remoteRef.current = true;
+    setState((current) => {
+      if (move.kind === "item") return { ...current, items: current.items.map((item) => item.id === move.id ? { ...item, x: move.x, y: move.y } : item) };
+      if (move.kind === "cover") return { ...current, covers: current.covers.map((cover) => cover.id === move.id ? { ...cover, x: Math.min(move.x, 1 - cover.w), y: Math.min(move.y, 1 - cover.h) } : cover) };
+      if (move.kind === "note") return { ...current, notes: current.notes.map((note) => note.id === move.id ? { ...note, x: Math.min(move.x, 1 - note.w), y: Math.min(move.y, 1 - note.h) } : note) };
+      return { ...current, stickers: current.stickers.map((sticker) => sticker.id === move.id ? { ...sticker, x: move.x, y: move.y } : sticker) };
+    });
+    room.send?.("casa:move", move);
   };
   const removeSticker = (id: string) => {
     setState((s) => ({ ...s, stickers: s.stickers.filter((st) => st.id !== id) }));
@@ -446,10 +467,10 @@ export default function MinhaCasa({ room }: Props) {
               mood={state.mood}
               selectedId={selectedId}
               onSelect={setSelectedId}
-              onMoveItem={(id, x, y) => setState((s) => ({ ...s, items: s.items.map((item) => item.id === id ? { ...item, x, y } : item) }))}
-              onMoveCover={(id, x, y) => setState((s) => ({ ...s, covers: s.covers.map((cover) => cover.id === id ? { ...cover, x: Math.min(x, 1 - cover.w), y: Math.min(y, 1 - cover.h) } : cover) }))}
-              onMoveNote={(id, x, y) => setState((s) => ({ ...s, notes: s.notes.map((note) => note.id === id ? { ...note, x: Math.min(x, 1 - note.w), y: Math.min(y, 1 - note.h) } : note) }))}
-              onMoveSticker={(id, x, y) => updateSticker(id, { x, y })}
+              onMoveItem={(id, x, y) => moveShared({ kind: "item", id, x, y })}
+              onMoveCover={(id, x, y) => moveShared({ kind: "cover", id, x, y })}
+              onMoveNote={(id, x, y) => moveShared({ kind: "note", id, x, y })}
+              onMoveSticker={(id, x, y) => moveShared({ kind: "sticker", id, x, y })}
               onChangeNote={(id, text) => updateNote(id, { text })}
             />
           </div>
