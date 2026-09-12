@@ -104,33 +104,47 @@ function Doorway({ x, z, rotation = 0, front = false }: { x: number; z: number; 
   });
 
   const halfWidth = front ? 1.08 : 0.72;
-  const frameWidth = front ? 2.3 : 1.55;
+  const frameWidth = front ? 2.5 : 1.55;
   const panelWidth = front ? 1.02 : 0.65;
+  const frameColor = front ? "#8c5a3c" : "#9a6845";
+
+  const doorLeaf = (side: -1 | 1) => (
+    <>
+      <RoundedBox args={[panelWidth, 2.14, 0.12]} radius={0.05} smoothness={4} position={[(side * panelWidth) / 2, 1.08, 0]} castShadow>
+        <meshPhysicalMaterial color="#37958c" roughness={0.3} clearcoat={0.7} clearcoatRoughness={0.22} sheen={0.4} sheenColor="#7fe0d3" />
+      </RoundedBox>
+      {[0.52, 1.26].map((y) => (
+        <RoundedBox key={y} args={[panelWidth * 0.62, y > 1 ? 0.72 : 0.62, 0.04]} radius={0.03} smoothness={3} position={[(side * panelWidth) / 2, y, 0.07]}>
+          <meshPhysicalMaterial color="#2f857d" roughness={0.34} clearcoat={0.5} />
+        </RoundedBox>
+      ))}
+      <mesh position={[(side * panelWidth) / 2, 1.86, 0.07]}>
+        <cylinderGeometry args={[0.19, 0.19, 0.04, 18]} />
+        <meshPhysicalMaterial color="#cfeef0" roughness={0.1} clearcoat={1} transmission={0.35} thickness={0.1} />
+      </mesh>
+      <mesh position={[side * (panelWidth - 0.16), 1.05, 0.11]}>
+        <sphereGeometry args={[0.058, 14, 10]} />
+        <meshStandardMaterial color="#f3c55e" metalness={0.75} roughness={0.2} />
+      </mesh>
+    </>
+  );
 
   return (
     <group position={[x, 0, z]} rotation-y={rotation}>
-      <mesh position={[-halfWidth, 1.15, 0]} castShadow><boxGeometry args={[0.13, 2.3, 0.2]} /><meshStandardMaterial color="#9a6845" /></mesh>
-      <mesh position={[halfWidth, 1.15, 0]} castShadow><boxGeometry args={[0.13, 2.3, 0.2]} /><meshStandardMaterial color="#9a6845" /></mesh>
-      <mesh position={[0, 2.24, 0]} castShadow><boxGeometry args={[frameWidth, 0.14, 0.2]} /><meshStandardMaterial color="#9a6845" /></mesh>
+      <mesh position={[-halfWidth, 1.15, 0]} castShadow><boxGeometry args={[front ? 0.2 : 0.13, 2.3, 0.24]} /><meshStandardMaterial color={frameColor} roughness={0.68} /></mesh>
+      <mesh position={[halfWidth, 1.15, 0]} castShadow><boxGeometry args={[front ? 0.2 : 0.13, 2.3, 0.24]} /><meshStandardMaterial color={frameColor} roughness={0.68} /></mesh>
+      <mesh position={[0, 2.28, 0]} castShadow><boxGeometry args={[frameWidth, front ? 0.22 : 0.14, 0.24]} /><meshStandardMaterial color={frameColor} roughness={0.68} /></mesh>
       {front && (
         <>
-          <group ref={leftDoor} position={[-1.01, 0, -0.08]}>
-            <RoundedBox args={[panelWidth, 2.14, 0.12]} radius={0.04} smoothness={3} position={[panelWidth / 2, 1.08, 0]} castShadow>
-              <meshPhysicalMaterial color="#3f918a" roughness={0.38} clearcoat={0.38} clearcoatRoughness={0.32} />
-            </RoundedBox>
-            <mesh position={[0.83, 1.05, -0.1]}><sphereGeometry args={[0.055, 12, 8]} /><meshStandardMaterial color="#f3c55e" metalness={0.6} roughness={0.25} /></mesh>
-          </group>
-          <group ref={rightDoor} position={[1.01, 0, -0.08]}>
-            <RoundedBox args={[panelWidth, 2.14, 0.12]} radius={0.04} smoothness={3} position={[-panelWidth / 2, 1.08, 0]} castShadow>
-              <meshPhysicalMaterial color="#3f918a" roughness={0.38} clearcoat={0.38} clearcoatRoughness={0.32} />
-            </RoundedBox>
-            <mesh position={[-0.83, 1.05, -0.1]}><sphereGeometry args={[0.055, 12, 8]} /><meshStandardMaterial color="#f3c55e" metalness={0.6} roughness={0.25} /></mesh>
-          </group>
+          <group ref={leftDoor} position={[-1.01, 0, -0.08]}>{doorLeaf(1)}</group>
+          <group ref={rightDoor} position={[1.01, 0, -0.08]}>{doorLeaf(-1)}</group>
+          <mesh position={[0, 0.06, 0.16]} receiveShadow><boxGeometry args={[2.5, 0.12, 0.7]} /><meshStandardMaterial color="#c9a882" roughness={0.9} /></mesh>
         </>
       )}
     </group>
   );
 }
+
 
 function Window({ position, rotation = 0 }: { position: [number, number, number]; rotation?: number }) {
   return (
