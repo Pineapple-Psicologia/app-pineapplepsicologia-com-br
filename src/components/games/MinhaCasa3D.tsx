@@ -1,6 +1,8 @@
 import { memo, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, type ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 import { Billboard, Environment, Html, Lightformer, OrbitControls, RoundedBox, Text, useTexture } from "@react-three/drei";
+import { DoorOpen, Eye, Footprints, RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import * as THREE from "three";
 import Game3DGuard from "./Game3DGuard";
 
@@ -27,6 +29,8 @@ type Props = {
   onChangeNote: (id: string, text: string) => void;
 };
 type SceneProps = Props & { lowPower: boolean };
+type ViewMode = "overview" | "walk";
+type MoveInput = { x: number; y: number };
 
 type DragKind = "item" | "cover" | "note" | "sticker";
 type DragState = { id: string; kind: DragKind } | null;
@@ -79,12 +83,34 @@ function Wall({ position, size, color = "#f7f0e5" }: { position: [number, number
   );
 }
 
-function Doorway({ x, z, rotation = 0 }: { x: number; z: number; rotation?: number }) {
+function Doorway({ x, z, rotation = 0, front = false }: { x: number; z: number; rotation?: number; front?: boolean }) {
+  const door = useRef<THREE.Group>(null);
+  const { camera, invalidate } = useThree();
+
+  useFrame((_, rawDelta) => {
+    if (!front || !door.current) return;
+    const distance = Math.hypot(camera.position.x - x, camera.position.z - z);
+    const target = distance < 3.2 ? -Math.PI * 0.47 : 0;
+    const next = THREE.MathUtils.lerp(door.current.rotation.y, target, 1 - Math.exp(-6 * Math.min(rawDelta, 0.05)));
+    if (Math.abs(next - door.current.rotation.y) > 0.001) {
+      door.current.rotation.y = next;
+      invalidate();
+    }
+  });
+
   return (
     <group position={[x, 0, z]} rotation-y={rotation}>
       <mesh position={[-0.72, 1.15, 0]} castShadow><boxGeometry args={[0.13, 2.3, 0.2]} /><meshStandardMaterial color="#9a6845" /></mesh>
       <mesh position={[0.72, 1.15, 0]} castShadow><boxGeometry args={[0.13, 2.3, 0.2]} /><meshStandardMaterial color="#9a6845" /></mesh>
       <mesh position={[0, 2.24, 0]} castShadow><boxGeometry args={[1.55, 0.14, 0.2]} /><meshStandardMaterial color="#9a6845" /></mesh>
+      {front && (
+        <group ref={door} position={[-0.66, 0, -0.08]}>
+          <RoundedBox args={[1.32, 2.14, 0.12]} radius={0.05} smoothness={3} position={[0.66, 1.08, 0]} castShadow>
+            <meshStandardMaterial color="#4f8b86" roughness={0.55} />
+          </RoundedBox>
+          <mesh position={[1.12, 1.05, -0.1]}><sphereGeometry args={[0.07, 12, 8]} /><meshStandardMaterial color="#f3c55e" metalness={0.6} roughness={0.25} /></mesh>
+        </group>
+      )}
     </group>
   );
 }
@@ -235,9 +261,58 @@ function RoomLabel({ children, position }: { children: string; position: [number
   return <Text position={position} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.28} color="#7b6a58" anchorX="center" anchorY="middle">{children}</Text>;
 }
 
-const Dollhouse = memo(function Dollhouse() {
+function CeilingAndRoof({ visible }: { visible: boolean }) {
+  if (!visible) return null;
   return (
     <group>
+      <mesh position={[0, 2.96, 0]} receiveShadow>
+        <boxGeometry args={[16.35, 0.16, 12.35]} />
+        <meshStandardMaterial color="#fff7e9" roughness={0.9} side={THREE.DoubleSide} />
+      </mesh>
+      <group position={[0, 4.42, 0]}>
+        <mesh position={[-4.15, 0, 0]} rotation-z={-0.35} castShadow>
+          <boxGeometry args={[8.85, 0.24, 13.1]} />
+          <meshStandardMaterial color="#b95346" roughness={0.78} />
+        </mesh>
+        <mesh position={[4.15, 0, 0]} rotation-z={0.35} castShadow>
+          <boxGeometry args={[8.85, 0.24, 13.1]} />
+          <meshStandardMaterial color="#b95346" roughness={0.78} />
+        </mesh>
+      </group>
+    </group>
+  );
+}
+
+function FrontGarden() {
+  return (
+    <group>
+      <mesh position={[0, -0.11, 9.8]} receiveShadow>
+        <boxGeometry args={[19, 0.18, 7.5]} />
+        <meshStandardMaterial color="#7fa96b" roughness={0.95} />
+      </mesh>
+      <mesh position={[0, 0.01, 8.2]} receiveShadow>
+        <boxGeometry args={[1.55, 0.08, 4.5]} />
+        <meshStandardMaterial color="#d9c6a6" roughness={0.9} />
+      </mesh>
+      {[-5.8, -4.5, 4.5, 5.8].map((x, index) => (
+        <group key={x} position={[x, 0, 7.6 + (index % 2) * 0.65]}>
+          <mesh position={[0, 0.24, 0]} castShadow><cylinderGeometry args={[0.26, 0.34, 0.48, 12]} /><meshStandardMaterial color="#dc8660" /></mesh>
+          <mesh position={[0, 0.72, 0]} castShadow><sphereGeometry args={[0.48, 14, 10]} /><meshStandardMaterial color={index % 2 ? "#63a567" : "#4f8f62"} roughness={0.9} /></mesh>
+        </group>
+      ))}
+      <RoundedBox args={[3.2, 0.18, 1.45]} radius={0.08} position={[0, 0.02, 6.55]} receiveShadow>
+        <meshStandardMaterial color="#d7b68e" roughness={0.9} />
+      </RoundedBox>
+      {[-1.55, 1.55].map((x) => <mesh key={x} position={[x, 1.28, 6.68]} castShadow><cylinderGeometry args={[0.13, 0.17, 2.55, 16]} /><meshStandardMaterial color="#f6ead8" /></mesh>)}
+      <mesh position={[0, 2.5, 6.65]} castShadow><boxGeometry args={[3.8, 0.18, 1.8]} /><meshStandardMaterial color="#f6ead8" /></mesh>
+    </group>
+  );
+}
+
+const Dollhouse = memo(function Dollhouse({ mode }: { mode: ViewMode }) {
+  return (
+    <group>
+      <FrontGarden />
       <RoomFloor position={[-5.25, 0, -3.5]} size={[5.5, 5]} color="#d7c09c" rug="#bd705e" />
       <RoomFloor position={[0, 0, -3.5]} size={[5, 5]} color="#d9c6a4" rug="#d4aa51" />
       <RoomFloor position={[5.25, 0, -3.5]} size={[5.5, 5]} color="#c8ad86" />
@@ -269,7 +344,7 @@ const Dollhouse = memo(function Dollhouse() {
       <Wall position={[-5.2, 1.45, 6]} size={[5.6, 2.9, 0.18]} />
       <Wall position={[5.2, 1.45, 6]} size={[5.6, 2.9, 0.18]} />
       <Wall position={[0, 2.55, 6]} size={[4.8, 0.7, 0.18]} />
-      <Doorway x={0} z={6} />
+      <Doorway x={0} z={6} front />
 
       <Wall position={[-2.55, 1.45, -3.5]} size={[0.16, 2.9, 2.25]} />
       <Wall position={[-2.55, 1.45, 1.2]} size={[0.16, 2.9, 2]} />
@@ -305,26 +380,82 @@ const Dollhouse = memo(function Dollhouse() {
       <RoomLabel position={[-5.2, 0.13, 5.7]}>ESTUDO</RoomLabel>
       <RoomLabel position={[0, 0.13, 5.7]}>CONVIVÊNCIA</RoomLabel>
       <RoomLabel position={[5.2, 0.13, 5.7]}>ENTRADA</RoomLabel>
+      <CeilingAndRoof visible={mode === "walk"} />
     </group>
   );
 });
 
-function CameraEntrance() {
+const isPassage = (x: number, z: number) => {
+  const radius = 0.32;
+  if (x < -8 + radius || x > 8 - radius || z < -6 + radius || z > 11.7) return false;
+  if (z > 6 - radius && Math.abs(x) > 0.72) return false;
+  const blockedVertical = (wallX: number) => Math.abs(x - wallX) < radius && z < 3.5 && Math.abs(z + 0.95) > 0.78;
+  if (blockedVertical(-2.55) || blockedVertical(2.55)) return false;
+  const horizontalBlocked = (wallZ: number, doors: number[]) => {
+    if (Math.abs(z - wallZ) >= radius) return false;
+    return !doors.some((doorX) => Math.abs(x - doorX) < 0.78);
+  };
+  if (horizontalBlocked(-0.95, [-3.9, 1.35, 6.7])) return false;
+  if (horizontalBlocked(3.55, [-3.9, 1.35, 6.7])) return false;
+  return true;
+};
+
+function WalkCamera({ moveInput, lookInput, resetSignal, enabled }: {
+  moveInput: React.MutableRefObject<MoveInput>;
+  lookInput: React.MutableRefObject<MoveInput>;
+  resetSignal: number;
+  enabled: boolean;
+}) {
   const { camera, invalidate } = useThree();
-  const progress = useRef(0);
-  const start = useMemo(() => new THREE.Vector3(0, 2.5, 13.5), []);
-  const finish = useMemo(() => new THREE.Vector3(13.5, 15.2, 17.5), []);
-  const look = useMemo(() => new THREE.Vector3(0, 0.6, 0), []);
+  const keys = useRef(new Set<string>());
+  const position = useRef(new THREE.Vector3(0, 1.65, 10.4));
+  const yaw = useRef(0);
+  const pitch = useRef(-0.04);
+
+  useEffect(() => {
+    const down = (event: KeyboardEvent) => {
+      if (["KeyW", "KeyA", "KeyS", "KeyD", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.code)) event.preventDefault();
+      keys.current.add(event.code);
+    };
+    const up = (event: KeyboardEvent) => keys.current.delete(event.code);
+    window.addEventListener("keydown", down);
+    window.addEventListener("keyup", up);
+    return () => {
+      window.removeEventListener("keydown", down);
+      window.removeEventListener("keyup", up);
+    };
+  }, []);
+
+  useEffect(() => {
+    position.current.set(0, 1.65, 10.4);
+    yaw.current = 0;
+    pitch.current = -0.04;
+    invalidate();
+  }, [invalidate, resetSignal]);
 
   useFrame((_, rawDelta) => {
-    if (progress.current >= 1) return;
-    progress.current = Math.min(1, progress.current + Math.min(rawDelta, 0.05) * 0.28);
-    const eased = 1 - Math.pow(1 - progress.current, 3);
-    camera.position.lerpVectors(start, finish, eased);
-    camera.lookAt(look);
-    if (progress.current < 1) invalidate();
+    if (!enabled) return;
+    const dt = Math.min(rawDelta, 0.05);
+    yaw.current -= lookInput.current.x * dt * 1.8;
+    pitch.current = THREE.MathUtils.clamp(pitch.current - lookInput.current.y * dt * 1.35, -0.78, 0.7);
+    const forward = (keys.current.has("KeyW") || keys.current.has("ArrowUp") ? 1 : 0)
+      - (keys.current.has("KeyS") || keys.current.has("ArrowDown") ? 1 : 0) - moveInput.current.y;
+    const strafe = (keys.current.has("KeyD") || keys.current.has("ArrowRight") ? 1 : 0)
+      - (keys.current.has("KeyA") || keys.current.has("ArrowLeft") ? 1 : 0) + moveInput.current.x;
+    if (Math.abs(forward) > 0.02 || Math.abs(strafe) > 0.02) {
+      const length = Math.hypot(forward, strafe) || 1;
+      const speed = 3.25 * dt;
+      const dx = ((-Math.sin(yaw.current) * forward) + (Math.cos(yaw.current) * strafe)) / length * speed;
+      const dz = ((-Math.cos(yaw.current) * forward) + (-Math.sin(yaw.current) * strafe)) / length * speed;
+      const current = position.current;
+      if (isPassage(current.x + dx, current.z)) current.x += dx;
+      if (isPassage(current.x, current.z + dz)) current.z += dz;
+    }
+    camera.position.copy(position.current);
+    camera.rotation.order = "YXZ";
+    camera.rotation.set(pitch.current, yaw.current, 0);
+    invalidate();
   });
-
   return null;
 }
 
