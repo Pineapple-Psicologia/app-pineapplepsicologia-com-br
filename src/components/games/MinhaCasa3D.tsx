@@ -1041,17 +1041,22 @@ function Scene({ props, mode, navigation, resetSignal, garden }: {
         shadow-bias={-0.0003}
       />
       <pointLight position={[0, 4.2, 1]} color={props.mood === "calmo" ? "#d7ecff" : "#ffc47a"} intensity={props.mood === "noite" ? 5.5 : 3.4} distance={18} decay={2} />
-      <Environment resolution={props.lowPower ? 32 : 64}>
-        <Lightformer intensity={2} position={[0, 7, 2]} scale={[12, 12, 1]} />
-        {!props.lowPower && <Lightformer intensity={1} color="#f5b77d" position={[-7, 2, 0]} rotation-y={Math.PI / 2} scale={[8, 4, 1]} />}
+      <Environment resolution={props.lowPower ? 32 : 96}>
+        <Lightformer intensity={2.2} position={[0, 7, 2]} scale={[12, 12, 1]} />
+        <Lightformer intensity={1.1} color="#ffd7ac" position={[0, 3, 10]} scale={[10, 6, 1]} />
+        {!props.lowPower && <Lightformer intensity={1.2} color="#f5b77d" position={[-7, 2, 0]} rotation-y={Math.PI / 2} scale={[8, 4, 1]} />}
+        {!props.lowPower && <Lightformer intensity={0.8} color="#bfe0ff" position={[7, 3, 0]} rotation-y={-Math.PI / 2} scale={[8, 4, 1]} />}
       </Environment>
+      <directionalLight position={[6, 6, -9]} intensity={props.mood === "noite" ? 0.35 : 0.6} color="#ffd9b0" />
 
       {mode === "walk" ? (
         <WalkCamera navigation={navigation} resetSignal={resetSignal} enabled={controlsEnabled} />
       ) : (
         <OverviewCamera />
       )}
-      <Dollhouse mode={mode} lowPower={props.lowPower} />
+      <Dollhouse mode={mode} lowPower={props.lowPower} garden={garden} />
+      {mode === "walk" && <MoveMarker navigation={navigation} />}
+
 
       <mesh
         position={[0, 0.17, 7.35]}
