@@ -132,8 +132,8 @@ function Window({ position, rotation = 0 }: { position: [number, number, number]
   return (
     <group position={position} rotation-y={rotation}>
       <mesh><boxGeometry args={[1.8, 1.25, 0.08]} /><meshPhysicalMaterial color="#9fd9e8" roughness={0.12} metalness={0.02} transmission={0.08} clearcoat={0.5} emissive="#73b6c8" emissiveIntensity={0.08} /></mesh>
-      <mesh position={[0, 0, 0.06]}><boxGeometry args={[0.08, 1.3, 0.08]} /><meshStandardMaterial color="#f8f1e8" /></mesh>
-      <mesh position={[0, 0, 0.06]}><boxGeometry args={[1.85, 0.08, 0.08]} /><meshStandardMaterial color="#f8f1e8" /></mesh>
+      <mesh position={[0, 0, 0.06]}><boxGeometry args={[0.08, 1.3, 0.08]} /><meshStandardMaterial color="#9a5f38" /></mesh>
+      <mesh position={[0, 0, 0.06]}><boxGeometry args={[1.85, 0.08, 0.08]} /><meshStandardMaterial color="#9a5f38" /></mesh>
       <mesh position={[0, -0.72, 0.08]} castShadow><boxGeometry args={[2, 0.13, 0.3]} /><meshStandardMaterial color="#d4b492" /></mesh>
       <RoundedBox args={[0.42, 1.5, 0.09]} radius={0.08} smoothness={3} position={[-1.02, -0.05, 0.14]} castShadow>
         <meshPhysicalMaterial color="#e9b7a2" roughness={0.9} sheen={0.42} sheenColor="#fff0da" />
@@ -547,6 +547,18 @@ function FrontGarden({ lowPower }: { lowPower: boolean }) {
               <meshStandardMaterial color={["#ef7f9a", "#f3c45f", "#e8697a"][i]} roughness={0.85} />
             </mesh>
           ))}
+        </group>
+      ))}
+      {[-6.9, -6.3, -5.7, -5.1, -4.5, -3.9, 3.9, 4.5, 5.1, 5.7, 6.3, 6.9].map((x, index) => (
+        <group key={`flower-bed-${x}`} position={[x, 0, 8.25 + (index % 3) * 0.22]}>
+          <mesh position={[0, 0.32, 0]} castShadow>
+            <sphereGeometry args={[0.28, 10, 8]} />
+            <meshStandardMaterial color="#4f9257" roughness={0.95} />
+          </mesh>
+          <mesh position={[0, 0.58, 0.12]} castShadow>
+            <sphereGeometry args={[0.13, 10, 8]} />
+            <meshStandardMaterial color={["#ef7f9a", "#f2c85f", "#8fb9e3", "#f09a8d"][index % 4]} roughness={0.82} />
+          </mesh>
         </group>
       ))}
 
