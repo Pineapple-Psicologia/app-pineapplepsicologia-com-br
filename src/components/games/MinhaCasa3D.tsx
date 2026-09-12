@@ -140,12 +140,12 @@ function Plant({ position }: { position: [number, number, number] }) {
 function Dollhouse() {
   return (
     <group>
-      <RoomFloor position={[-4, 0, -2]} color="#f4d9b1" rug="#dc8f83"} />
-      <RoomFloor position={[0, 0, -2]} color="#d9e9c6" rug="#e6b956"} />
-      <RoomFloor position={[4, 0, -2]} color="#d7e8f3" rug="#729ebc"} />
-      <RoomFloor position={[-4, 0, 2]} color="#f2dce7" rug="#ca82a8"} />
-      <RoomFloor position={[0, 0, 2]} color="#efe5bb" rug="#82aa7b"} />
-      <RoomFloor position={[4, 0, 2]} color="#ddd8ee" rug="#9d82bd"} />
+      <RoomFloor position={[-4, 0, -2]} color="#f4d9b1" rug="#dc8f83" />
+      <RoomFloor position={[0, 0, -2]} color="#d9e9c6" rug="#e6b956" />
+      <RoomFloor position={[4, 0, -2]} color="#d7e8f3" rug="#729ebc" />
+      <RoomFloor position={[-4, 0, 2]} color="#f2dce7" rug="#ca82a8" />
+      <RoomFloor position={[0, 0, 2]} color="#efe5bb" rug="#82aa7b" />
+      <RoomFloor position={[4, 0, 2]} color="#ddd8ee" rug="#9d82bd" />
 
       <Sofa position={[-4.1, 0.08, -2.5]} color="#cb6e5d" />
       <Table position={[0, 0.08, -2]} />
@@ -357,18 +357,18 @@ function Scene({ props }: { props: Props }) {
 
       {props.stickers.map((sticker) => (
         <Billboard key={sticker.id} position={[toWorldX(sticker.x), 1.1 * sticker.scale, toWorldZ(sticker.y)]}>
+          <mesh
+            onPointerDown={(event) => startDrag("sticker", sticker.id, event)}
+            onPointerMove={moveDrag}
+            onPointerUp={endDrag}
+          >
+            <planeGeometry args={[1.15 * sticker.scale, 1.15 * sticker.scale]} />
+            <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+          </mesh>
           <Html center transform distanceFactor={7}>
-            <button
-              type="button"
-              onPointerDown={(event) => {
-                event.stopPropagation();
-                props.onSelect(sticker.id);
-              }}
-              className={`cursor-grab select-none border-0 bg-transparent text-5xl ${props.selectedId === sticker.id ? "drop-shadow-lg" : ""}`}
-              aria-label={`Mover ${sticker.emoji}`}
-            >
+            <div className={`pointer-events-none select-none text-5xl ${props.selectedId === sticker.id ? "drop-shadow-lg" : ""}`} aria-label={sticker.emoji}>
               {sticker.emoji}
-            </button>
+            </div>
           </Html>
         </Billboard>
       ))}

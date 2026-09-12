@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
 import { Home, RotateCcw, Download, Trash2, Sun, Moon, Sparkles, Cloud, EyeOff, X, StickyNote, Smile } from "lucide-react";
@@ -192,7 +192,6 @@ export default function MinhaCasa({ room }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const canvasRef = useRef<HTMLDivElement>(null);
 
   // sync realtime — evita ping-pong: quando o estado chega do peer, NÃO rebroadcast.
   const remoteRef = useRef(false);
@@ -228,9 +227,6 @@ export default function MinhaCasa({ room }: Props) {
   useEffect(() => () => {
     if (sendTimerRef.current) clearTimeout(sendTimerRef.current);
   }, []);
-
-  const mood = MOODS.find((m) => m.id === state.mood)!;
-  
 
   const addCharacter = (c: CharDef) => {
     setState((s) => ({
@@ -304,88 +300,6 @@ export default function MinhaCasa({ room }: Props) {
     setState((s) => ({ ...s, stickers: s.stickers.filter((st) => st.id !== id) }));
     if (selectedId === id) setSelectedId(null);
   };
-
-  // drag (personagens + covers + notas + stickers)
-  type DragMode = "move" | "resize";
-  type DragKind = "item" | "cover" | "note" | "sticker";
-  const dragRef = useRef<{ id: string; kind: DragKind; mode: DragMode; offX: number; offY: number } | null>(null);
-
-  const onPointerDownItem = (e: React.PointerEvent, item: Placed) => {
-    e.stopPropagation();
-    setSelectedId(item.id);
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const cx = (e.clientX - rect.left) / rect.width;
-    const cy = (e.clientY - rect.top) / rect.height;
-    dragRef.current = { id: item.id, kind: "item", mode: "move", offX: cx - item.x, offY: cy - item.y };
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-  };
-  const onPointerDownBox = (
-    e: React.PointerEvent,
-    box: { id: string; x: number; y: number; w: number; h: number },
-    kind: "cover" | "note",
-    mode: DragMode,
-  ) => {
-    e.stopPropagation();
-    setSelectedId(box.id);
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const cx = (e.clientX - rect.left) / rect.width;
-    const cy = (e.clientY - rect.top) / rect.height;
-    const offX = mode === "move" ? cx - box.x : cx - (box.x + box.w);
-    const offY = mode === "move" ? cy - box.y : cy - (box.y + box.h);
-    dragRef.current = { id: box.id, kind, mode, offX, offY };
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-  };
-  const onPointerDownSticker = (e: React.PointerEvent, st: Sticker) => {
-    e.stopPropagation();
-    setSelectedId(st.id);
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const cx = (e.clientX - rect.left) / rect.width;
-    const cy = (e.clientY - rect.top) / rect.height;
-    dragRef.current = { id: st.id, kind: "sticker", mode: "move", offX: cx - st.x, offY: cy - st.y };
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-  };
-  const onPointerMove = useCallback((e: React.PointerEvent) => {
-    const d = dragRef.current;
-    if (!d) return;
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const cx = (e.clientX - rect.left) / rect.width;
-    const cy = (e.clientY - rect.top) / rect.height;
-    setState((s) => {
-      if (d.kind === "item") {
-        return {
-          ...s,
-          items: s.items.map((i) =>
-            i.id !== d.id ? i : { ...i, x: Math.max(0.02, Math.min(0.98, cx - d.offX)), y: Math.max(0.05, Math.min(0.98, cy - d.offY)) },
-          ),
-        };
-      }
-      if (d.kind === "sticker") {
-        return {
-          ...s,
-          stickers: s.stickers.map((st) =>
-            st.id !== d.id ? st : { ...st, x: Math.max(0.02, Math.min(0.98, cx - d.offX)), y: Math.max(0.02, Math.min(0.98, cy - d.offY)) },
-          ),
-        };
-      }
-      const updateBox = <T extends { id: string; x: number; y: number; w: number; h: number }>(arr: T[]): T[] =>
-        arr.map((b) => {
-          if (b.id !== d.id) return b;
-          if (d.mode === "move") {
-            return { ...b, x: Math.max(0, Math.min(1 - b.w, cx - d.offX)), y: Math.max(0, Math.min(1 - b.h, cy - d.offY)) };
-          }
-          const nw = Math.max(0.08, Math.min(1 - b.x, cx - d.offX - b.x));
-          const nh = Math.max(0.06, Math.min(1 - b.y, cy - d.offY - b.y));
-          return { ...b, w: nw, h: nh };
-        });
-      if (d.kind === "cover") return { ...s, covers: updateBox(s.covers) };
-      return { ...s, notes: updateBox(s.notes) };
-    });
-  }, []);
-  const onPointerUp = () => { dragRef.current = null; };
 
   // leituras simbólicas
   const characters = state.items;
