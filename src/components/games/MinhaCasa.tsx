@@ -219,6 +219,7 @@ export default function MinhaCasa({ room }: Props) {
   }, [room]);
 
   useEffect(() => {
+    if (!room.ready) return;
     if (remoteRef.current) {
       remoteRef.current = false;
       return;
@@ -315,7 +316,7 @@ export default function MinhaCasa({ room }: Props) {
       if (move.kind === "note") return { ...current, notes: current.notes.map((note) => note.id === move.id ? { ...note, x: Math.min(move.x, 1 - note.w), y: Math.min(move.y, 1 - note.h) } : note) };
       return { ...current, stickers: current.stickers.map((sticker) => sticker.id === move.id ? { ...sticker, x: move.x, y: move.y } : sticker) };
     });
-    room.send?.("casa:move", move);
+    if (room.ready) room.send?.("casa:move", move);
   };
   const removeSticker = (id: string) => {
     setState((s) => ({ ...s, stickers: s.stickers.filter((st) => st.id !== id) }));
