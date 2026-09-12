@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
-import { Home, RotateCcw, Download, Trash2, Sun, Moon, Sparkles, Cloud, EyeOff, X, StickyNote, Smile } from "lucide-react";
+import { Home, RotateCcw, Download, Trash2, Sun, Moon, Sparkles, Cloud, EyeOff, X, StickyNote, Smile, BookmarkPlus } from "lucide-react";
 import jsPDF from "jspdf";
-import MinhaCasa3D from "./MinhaCasa3D";
+import MinhaCasa3D, { type CasaCamera, type GardenStyle } from "./MinhaCasa3D";
 
 import imgCrianca from "@/assets/casa/char-crianca.png";
 import imgAdolescente from "@/assets/casa/char-adolescente.png";
@@ -183,15 +183,23 @@ const EMOJI_GROUPS: { label: string; items: { emoji: string; name: string }[] }[
   },
 ];
 
-type State = { items: Placed[]; mood: Mood; covers: Cover[]; notes: Note[]; stickers: Sticker[] };
+type State = { items: Placed[]; mood: Mood; covers: Cover[]; notes: Note[]; stickers: Sticker[]; garden: GardenStyle };
 type MovePayload = { kind: "item" | "cover" | "note" | "sticker"; id: string; x: number; y: number };
-const DEFAULT_STATE: State = { items: [], mood: "dia", covers: [], notes: [], stickers: [] };
+const DEFAULT_STATE: State = { items: [], mood: "dia", covers: [], notes: [], stickers: [], garden: "florido" };
+type ScenePreset = { id: string; name: string; state: State };
+const PRESETS_KEY = "casa:presets";
+const loadPresets = (): ScenePreset[] => {
+  try { return JSON.parse(localStorage.getItem(PRESETS_KEY) || "[]") as ScenePreset[]; } catch { return []; }
+};
 const uid = () => Math.random().toString(36).slice(2, 9);
 
 export default function MinhaCasa({ room }: Props) {
   const [state, setState] = useState<State>(DEFAULT_STATE);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [emojiOpen, setEmojiOpen] = useState(false);
+  const [presetsOpen, setPresetsOpen] = useState(false);
+  const [presets, setPresets] = useState<ScenePreset[]>([]);
+  const remoteCameraRef = useRef<CasaCamera | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // sync realtime — evita ping-pong: quando o estado chega do peer, NÃO rebroadcast.
@@ -204,7 +212,9 @@ export default function MinhaCasa({ room }: Props) {
       if (m.type === "casa:state") {
         const p = m.payload as Partial<State>;
         remoteRef.current = true;
-        setState({ ...DEFAULT_STATE, ...p, covers: p.covers ?? [], notes: p.notes ?? [], stickers: p.stickers ?? [] });
+        setState({ ...DEFAULT_STATE, ...p, covers: p.covers ?? [], notes: p.notes ?? [], stickers: p.stickers ?? [], garden: p.garden ?? "florido" });
+      } else if (m.type === "casa:cam") {
+        remoteCameraRef.current = m.payload as CasaCamera;
       } else if (m.type === "casa:move") {
         const move = m.payload as MovePayload;
         remoteRef.current = true;
@@ -336,6 +346,28 @@ export default function MinhaCasa({ room }: Props) {
     return pairs.sort((p, q) => p.dist - q.dist);
   }, [characters]);
 
+  useEffect(() => { setPresets(loadPresets()); }, []);
+  const persistPresets = (next: ScenePreset[]) => {
+    setPresets(next);
+    try { localStorage.setItem(PRESETS_KEY, JSON.stringify(next)); } catch { /* armazenamento indisponível */ }
+  };
+  const savePreset = () => {
+    const name = window.prompt("Nome desta cena (ex.: Casa da avó · sereno)");
+    if (!name?.trim()) return;
+    persistPresets([...presets, { id: uid(), name: name.trim(), state }]);
+  };
+  const loadPreset = (preset: ScenePreset) => {
+    setState({ ...DEFAULT_STATE, ...preset.state });
+    setSelectedId(null);
+    setPresetsOpen(false);
+  };
+  const removePreset = (id: string) => persistPresets(presets.filter((p) => p.id !== id));
+
+  const sendCamera = (camera: CasaCamera) => {
+    if (room.ready) room.send?.("casa:cam", camera);
+  };
+  const setGarden = (garden: GardenStyle) => setState((s) => ({ ...s, garden }));
+
   const reset = () => { setState(DEFAULT_STATE); setSelectedId(null); };
   const exportPdf = () => exportCasaPdf(state, proximity);
   const selected = state.items.find((i) => i.id === selectedId) || null;
@@ -406,6 +438,29 @@ export default function MinhaCasa({ room }: Props) {
               );
             })}
           </div>
+          <div className="relative">
+            <Button size="sm" variant="outline" onClick={() => setPresetsOpen((v) => !v)} title="Salvar ou carregar cenas">
+              <BookmarkPlus className="w-4 h-4" /> <span className="hidden sm:inline">Cenas</span>
+            </Button>
+            {presetsOpen && (
+              <div className="absolute right-0 top-10 z-50 w-64 rounded-xl border bg-white p-2 shadow-2xl">
+                <Button size="sm" className="w-full mb-2" onClick={savePreset}>Salvar cena atual</Button>
+                {presets.length === 0 && <p className="px-1 pb-1 text-[11px] text-muted-foreground">Nenhuma cena salva ainda.</p>}
+                <div className="max-h-56 overflow-auto flex flex-col gap-1">
+                  {presets.map((preset) => (
+                    <div key={preset.id} className="flex items-center gap-1">
+                      <button onClick={() => loadPreset(preset)} className="flex-1 text-left text-xs px-2 py-1.5 rounded-md hover:bg-amber-50 truncate">
+                        {preset.name}
+                      </button>
+                      <button onClick={() => removePreset(preset.id)} title="Apagar" className="w-7 h-7 rounded-md border flex items-center justify-center text-muted-foreground hover:text-destructive">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
           <Button size="sm" variant="outline" onClick={exportPdf} disabled={state.items.length === 0 && state.notes.length === 0 && state.covers.length === 0 && state.stickers.length === 0}>
             <Download className="w-4 h-4" /> PDF
           </Button>
@@ -466,6 +521,10 @@ export default function MinhaCasa({ room }: Props) {
               stickers={state.stickers}
               characters={CHARACTERS}
               mood={state.mood}
+              garden={state.garden}
+              onGardenChange={setGarden}
+              remoteCamera={remoteCameraRef}
+              onCamera={sendCamera}
               selectedId={selectedId}
               onSelect={setSelectedId}
               onMoveItem={(id, x, y) => moveShared({ kind: "item", id, x, y })}
