@@ -387,7 +387,7 @@ const Dollhouse = memo(function Dollhouse({ mode }: { mode: ViewMode }) {
 
 const isPassage = (x: number, z: number) => {
   const radius = 0.32;
-  if (x < -8 + radius || x > 8 - radius || z < -6 + radius || z > 11.7) return false;
+  if (x < -8 + radius || x > 8 - radius || z < -6 + radius || z > 14.6) return false;
   if (z > 6 - radius && Math.abs(x) > 0.72) return false;
   const blockedVertical = (wallX: number) => Math.abs(x - wallX) < radius && z < 3.5 && Math.abs(z + 0.95) > 0.78;
   if (blockedVertical(-2.55) || blockedVertical(2.55)) return false;
@@ -408,7 +408,7 @@ function WalkCamera({ moveInput, lookInput, resetSignal, enabled }: {
 }) {
   const { camera, invalidate } = useThree();
   const keys = useRef(new Set<string>());
-  const position = useRef(new THREE.Vector3(0, 1.65, 10.4));
+  const position = useRef(new THREE.Vector3(0, 1.65, 13.2));
   const yaw = useRef(0);
   const pitch = useRef(-0.04);
 
@@ -427,7 +427,7 @@ function WalkCamera({ moveInput, lookInput, resetSignal, enabled }: {
   }, []);
 
   useEffect(() => {
-    position.current.set(0, 1.65, 10.4);
+    position.current.set(0, 1.65, 13.2);
     yaw.current = 0;
     pitch.current = -0.04;
     invalidate();
@@ -805,7 +805,7 @@ export default function MinhaCasa3D(props: Props) {
           shadows={!lowPower}
           dpr={lowPower ? 1 : [1, 1.25]}
           frameloop={mode === "walk" ? "always" : "demand"}
-          camera={{ position: mode === "walk" ? [0, 1.65, 10.4] : [13.5, 15.2, 17.5], fov: mode === "walk" ? 62 : 42, near: 0.08, far: 60 }}
+          camera={{ position: mode === "walk" ? [0, 1.65, 13.2] : [13.5, 15.2, 17.5], fov: mode === "walk" ? 62 : 42, near: 0.08, far: 60 }}
           gl={{ antialias: !lowPower, alpha: false, powerPreference: "high-performance" }}
           onPointerMissed={() => props.onSelect(null)}
         >
