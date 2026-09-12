@@ -466,7 +466,25 @@ function RoomLabel({ children, position }: { children: string; position: [number
   return <Text position={position} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.28} color="#7b6a58" anchorX="center" anchorY="middle">{children}</Text>;
 }
 
-function CeilingAndRoof({ visible }: { visible: boolean }) {
+function RoofSlope({ z, depth, angle, lowPower }: { z: number; depth: number; angle: number; lowPower: boolean }) {
+  const tiles = lowPower ? [] : Array.from({ length: 21 }, (_, index) => -8.2 + index * 0.82);
+  return (
+    <group position={[0, 4.08, z]} rotation-x={angle}>
+      <mesh castShadow receiveShadow>
+        <boxGeometry args={[17.6, 0.2, depth]} />
+        <meshStandardMaterial color="#c9694f" roughness={0.82} />
+      </mesh>
+      {tiles.map((x) => (
+        <mesh key={x} position={[x, 0.14, 0]} rotation-x={Math.PI / 2} castShadow>
+          <cylinderGeometry args={[0.11, 0.11, depth, 8, 1, true]} />
+          <meshStandardMaterial color="#d97a58" roughness={0.75} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+function CeilingAndRoof({ visible, lowPower }: { visible: boolean; lowPower: boolean }) {
   if (!visible) return null;
   return (
     <group>
@@ -474,19 +492,16 @@ function CeilingAndRoof({ visible }: { visible: boolean }) {
         <boxGeometry args={[16.35, 0.16, 12.35]} />
         <meshStandardMaterial color="#fff7e9" roughness={0.9} side={THREE.DoubleSide} />
       </mesh>
-      <group position={[0, 4.42, 0]}>
-        <mesh position={[-4.15, 0, 0]} rotation-z={-0.35} castShadow>
-          <boxGeometry args={[8.85, 0.24, 13.1]} />
-          <meshStandardMaterial color="#b95346" roughness={0.78} />
-        </mesh>
-        <mesh position={[4.15, 0, 0]} rotation-z={0.35} castShadow>
-          <boxGeometry args={[8.85, 0.24, 13.1]} />
-          <meshStandardMaterial color="#b95346" roughness={0.78} />
-        </mesh>
-      </group>
+      <RoofSlope z={3.85} depth={7.9} angle={0.163} lowPower={lowPower} />
+      <RoofSlope z={-3.5} depth={7.1} angle={-0.178} lowPower={lowPower} />
+      <mesh position={[0, 4.78, 0]} rotation-z={Math.PI / 2} castShadow>
+        <cylinderGeometry args={[0.2, 0.2, 17.6, 10]} />
+        <meshStandardMaterial color="#b95a43" roughness={0.8} />
+      </mesh>
     </group>
   );
 }
+
 
 function FrontGarden({ lowPower }: { lowPower: boolean }) {
   return (
@@ -511,6 +526,18 @@ function FrontGarden({ lowPower }: { lowPower: boolean }) {
           <mesh position={[0, 0.66, 0]} castShadow><sphereGeometry args={[0.18, 12, 8]} /><meshStandardMaterial color={["#df716b", "#f0c65f", "#cf7aa2"][index % 3]} roughness={0.9} /></mesh>
         </group>
       ))}
+      {[-2.9, 2.9].map((x, index) => (
+        <group key={x} position={[x, 0, 7.1]}>
+          <mesh position={[0, 0.52, 0]} castShadow><sphereGeometry args={[0.72, 16, 12]} /><meshStandardMaterial color={index ? "#5f9f60" : "#569a5c"} roughness={0.92} /></mesh>
+          {!lowPower && [-0.42, 0, 0.42].map((dx, i) => (
+            <mesh key={dx} position={[dx, 0.95 - i * 0.12, 0.5]} castShadow>
+              <sphereGeometry args={[0.14, 10, 8]} />
+              <meshStandardMaterial color={["#ef7f9a", "#f3c45f", "#e8697a"][i]} roughness={0.85} />
+            </mesh>
+          ))}
+        </group>
+      ))}
+
       <RoundedBox args={[3.2, 0.18, 1.45]} radius={0.08} position={[0, 0.02, 6.55]} receiveShadow>
         <meshStandardMaterial color="#d7b68e" roughness={0.9} />
       </RoundedBox>
@@ -585,6 +612,9 @@ const Dollhouse = memo(function Dollhouse({ mode, lowPower }: { mode: ViewMode; 
       <Window position={[5.15, 1.65, -5.88]} />
       <Window position={[-7.88, 1.65, 1.2]} rotation={Math.PI / 2} />
       <Window position={[7.88, 1.65, 1.2]} rotation={Math.PI / 2} />
+      <Window position={[-5.2, 1.65, 6.12]} />
+      <Window position={[5.2, 1.65, 6.12]} />
+
 
       <RoomLabel position={[-5.2, 0.13, -1.3]}>SALA</RoomLabel>
       <RoomLabel position={[0, 0.13, -1.3]}>JANTAR</RoomLabel>
@@ -595,7 +625,7 @@ const Dollhouse = memo(function Dollhouse({ mode, lowPower }: { mode: ViewMode; 
       <RoomLabel position={[-5.2, 0.13, 5.7]}>ESTUDO</RoomLabel>
       <RoomLabel position={[0, 0.13, 5.7]}>CONVIVÊNCIA</RoomLabel>
       <RoomLabel position={[5.2, 0.13, 5.7]}>ENTRADA</RoomLabel>
-      <CeilingAndRoof visible={mode === "walk"} />
+      <CeilingAndRoof visible={mode === "walk"} lowPower={lowPower} />
     </group>
   );
 });
@@ -623,7 +653,7 @@ function WalkCamera({ moveInput, lookInput, resetSignal, enabled }: {
 }) {
   const { camera, invalidate } = useThree();
   const keys = useRef(new Set<string>());
-  const position = useRef(new THREE.Vector3(0, 1.65, 13.2));
+  const position = useRef(new THREE.Vector3(0, 1.7, 14.2));
   const yaw = useRef(0);
   const pitch = useRef(-0.04);
 
@@ -642,7 +672,7 @@ function WalkCamera({ moveInput, lookInput, resetSignal, enabled }: {
   }, []);
 
   useEffect(() => {
-    position.current.set(0, 1.65, 13.2);
+    position.current.set(0, 1.7, 14.2);
     yaw.current = 0;
     pitch.current = -0.04;
     invalidate();
@@ -1031,7 +1061,7 @@ export default function MinhaCasa3D(props: Props) {
           shadows={!lowPower}
           dpr={lowPower ? 1 : [1, 1.25]}
           frameloop={mode === "walk" ? "always" : "demand"}
-          camera={{ position: mode === "walk" ? [0, 1.65, 13.2] : [13.5, 15.2, 17.5], fov: mode === "walk" ? 62 : 42, near: 0.08, far: 60 }}
+          camera={{ position: mode === "walk" ? [0, 1.7, 14.2] : [13.5, 15.2, 17.5], fov: mode === "walk" ? 62 : 42, near: 0.08, far: 60 }}
            gl={{ antialias: !lowPower, alpha: false, powerPreference: lowPower ? "default" : "high-performance", failIfMajorPerformanceCaveat: false, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: lowPower ? 1.02 : 1.08 }}
           onPointerMissed={() => props.onSelect(null)}
         >
