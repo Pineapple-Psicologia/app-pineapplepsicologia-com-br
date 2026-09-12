@@ -613,8 +613,23 @@ function FrontGarden({ lowPower }: { lowPower: boolean }) {
           <meshStandardMaterial color={index === 0 ? "#d8b48d" : "#c99f78"} roughness={0.9} />
         </RoundedBox>
       ))}
-      {[-2.15, 2.15].map((x) => <mesh key={x} position={[x, 1.28, 6.68]} castShadow><cylinderGeometry args={[0.16, 0.2, 2.55, 20]} /><meshStandardMaterial color="#f6ead8" roughness={0.72} /></mesh>)}
-      <mesh position={[0, 2.5, 6.65]} castShadow><boxGeometry args={[5.5, 0.18, 1.8]} /><meshStandardMaterial color="#f6ead8" /></mesh>
+      {[-2.15, 2.15].map((x) => (
+        <group key={x} position={[x, 0, 6.68]}>
+          <mesh position={[0, 0.18, 0]} castShadow><cylinderGeometry args={[0.28, 0.32, 0.3, 20]} /><meshStandardMaterial color="#efe0c8" roughness={0.78} /></mesh>
+          <mesh position={[0, 1.4, 0]} castShadow><cylinderGeometry args={[0.17, 0.21, 2.15, 20]} /><meshPhysicalMaterial color="#f8eeda" roughness={0.6} clearcoat={0.25} /></mesh>
+          <mesh position={[0, 2.56, 0]} castShadow><cylinderGeometry args={[0.3, 0.24, 0.24, 20]} /><meshStandardMaterial color="#efe0c8" roughness={0.78} /></mesh>
+        </group>
+      ))}
+      <mesh position={[0, 2.76, 6.6]} castShadow><boxGeometry args={[6.1, 0.22, 2.1]} /><meshStandardMaterial color="#f8eeda" roughness={0.8} /></mesh>
+      <group position={[0, 3.06, 6.9]} rotation-x={-0.3}>
+        <mesh castShadow receiveShadow><boxGeometry args={[6.5, 0.16, 2.3]} /><meshStandardMaterial color="#cf6f52" roughness={0.8} /></mesh>
+        {!lowPower && Array.from({ length: 9 }, (_, i) => -2.8 + i * 0.7).map((x) => (
+          <mesh key={x} position={[x, 0.12, 0]} rotation-x={Math.PI / 2} castShadow>
+            <cylinderGeometry args={[0.1, 0.1, 2.3, 8, 1, true]} />
+            <meshStandardMaterial color="#e0805c" roughness={0.75} />
+          </mesh>
+        ))}
+      </group>
       <mesh position={[0, 2.16, 6.78]} castShadow><sphereGeometry args={[0.2, 16, 10]} /><meshStandardMaterial color="#ffd58a" emissive="#ffb45e" emissiveIntensity={0.65} roughness={0.3} /></mesh>
       {!lowPower && <pointLight position={[0, 2.1, 7]} color="#ffc477" intensity={1.1} distance={4.5} decay={2} />}
     </group>
@@ -622,24 +637,28 @@ function FrontGarden({ lowPower }: { lowPower: boolean }) {
 }
 
 function FrontFacade() {
-  const cream = "#f4dfbf";
+  const cream = "#f7e3c3";
   return (
     <group>
       <Wall position={[-7, 1.5, 6]} size={[2, 3, 0.24]} color={cream} />
       <Wall position={[7, 1.5, 6]} size={[2, 3, 0.24]} color={cream} />
       <Wall position={[-2.43, 1.5, 6]} size={[2.75, 3, 0.24]} color={cream} />
       <Wall position={[2.43, 1.5, 6]} size={[2.75, 3, 0.24]} color={cream} />
-      <Wall position={[-4.8, 0.42, 6]} size={[2.4, 0.84, 0.24]} color={cream} />
-      <Wall position={[4.8, 0.42, 6]} size={[2.4, 0.84, 0.24]} color={cream} />
+      <Wall position={[-4.8, 0.34, 6]} size={[2.4, 0.68, 0.24]} color={cream} />
+      <Wall position={[4.8, 0.34, 6]} size={[2.4, 0.68, 0.24]} color={cream} />
       <Wall position={[-4.8, 2.62, 6]} size={[2.4, 0.76, 0.24]} color={cream} />
       <Wall position={[4.8, 2.62, 6]} size={[2.4, 0.76, 0.24]} color={cream} />
-      <Wall position={[0, 2.64, 6]} size={[2.1, 0.72, 0.24]} color={cream} />
-      <Window position={[-4.8, 1.62, 6.15]} />
-      <Window position={[4.8, 1.62, 6.15]} />
+      <Wall position={[0, 2.68, 6]} size={[2.1, 0.64, 0.24]} color={cream} />
+      {/* rodapé e cornija da fachada */}
+      <mesh position={[0, 0.16, 6.16]} castShadow receiveShadow><boxGeometry args={[16.1, 0.32, 0.14]} /><meshStandardMaterial color="#e2c8a2" roughness={0.85} /></mesh>
+      <mesh position={[0, 3.02, 6.24]} castShadow><boxGeometry args={[16.6, 0.24, 0.3]} /><meshStandardMaterial color="#fdf3e2" roughness={0.72} /></mesh>
+      <Window position={[-4.8, 1.5, 6.15]} front />
+      <Window position={[4.8, 1.5, 6.15]} front />
       <Doorway x={0} z={6.15} front />
     </group>
   );
 }
+
 
 function InteriorTrim() {
   const trim = "#b78963";
