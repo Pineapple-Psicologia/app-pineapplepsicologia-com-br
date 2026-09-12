@@ -85,16 +85,20 @@ function Wall({ position, size, color = "#f7f0e5" }: { position: [number, number
 }
 
 function Doorway({ x, z, rotation = 0, front = false }: { x: number; z: number; rotation?: number; front?: boolean }) {
-  const door = useRef<THREE.Group>(null);
+  const leftDoor = useRef<THREE.Group>(null);
+  const rightDoor = useRef<THREE.Group>(null);
   const { camera, invalidate } = useThree();
 
   useFrame((_, rawDelta) => {
-    if (!front || !door.current) return;
+    if (!front || !leftDoor.current || !rightDoor.current) return;
     const distance = Math.hypot(camera.position.x - x, camera.position.z - z);
-    const target = distance < 3.2 ? -Math.PI * 0.47 : 0;
-    const next = THREE.MathUtils.lerp(door.current.rotation.y, target, 1 - Math.exp(-6 * Math.min(rawDelta, 0.05)));
-    if (Math.abs(next - door.current.rotation.y) > 0.001) {
-      door.current.rotation.y = next;
+    const target = distance < 18 ? Math.PI * 0.4 : 0;
+    const easing = 1 - Math.exp(-6 * Math.min(rawDelta, 0.05));
+    const nextLeft = THREE.MathUtils.lerp(leftDoor.current.rotation.y, target, easing);
+    const nextRight = THREE.MathUtils.lerp(rightDoor.current.rotation.y, -target, easing);
+    if (Math.abs(nextLeft - leftDoor.current.rotation.y) > 0.001 || Math.abs(nextRight - rightDoor.current.rotation.y) > 0.001) {
+      leftDoor.current.rotation.y = nextLeft;
+      rightDoor.current.rotation.y = nextRight;
       invalidate();
     }
   });
@@ -105,12 +109,20 @@ function Doorway({ x, z, rotation = 0, front = false }: { x: number; z: number; 
       <mesh position={[0.72, 1.15, 0]} castShadow><boxGeometry args={[0.13, 2.3, 0.2]} /><meshStandardMaterial color="#9a6845" /></mesh>
       <mesh position={[0, 2.24, 0]} castShadow><boxGeometry args={[1.55, 0.14, 0.2]} /><meshStandardMaterial color="#9a6845" /></mesh>
       {front && (
-        <group ref={door} position={[-0.66, 0, -0.08]}>
-          <RoundedBox args={[1.32, 2.14, 0.12]} radius={0.05} smoothness={3} position={[0.66, 1.08, 0]} castShadow>
-            <meshPhysicalMaterial color="#4f8b86" roughness={0.38} clearcoat={0.38} clearcoatRoughness={0.32} />
-          </RoundedBox>
-          <mesh position={[1.12, 1.05, -0.1]}><sphereGeometry args={[0.07, 12, 8]} /><meshStandardMaterial color="#f3c55e" metalness={0.6} roughness={0.25} /></mesh>
-        </group>
+        <>
+          <group ref={leftDoor} position={[-0.66, 0, -0.08]}>
+            <RoundedBox args={[0.65, 2.14, 0.12]} radius={0.04} smoothness={3} position={[0.325, 1.08, 0]} castShadow>
+              <meshPhysicalMaterial color="#3f918a" roughness={0.38} clearcoat={0.38} clearcoatRoughness={0.32} />
+            </RoundedBox>
+            <mesh position={[0.53, 1.05, -0.1]}><sphereGeometry args={[0.055, 12, 8]} /><meshStandardMaterial color="#f3c55e" metalness={0.6} roughness={0.25} /></mesh>
+          </group>
+          <group ref={rightDoor} position={[0.66, 0, -0.08]}>
+            <RoundedBox args={[0.65, 2.14, 0.12]} radius={0.04} smoothness={3} position={[-0.325, 1.08, 0]} castShadow>
+              <meshPhysicalMaterial color="#3f918a" roughness={0.38} clearcoat={0.38} clearcoatRoughness={0.32} />
+            </RoundedBox>
+            <mesh position={[-0.53, 1.05, -0.1]}><sphereGeometry args={[0.055, 12, 8]} /><meshStandardMaterial color="#f3c55e" metalness={0.6} roughness={0.25} /></mesh>
+          </group>
+        </>
       )}
     </group>
   );
@@ -120,8 +132,8 @@ function Window({ position, rotation = 0 }: { position: [number, number, number]
   return (
     <group position={position} rotation-y={rotation}>
       <mesh><boxGeometry args={[1.8, 1.25, 0.08]} /><meshPhysicalMaterial color="#9fd9e8" roughness={0.12} metalness={0.02} transmission={0.08} clearcoat={0.5} emissive="#73b6c8" emissiveIntensity={0.08} /></mesh>
-      <mesh position={[0, 0, 0.06]}><boxGeometry args={[0.08, 1.3, 0.08]} /><meshStandardMaterial color="#f8f1e8" /></mesh>
-      <mesh position={[0, 0, 0.06]}><boxGeometry args={[1.85, 0.08, 0.08]} /><meshStandardMaterial color="#f8f1e8" /></mesh>
+      <mesh position={[0, 0, 0.06]}><boxGeometry args={[0.08, 1.3, 0.08]} /><meshStandardMaterial color="#9a5f38" /></mesh>
+      <mesh position={[0, 0, 0.06]}><boxGeometry args={[1.85, 0.08, 0.08]} /><meshStandardMaterial color="#9a5f38" /></mesh>
       <mesh position={[0, -0.72, 0.08]} castShadow><boxGeometry args={[2, 0.13, 0.3]} /><meshStandardMaterial color="#d4b492" /></mesh>
       <RoundedBox args={[0.42, 1.5, 0.09]} radius={0.08} smoothness={3} position={[-1.02, -0.05, 0.14]} castShadow>
         <meshPhysicalMaterial color="#e9b7a2" roughness={0.9} sheen={0.42} sheenColor="#fff0da" />
@@ -506,12 +518,12 @@ function CeilingAndRoof({ visible, lowPower }: { visible: boolean; lowPower: boo
 function FrontGarden({ lowPower }: { lowPower: boolean }) {
   return (
     <group>
-      <mesh position={[0, -0.11, 9.8]} receiveShadow>
-        <boxGeometry args={[19, 0.18, 7.5]} />
+      <mesh position={[0, -0.11, 13.4]} receiveShadow>
+        <boxGeometry args={[19, 0.18, 14.7]} />
         <meshStandardMaterial color="#7fa96b" roughness={0.95} />
       </mesh>
-      <mesh position={[0, 0.01, 8.2]} receiveShadow>
-        <boxGeometry args={[1.55, 0.08, 4.5]} />
+      <mesh position={[0, 0.01, 13.2]} receiveShadow>
+        <boxGeometry args={[1.55, 0.08, 14.5]} />
         <meshStandardMaterial color="#d9c6a6" roughness={0.9} />
       </mesh>
       {[-5.8, -4.5, 4.5, 5.8].map((x, index) => (
@@ -535,6 +547,18 @@ function FrontGarden({ lowPower }: { lowPower: boolean }) {
               <meshStandardMaterial color={["#ef7f9a", "#f3c45f", "#e8697a"][i]} roughness={0.85} />
             </mesh>
           ))}
+        </group>
+      ))}
+      {[-6.9, -6.3, -5.7, -5.1, -4.5, -3.9, 3.9, 4.5, 5.1, 5.7, 6.3, 6.9].map((x, index) => (
+        <group key={`flower-bed-${x}`} position={[x, 0, 8.25 + (index % 3) * 0.22]}>
+          <mesh position={[0, 0.32, 0]} castShadow>
+            <sphereGeometry args={[0.28, 10, 8]} />
+            <meshStandardMaterial color="#4f9257" roughness={0.95} />
+          </mesh>
+          <mesh position={[0, 0.58, 0.12]} castShadow>
+            <sphereGeometry args={[0.13, 10, 8]} />
+            <meshStandardMaterial color={["#ef7f9a", "#f2c85f", "#8fb9e3", "#f09a8d"][index % 4]} roughness={0.82} />
+          </mesh>
         </group>
       ))}
 
@@ -632,7 +656,7 @@ const Dollhouse = memo(function Dollhouse({ mode, lowPower }: { mode: ViewMode; 
 
 const isPassage = (x: number, z: number) => {
   const radius = 0.32;
-  if (x < -8 + radius || x > 8 - radius || z < -6 + radius || z > 14.6) return false;
+  if (x < -8 + radius || x > 8 - radius || z < -6 + radius || z > 20.8) return false;
   if (z > 6 - radius && Math.abs(x) > 0.72) return false;
   const blockedVertical = (wallX: number) => Math.abs(x - wallX) < radius && z < 3.5 && Math.abs(z + 0.95) > 0.78;
   if (blockedVertical(-2.55) || blockedVertical(2.55)) return false;
@@ -653,9 +677,9 @@ function WalkCamera({ moveInput, lookInput, resetSignal, enabled }: {
 }) {
   const { camera, invalidate } = useThree();
   const keys = useRef(new Set<string>());
-  const position = useRef(new THREE.Vector3(0, 1.7, 14.2));
+  const position = useRef(new THREE.Vector3(0, 1.82, 17.2));
   const yaw = useRef(0);
-  const pitch = useRef(-0.04);
+  const pitch = useRef(-0.16);
 
   useEffect(() => {
     const down = (event: KeyboardEvent) => {
@@ -672,9 +696,9 @@ function WalkCamera({ moveInput, lookInput, resetSignal, enabled }: {
   }, []);
 
   useEffect(() => {
-    position.current.set(0, 1.7, 14.2);
+    position.current.set(0, 1.82, 17.2);
     yaw.current = 0;
-    pitch.current = -0.04;
+    pitch.current = -0.16;
     invalidate();
   }, [invalidate, resetSignal]);
 
@@ -1061,7 +1085,7 @@ export default function MinhaCasa3D(props: Props) {
           shadows={!lowPower}
           dpr={lowPower ? 1 : [1, 1.25]}
           frameloop={mode === "walk" ? "always" : "demand"}
-          camera={{ position: mode === "walk" ? [0, 1.7, 14.2] : [13.5, 15.2, 17.5], fov: mode === "walk" ? 62 : 42, near: 0.08, far: 60 }}
+          camera={{ position: mode === "walk" ? [0, 1.82, 17.2] : [13.5, 15.2, 17.5], fov: mode === "walk" ? 48 : 42, near: 0.08, far: 60 }}
            gl={{ antialias: !lowPower, alpha: false, powerPreference: lowPower ? "default" : "high-performance", failIfMajorPerformanceCaveat: false, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: lowPower ? 1.02 : 1.08 }}
           onPointerMissed={() => props.onSelect(null)}
         >
