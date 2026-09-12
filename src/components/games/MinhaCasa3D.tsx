@@ -890,7 +890,7 @@ function WalkCamera({ navigation, resetSignal, enabled, remoteCamera, onCamera }
     camera.rotation.order = "YXZ";
     camera.rotation.set(pitch.current, yaw.current, 0);
 
-    if (onCamera && now - lastSent.current > 120 && now - lastLocalInput.current < 2500) {
+    if (onCamera && now - lastSent.current > 220 && now - lastLocalInput.current < 2500) {
       lastSent.current = now;
       onCamera({
         x: position.current.x,
