@@ -1086,6 +1086,7 @@ function Scene({ props, mode, navigation, resetSignal, garden }: {
 
   return (
     <>
+      <ShadowBudget trigger={`${props.mood}-${mode}-${garden}-${props.lowPower}`} />
       <color attach="background" args={[background]} />
       <fog attach="fog" args={[background, 20, 34]} />
       <ambientLight intensity={ambience * 0.72} color={props.mood === "noite" ? "#aab6df" : "#fff3df"} />
