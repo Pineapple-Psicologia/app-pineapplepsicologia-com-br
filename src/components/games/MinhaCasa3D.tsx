@@ -558,36 +558,45 @@ function CeilingAndRoof({ visible, lowPower }: { visible: boolean; lowPower: boo
 }
 
 
-function FrontGarden({ lowPower }: { lowPower: boolean }) {
+export type GardenStyle = "florido" | "sereno" | "outono";
+
+const gardenPalettes: Record<GardenStyle, { grass: string; path: string; bushes: [string, string]; flowers: string[]; pot: string }> = {
+  florido: { grass: "#7fa96b", path: "#d9c6a6", bushes: ["#63a567", "#4f8f62"], flowers: ["#ef7f9a", "#f2c85f", "#8fb9e3", "#f09a8d"], pot: "#dc8660" },
+  sereno: { grass: "#8fb59a", path: "#dfe2df", bushes: ["#7bab92", "#5f9a84"], flowers: ["#cfe3f2", "#e8eef2", "#b9d4e8", "#dfeaf0"], pot: "#b8b3a6" },
+  outono: { grass: "#a89358", path: "#e0c79c", bushes: ["#b9873f", "#96693a"], flowers: ["#e0793f", "#f0b23c", "#c4522f", "#e8934a"], pot: "#a9613c" },
+};
+
+function FrontGarden({ lowPower, style = "florido" }: { lowPower: boolean; style?: GardenStyle }) {
+  const palette = gardenPalettes[style];
   return (
     <group>
       <mesh position={[0, -0.11, 13.4]} receiveShadow>
         <boxGeometry args={[19, 0.18, 14.7]} />
-        <meshStandardMaterial color="#7fa96b" roughness={0.95} />
+        <meshStandardMaterial color={palette.grass} roughness={0.95} />
       </mesh>
       <mesh position={[0, 0.01, 13.2]} receiveShadow>
         <boxGeometry args={[1.55, 0.08, 14.5]} />
-        <meshStandardMaterial color="#d9c6a6" roughness={0.9} />
+        <meshStandardMaterial color={palette.path} roughness={0.9} />
       </mesh>
       {[-5.8, -4.5, 4.5, 5.8].map((x, index) => (
         <group key={x} position={[x, 0, 7.6 + (index % 2) * 0.65]}>
-          <mesh position={[0, 0.24, 0]} castShadow><cylinderGeometry args={[0.26, 0.34, 0.48, 12]} /><meshStandardMaterial color="#dc8660" /></mesh>
-          <mesh position={[0, 0.72, 0]} castShadow><sphereGeometry args={[0.48, 14, 10]} /><meshStandardMaterial color={index % 2 ? "#63a567" : "#4f8f62"} roughness={0.9} /></mesh>
+          <mesh position={[0, 0.24, 0]} castShadow><cylinderGeometry args={[0.26, 0.34, 0.48, 12]} /><meshStandardMaterial color={palette.pot} /></mesh>
+          <mesh position={[0, 0.72, 0]} castShadow><sphereGeometry args={[0.48, 14, 10]} /><meshStandardMaterial color={palette.bushes[index % 2]} roughness={0.9} /></mesh>
         </group>
       ))}
       {[-7, -6.45, -3.8, 3.8, 6.45, 7].map((x, index) => (
         <group key={x} position={[x, 0, 7 + (index % 2) * 0.38]}>
           <mesh position={[0, 0.32, 0]}><cylinderGeometry args={[0.025, 0.035, 0.62, 7]} /><meshStandardMaterial color="#4d8454" roughness={0.95} /></mesh>
-          <mesh position={[0, 0.66, 0]} castShadow><sphereGeometry args={[0.18, 12, 8]} /><meshStandardMaterial color={["#df716b", "#f0c65f", "#cf7aa2"][index % 3]} roughness={0.9} /></mesh>
+          <mesh position={[0, 0.66, 0]} castShadow><sphereGeometry args={[0.18, 12, 8]} /><meshStandardMaterial color={palette.flowers[index % palette.flowers.length]} roughness={0.9} /></mesh>
         </group>
       ))}
       {[-2.9, 2.9].map((x, index) => (
         <group key={x} position={[x, 0, 7.1]}>
-          <mesh position={[0, 0.52, 0]} castShadow><sphereGeometry args={[0.72, 16, 12]} /><meshStandardMaterial color={index ? "#5f9f60" : "#569a5c"} roughness={0.92} /></mesh>
+          <mesh position={[0, 0.52, 0]} castShadow><sphereGeometry args={[0.72, 16, 12]} /><meshStandardMaterial color={palette.bushes[index % 2]} roughness={0.92} /></mesh>
           {!lowPower && [-0.42, 0, 0.42].map((dx, i) => (
             <mesh key={dx} position={[dx, 0.95 - i * 0.12, 0.5]} castShadow>
               <sphereGeometry args={[0.14, 10, 8]} />
-              <meshStandardMaterial color={["#ef7f9a", "#f3c45f", "#e8697a"][i]} roughness={0.85} />
+              <meshStandardMaterial color={palette.flowers[i % palette.flowers.length]} roughness={0.85} />
             </mesh>
           ))}
         </group>
@@ -596,14 +605,15 @@ function FrontGarden({ lowPower }: { lowPower: boolean }) {
         <group key={`flower-bed-${x}`} position={[x, 0, 8.25 + (index % 3) * 0.22]}>
           <mesh position={[0, 0.32, 0]} castShadow>
             <sphereGeometry args={[0.28, 10, 8]} />
-            <meshStandardMaterial color="#4f9257" roughness={0.95} />
+            <meshStandardMaterial color={palette.bushes[index % 2]} roughness={0.95} />
           </mesh>
           <mesh position={[0, 0.58, 0.12]} castShadow>
             <sphereGeometry args={[0.13, 10, 8]} />
-            <meshStandardMaterial color={["#ef7f9a", "#f2c85f", "#8fb9e3", "#f09a8d"][index % 4]} roughness={0.82} />
+            <meshStandardMaterial color={palette.flowers[index % palette.flowers.length]} roughness={0.82} />
           </mesh>
         </group>
       ))}
+
 
       <RoundedBox args={[5.7, 0.18, 1.45]} radius={0.08} position={[0, 0.02, 6.55]} receiveShadow>
         <meshStandardMaterial color="#d7b68e" roughness={0.9} />
