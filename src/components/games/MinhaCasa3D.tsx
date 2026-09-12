@@ -558,36 +558,45 @@ function CeilingAndRoof({ visible, lowPower }: { visible: boolean; lowPower: boo
 }
 
 
-function FrontGarden({ lowPower }: { lowPower: boolean }) {
+export type GardenStyle = "florido" | "sereno" | "outono";
+
+const gardenPalettes: Record<GardenStyle, { grass: string; path: string; bushes: [string, string]; flowers: string[]; pot: string }> = {
+  florido: { grass: "#7fa96b", path: "#d9c6a6", bushes: ["#63a567", "#4f8f62"], flowers: ["#ef7f9a", "#f2c85f", "#8fb9e3", "#f09a8d"], pot: "#dc8660" },
+  sereno: { grass: "#8fb59a", path: "#dfe2df", bushes: ["#7bab92", "#5f9a84"], flowers: ["#cfe3f2", "#e8eef2", "#b9d4e8", "#dfeaf0"], pot: "#b8b3a6" },
+  outono: { grass: "#a89358", path: "#e0c79c", bushes: ["#b9873f", "#96693a"], flowers: ["#e0793f", "#f0b23c", "#c4522f", "#e8934a"], pot: "#a9613c" },
+};
+
+function FrontGarden({ lowPower, style = "florido" }: { lowPower: boolean; style?: GardenStyle }) {
+  const palette = gardenPalettes[style];
   return (
     <group>
       <mesh position={[0, -0.11, 13.4]} receiveShadow>
         <boxGeometry args={[19, 0.18, 14.7]} />
-        <meshStandardMaterial color="#7fa96b" roughness={0.95} />
+        <meshStandardMaterial color={palette.grass} roughness={0.95} />
       </mesh>
       <mesh position={[0, 0.01, 13.2]} receiveShadow>
         <boxGeometry args={[1.55, 0.08, 14.5]} />
-        <meshStandardMaterial color="#d9c6a6" roughness={0.9} />
+        <meshStandardMaterial color={palette.path} roughness={0.9} />
       </mesh>
       {[-5.8, -4.5, 4.5, 5.8].map((x, index) => (
         <group key={x} position={[x, 0, 7.6 + (index % 2) * 0.65]}>
-          <mesh position={[0, 0.24, 0]} castShadow><cylinderGeometry args={[0.26, 0.34, 0.48, 12]} /><meshStandardMaterial color="#dc8660" /></mesh>
-          <mesh position={[0, 0.72, 0]} castShadow><sphereGeometry args={[0.48, 14, 10]} /><meshStandardMaterial color={index % 2 ? "#63a567" : "#4f8f62"} roughness={0.9} /></mesh>
+          <mesh position={[0, 0.24, 0]} castShadow><cylinderGeometry args={[0.26, 0.34, 0.48, 12]} /><meshStandardMaterial color={palette.pot} /></mesh>
+          <mesh position={[0, 0.72, 0]} castShadow><sphereGeometry args={[0.48, 14, 10]} /><meshStandardMaterial color={palette.bushes[index % 2]} roughness={0.9} /></mesh>
         </group>
       ))}
       {[-7, -6.45, -3.8, 3.8, 6.45, 7].map((x, index) => (
         <group key={x} position={[x, 0, 7 + (index % 2) * 0.38]}>
           <mesh position={[0, 0.32, 0]}><cylinderGeometry args={[0.025, 0.035, 0.62, 7]} /><meshStandardMaterial color="#4d8454" roughness={0.95} /></mesh>
-          <mesh position={[0, 0.66, 0]} castShadow><sphereGeometry args={[0.18, 12, 8]} /><meshStandardMaterial color={["#df716b", "#f0c65f", "#cf7aa2"][index % 3]} roughness={0.9} /></mesh>
+          <mesh position={[0, 0.66, 0]} castShadow><sphereGeometry args={[0.18, 12, 8]} /><meshStandardMaterial color={palette.flowers[index % palette.flowers.length]} roughness={0.9} /></mesh>
         </group>
       ))}
       {[-2.9, 2.9].map((x, index) => (
         <group key={x} position={[x, 0, 7.1]}>
-          <mesh position={[0, 0.52, 0]} castShadow><sphereGeometry args={[0.72, 16, 12]} /><meshStandardMaterial color={index ? "#5f9f60" : "#569a5c"} roughness={0.92} /></mesh>
+          <mesh position={[0, 0.52, 0]} castShadow><sphereGeometry args={[0.72, 16, 12]} /><meshStandardMaterial color={palette.bushes[index % 2]} roughness={0.92} /></mesh>
           {!lowPower && [-0.42, 0, 0.42].map((dx, i) => (
             <mesh key={dx} position={[dx, 0.95 - i * 0.12, 0.5]} castShadow>
               <sphereGeometry args={[0.14, 10, 8]} />
-              <meshStandardMaterial color={["#ef7f9a", "#f3c45f", "#e8697a"][i]} roughness={0.85} />
+              <meshStandardMaterial color={palette.flowers[i % palette.flowers.length]} roughness={0.85} />
             </mesh>
           ))}
         </group>
@@ -596,14 +605,15 @@ function FrontGarden({ lowPower }: { lowPower: boolean }) {
         <group key={`flower-bed-${x}`} position={[x, 0, 8.25 + (index % 3) * 0.22]}>
           <mesh position={[0, 0.32, 0]} castShadow>
             <sphereGeometry args={[0.28, 10, 8]} />
-            <meshStandardMaterial color="#4f9257" roughness={0.95} />
+            <meshStandardMaterial color={palette.bushes[index % 2]} roughness={0.95} />
           </mesh>
           <mesh position={[0, 0.58, 0.12]} castShadow>
             <sphereGeometry args={[0.13, 10, 8]} />
-            <meshStandardMaterial color={["#ef7f9a", "#f2c85f", "#8fb9e3", "#f09a8d"][index % 4]} roughness={0.82} />
+            <meshStandardMaterial color={palette.flowers[index % palette.flowers.length]} roughness={0.82} />
           </mesh>
         </group>
       ))}
+
 
       <RoundedBox args={[5.7, 0.18, 1.45]} radius={0.08} position={[0, 0.02, 6.55]} receiveShadow>
         <meshStandardMaterial color="#d7b68e" roughness={0.9} />
@@ -677,10 +687,11 @@ function InteriorTrim() {
   );
 }
 
-const Dollhouse = memo(function Dollhouse({ mode, lowPower }: { mode: ViewMode; lowPower: boolean }) {
+const Dollhouse = memo(function Dollhouse({ mode, lowPower, garden }: { mode: ViewMode; lowPower: boolean; garden: GardenStyle }) {
   return (
     <group>
-      <FrontGarden lowPower={lowPower} />
+      <FrontGarden lowPower={lowPower} style={garden} />
+
       <RoomFloor position={[-5.25, 0, -3.5]} size={[5.5, 5]} color="#cfa678" />
       <RoomFloor position={[0, 0, -3.5]} size={[5, 5]} color="#d6b789" />
       <RoomFloor position={[5.25, 0, -3.5]} size={[5.5, 5]} color="#c59c70" />
@@ -922,12 +933,40 @@ const CharacterFigure = memo(function CharacterFigure({ item, definition, select
   );
 });
 
-function Scene({ props, mode, navigation, resetSignal }: {
+function MoveMarker({ navigation }: { navigation: MutableRefObject<NavigationInput> }) {
+  const marker = useRef<THREE.Group>(null);
+  useFrame((state) => {
+    const group = marker.current;
+    if (!group) return;
+    const nav = navigation.current;
+    group.visible = nav.moving;
+    if (!nav.moving) return;
+    group.position.set(nav.targetX, 0.21, nav.targetZ);
+    const pulse = 1 + Math.sin(state.clock.elapsedTime * 6) * 0.14;
+    group.scale.setScalar(pulse);
+  });
+  return (
+    <group ref={marker} visible={false}>
+      <mesh rotation-x={-Math.PI / 2}>
+        <ringGeometry args={[0.34, 0.48, 36]} />
+        <meshBasicMaterial color="#ffd58a" transparent opacity={0.92} depthWrite={false} toneMapped={false} />
+      </mesh>
+      <mesh rotation-x={-Math.PI / 2} position={[0, -0.005, 0]}>
+        <circleGeometry args={[0.34, 32]} />
+        <meshBasicMaterial color="#ffb45e" transparent opacity={0.3} depthWrite={false} toneMapped={false} />
+      </mesh>
+    </group>
+  );
+}
+
+function Scene({ props, mode, navigation, resetSignal, garden }: {
   props: SceneProps;
   mode: ViewMode;
   navigation: MutableRefObject<NavigationInput>;
   resetSignal: number;
+  garden: GardenStyle;
 }) {
+
   const drag = useRef<DragState>(null);
   const [controlsEnabled, setControlsEnabled] = useState(true);
   const groundPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), []);
@@ -1002,17 +1041,22 @@ function Scene({ props, mode, navigation, resetSignal }: {
         shadow-bias={-0.0003}
       />
       <pointLight position={[0, 4.2, 1]} color={props.mood === "calmo" ? "#d7ecff" : "#ffc47a"} intensity={props.mood === "noite" ? 5.5 : 3.4} distance={18} decay={2} />
-      <Environment resolution={props.lowPower ? 32 : 64}>
-        <Lightformer intensity={2} position={[0, 7, 2]} scale={[12, 12, 1]} />
-        {!props.lowPower && <Lightformer intensity={1} color="#f5b77d" position={[-7, 2, 0]} rotation-y={Math.PI / 2} scale={[8, 4, 1]} />}
+      <Environment resolution={props.lowPower ? 32 : 96}>
+        <Lightformer intensity={2.2} position={[0, 7, 2]} scale={[12, 12, 1]} />
+        <Lightformer intensity={1.1} color="#ffd7ac" position={[0, 3, 10]} scale={[10, 6, 1]} />
+        {!props.lowPower && <Lightformer intensity={1.2} color="#f5b77d" position={[-7, 2, 0]} rotation-y={Math.PI / 2} scale={[8, 4, 1]} />}
+        {!props.lowPower && <Lightformer intensity={0.8} color="#bfe0ff" position={[7, 3, 0]} rotation-y={-Math.PI / 2} scale={[8, 4, 1]} />}
       </Environment>
+      <directionalLight position={[6, 6, -9]} intensity={props.mood === "noite" ? 0.35 : 0.6} color="#ffd9b0" />
 
       {mode === "walk" ? (
         <WalkCamera navigation={navigation} resetSignal={resetSignal} enabled={controlsEnabled} />
       ) : (
         <OverviewCamera />
       )}
-      <Dollhouse mode={mode} lowPower={props.lowPower} />
+      <Dollhouse mode={mode} lowPower={props.lowPower} garden={garden} />
+      {mode === "walk" && <MoveMarker navigation={navigation} />}
+
 
       <mesh
         position={[0, 0.17, 7.35]}
@@ -1188,7 +1232,9 @@ export default function MinhaCasa3D(props: Props) {
   const [lowPower, setLowPower] = useState(false);
   const [mode, setMode] = useState<ViewMode>("walk");
   const [resetSignal, setResetSignal] = useState(0);
+  const [garden, setGarden] = useState<GardenStyle>("florido");
   const navigation = useRef<NavigationInput>({ targetX: 0, targetZ: 19.2, moving: false, lookX: 0, lookY: 0 });
+
 
   useEffect(() => {
     const coarse = window.matchMedia("(pointer: coarse)");
@@ -1216,8 +1262,24 @@ export default function MinhaCasa3D(props: Props) {
            gl={{ antialias: !lowPower, alpha: false, powerPreference: lowPower ? "default" : "high-performance", failIfMajorPerformanceCaveat: false, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: lowPower ? 1.02 : 1.08 }}
           onPointerMissed={() => props.onSelect(null)}
         >
-          <Scene props={{ ...props, lowPower }} mode={mode} navigation={navigation} resetSignal={resetSignal} />
+          <Scene props={{ ...props, lowPower }} mode={mode} navigation={navigation} resetSignal={resetSignal} garden={garden} />
         </Canvas>
+
+        <div className="absolute right-3 top-3 z-20 flex gap-1 rounded-full bg-card/85 p-1 shadow-lg backdrop-blur-sm">
+          {([["florido", "Florido"], ["sereno", "Sereno"], ["outono", "Outono"]] as [GardenStyle, string][]).map(([value, label]) => (
+            <Button
+              key={value}
+              size="sm"
+              variant={garden === value ? "default" : "ghost"}
+              className="h-7 rounded-full px-3 text-xs"
+              onClick={() => setGarden(value)}
+            >
+              {label}
+            </Button>
+          ))}
+        </div>
+
+
 
         <div className="absolute left-3 top-3 z-20 flex gap-2">
           <Button
