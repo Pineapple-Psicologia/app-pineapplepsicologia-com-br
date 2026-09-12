@@ -25,8 +25,8 @@ type Props = {
   onMoveNote: (id: string, x: number, y: number) => void;
   onMoveSticker: (id: string, x: number, y: number) => void;
   onChangeNote: (id: string, text: string) => void;
-  lowPower: boolean;
 };
+type SceneProps = Props & { lowPower: boolean };
 
 type DragKind = "item" | "cover" | "note" | "sticker";
 type DragState = { id: string; kind: DragKind } | null;
@@ -389,7 +389,7 @@ const CharacterFigure = memo(function CharacterFigure({ item, definition, select
   );
 });
 
-function Scene({ props }: { props: Props }) {
+function Scene({ props }: { props: SceneProps }) {
   const drag = useRef<DragState>(null);
   const [controlsEnabled, setControlsEnabled] = useState(true);
   const groundPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), []);
@@ -572,7 +572,7 @@ function Scene({ props }: { props: Props }) {
         maxAzimuthAngle={1.1}
         target={[0, 0.65, 0]}
         touches={{ ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_ROTATE }}
-        onChange={invalidate}
+        onChange={() => invalidate()}
       />
     </>
   );
