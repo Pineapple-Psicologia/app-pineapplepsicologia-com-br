@@ -104,51 +104,86 @@ function Doorway({ x, z, rotation = 0, front = false }: { x: number; z: number; 
   });
 
   const halfWidth = front ? 1.08 : 0.72;
-  const frameWidth = front ? 2.3 : 1.55;
+  const frameWidth = front ? 2.5 : 1.55;
   const panelWidth = front ? 1.02 : 0.65;
+  const frameColor = front ? "#8c5a3c" : "#9a6845";
+
+  const doorLeaf = (side: -1 | 1) => (
+    <>
+      <RoundedBox args={[panelWidth, 2.14, 0.12]} radius={0.05} smoothness={4} position={[(side * panelWidth) / 2, 1.08, 0]} castShadow>
+        <meshPhysicalMaterial color="#37958c" roughness={0.3} clearcoat={0.7} clearcoatRoughness={0.22} sheen={0.4} sheenColor="#7fe0d3" />
+      </RoundedBox>
+      {[0.52, 1.26].map((y) => (
+        <RoundedBox key={y} args={[panelWidth * 0.62, y > 1 ? 0.72 : 0.62, 0.04]} radius={0.03} smoothness={3} position={[(side * panelWidth) / 2, y, 0.07]}>
+          <meshPhysicalMaterial color="#2f857d" roughness={0.34} clearcoat={0.5} />
+        </RoundedBox>
+      ))}
+      <mesh position={[(side * panelWidth) / 2, 1.86, 0.07]}>
+        <cylinderGeometry args={[0.19, 0.19, 0.04, 18]} />
+        <meshPhysicalMaterial color="#cfeef0" roughness={0.1} clearcoat={1} transmission={0.35} thickness={0.1} />
+      </mesh>
+      <mesh position={[side * (panelWidth - 0.16), 1.05, 0.11]}>
+        <sphereGeometry args={[0.058, 14, 10]} />
+        <meshStandardMaterial color="#f3c55e" metalness={0.75} roughness={0.2} />
+      </mesh>
+    </>
+  );
 
   return (
     <group position={[x, 0, z]} rotation-y={rotation}>
-      <mesh position={[-halfWidth, 1.15, 0]} castShadow><boxGeometry args={[0.13, 2.3, 0.2]} /><meshStandardMaterial color="#9a6845" /></mesh>
-      <mesh position={[halfWidth, 1.15, 0]} castShadow><boxGeometry args={[0.13, 2.3, 0.2]} /><meshStandardMaterial color="#9a6845" /></mesh>
-      <mesh position={[0, 2.24, 0]} castShadow><boxGeometry args={[frameWidth, 0.14, 0.2]} /><meshStandardMaterial color="#9a6845" /></mesh>
+      <mesh position={[-halfWidth, 1.15, 0]} castShadow><boxGeometry args={[front ? 0.2 : 0.13, 2.3, 0.24]} /><meshStandardMaterial color={frameColor} roughness={0.68} /></mesh>
+      <mesh position={[halfWidth, 1.15, 0]} castShadow><boxGeometry args={[front ? 0.2 : 0.13, 2.3, 0.24]} /><meshStandardMaterial color={frameColor} roughness={0.68} /></mesh>
+      <mesh position={[0, 2.28, 0]} castShadow><boxGeometry args={[frameWidth, front ? 0.22 : 0.14, 0.24]} /><meshStandardMaterial color={frameColor} roughness={0.68} /></mesh>
       {front && (
         <>
-          <group ref={leftDoor} position={[-1.01, 0, -0.08]}>
-            <RoundedBox args={[panelWidth, 2.14, 0.12]} radius={0.04} smoothness={3} position={[panelWidth / 2, 1.08, 0]} castShadow>
-              <meshPhysicalMaterial color="#3f918a" roughness={0.38} clearcoat={0.38} clearcoatRoughness={0.32} />
-            </RoundedBox>
-            <mesh position={[0.83, 1.05, -0.1]}><sphereGeometry args={[0.055, 12, 8]} /><meshStandardMaterial color="#f3c55e" metalness={0.6} roughness={0.25} /></mesh>
-          </group>
-          <group ref={rightDoor} position={[1.01, 0, -0.08]}>
-            <RoundedBox args={[panelWidth, 2.14, 0.12]} radius={0.04} smoothness={3} position={[-panelWidth / 2, 1.08, 0]} castShadow>
-              <meshPhysicalMaterial color="#3f918a" roughness={0.38} clearcoat={0.38} clearcoatRoughness={0.32} />
-            </RoundedBox>
-            <mesh position={[-0.83, 1.05, -0.1]}><sphereGeometry args={[0.055, 12, 8]} /><meshStandardMaterial color="#f3c55e" metalness={0.6} roughness={0.25} /></mesh>
-          </group>
+          <group ref={leftDoor} position={[-1.01, 0, -0.08]}>{doorLeaf(1)}</group>
+          <group ref={rightDoor} position={[1.01, 0, -0.08]}>{doorLeaf(-1)}</group>
+          <mesh position={[0, 0.06, 0.16]} receiveShadow><boxGeometry args={[2.5, 0.12, 0.7]} /><meshStandardMaterial color="#c9a882" roughness={0.9} /></mesh>
         </>
       )}
     </group>
   );
 }
 
-function Window({ position, rotation = 0 }: { position: [number, number, number]; rotation?: number }) {
+
+function Window({ position, rotation = 0, front = false }: { position: [number, number, number]; rotation?: number; front?: boolean }) {
+  const frame = "#8c5a3c";
   return (
     <group position={position} rotation-y={rotation}>
-      <mesh><boxGeometry args={[1.8, 1.25, 0.08]} /><meshPhysicalMaterial color="#9fd9e8" roughness={0.12} metalness={0.02} transmission={0.08} clearcoat={0.5} emissive="#73b6c8" emissiveIntensity={0.08} /></mesh>
-      <mesh position={[0, 0, 0.06]}><boxGeometry args={[0.08, 1.3, 0.08]} /><meshStandardMaterial color="#9a5f38" /></mesh>
-      <mesh position={[0, 0, 0.06]}><boxGeometry args={[1.85, 0.08, 0.08]} /><meshStandardMaterial color="#9a5f38" /></mesh>
-      <mesh position={[0, -0.72, 0.08]} castShadow><boxGeometry args={[2, 0.13, 0.3]} /><meshStandardMaterial color="#d4b492" /></mesh>
-      <RoundedBox args={[0.42, 1.5, 0.09]} radius={0.08} smoothness={3} position={[-1.02, -0.05, 0.14]} castShadow>
+      <mesh><boxGeometry args={[1.8, 1.25, 0.08]} /><meshPhysicalMaterial color="#a9e0ec" roughness={0.08} metalness={0.02} transmission={0.12} clearcoat={0.8} emissive="#7cc0d2" emissiveIntensity={0.12} /></mesh>
+      {front && (
+        <>
+          <RoundedBox args={[2.12, 0.18, 0.16]} radius={0.05} smoothness={3} position={[0, 0.7, 0.06]} castShadow><meshStandardMaterial color={frame} roughness={0.6} /></RoundedBox>
+          <RoundedBox args={[2.12, 0.18, 0.16]} radius={0.05} smoothness={3} position={[0, -0.7, 0.06]} castShadow><meshStandardMaterial color={frame} roughness={0.6} /></RoundedBox>
+          {[-0.97, 0.97].map((x) => (
+            <RoundedBox key={x} args={[0.18, 1.58, 0.16]} radius={0.05} smoothness={3} position={[x, 0, 0.06]} castShadow><meshStandardMaterial color={frame} roughness={0.6} /></RoundedBox>
+          ))}
+        </>
+      )}
+      <mesh position={[0, 0, 0.07]}><boxGeometry args={[0.09, 1.3, 0.09]} /><meshStandardMaterial color={frame} roughness={0.6} /></mesh>
+      <mesh position={[0, 0, 0.07]}><boxGeometry args={[1.85, 0.09, 0.09]} /><meshStandardMaterial color={frame} roughness={0.6} /></mesh>
+      <mesh position={[0, -0.82, 0.1]} castShadow><boxGeometry args={[2.3, 0.14, 0.34]} /><meshStandardMaterial color="#e6d3b3" roughness={0.85} /></mesh>
+      {front && (
+        <group position={[0, -1.02, 0.2]}>
+          <RoundedBox args={[1.72, 0.32, 0.36]} radius={0.07} smoothness={3} castShadow><meshStandardMaterial color="#b6764f" roughness={0.85} /></RoundedBox>
+          {[-0.58, -0.2, 0.2, 0.58].map((x, i) => (
+            <group key={x} position={[x, 0.22, 0.04]}>
+              <mesh castShadow><sphereGeometry args={[0.13, 10, 8]} /><meshStandardMaterial color="#4f9257" roughness={0.95} /></mesh>
+              <mesh position={[0, 0.13, 0.03]} castShadow><sphereGeometry args={[0.085, 10, 8]} /><meshStandardMaterial color={["#ef7f9a", "#f2c85f", "#e8697a", "#f0a15c"][i]} roughness={0.8} /></mesh>
+            </group>
+          ))}
+        </group>
+      )}
+      <RoundedBox args={[0.42, 1.6, 0.09]} radius={0.08} smoothness={3} position={[-1.22, -0.05, 0.14]} castShadow>
         <meshPhysicalMaterial color="#e9b7a2" roughness={0.9} sheen={0.42} sheenColor="#fff0da" />
       </RoundedBox>
-      <RoundedBox args={[0.42, 1.5, 0.09]} radius={0.08} smoothness={3} position={[1.02, -0.05, 0.14]} castShadow>
+      <RoundedBox args={[0.42, 1.6, 0.09]} radius={0.08} smoothness={3} position={[1.22, -0.05, 0.14]} castShadow>
         <meshPhysicalMaterial color="#e9b7a2" roughness={0.9} sheen={0.42} sheenColor="#fff0da" />
       </RoundedBox>
-      <mesh position={[0, 0.78, 0.16]}><cylinderGeometry args={[0.035, 0.035, 2.5, 10]} /><meshStandardMaterial color="#9a6845" roughness={0.55} /></mesh>
     </group>
   );
 }
+
 
 function Sofa({ position, color }: { position: [number, number, number]; color: string }) {
   return (
@@ -578,8 +613,23 @@ function FrontGarden({ lowPower }: { lowPower: boolean }) {
           <meshStandardMaterial color={index === 0 ? "#d8b48d" : "#c99f78"} roughness={0.9} />
         </RoundedBox>
       ))}
-      {[-2.15, 2.15].map((x) => <mesh key={x} position={[x, 1.28, 6.68]} castShadow><cylinderGeometry args={[0.16, 0.2, 2.55, 20]} /><meshStandardMaterial color="#f6ead8" roughness={0.72} /></mesh>)}
-      <mesh position={[0, 2.5, 6.65]} castShadow><boxGeometry args={[5.5, 0.18, 1.8]} /><meshStandardMaterial color="#f6ead8" /></mesh>
+      {[-2.15, 2.15].map((x) => (
+        <group key={x} position={[x, 0, 6.68]}>
+          <mesh position={[0, 0.18, 0]} castShadow><cylinderGeometry args={[0.28, 0.32, 0.3, 20]} /><meshStandardMaterial color="#efe0c8" roughness={0.78} /></mesh>
+          <mesh position={[0, 1.4, 0]} castShadow><cylinderGeometry args={[0.17, 0.21, 2.15, 20]} /><meshPhysicalMaterial color="#f8eeda" roughness={0.6} clearcoat={0.25} /></mesh>
+          <mesh position={[0, 2.56, 0]} castShadow><cylinderGeometry args={[0.3, 0.24, 0.24, 20]} /><meshStandardMaterial color="#efe0c8" roughness={0.78} /></mesh>
+        </group>
+      ))}
+      <mesh position={[0, 2.76, 6.6]} castShadow><boxGeometry args={[6.1, 0.22, 2.1]} /><meshStandardMaterial color="#f8eeda" roughness={0.8} /></mesh>
+      <group position={[0, 3.06, 6.9]} rotation-x={-0.3}>
+        <mesh castShadow receiveShadow><boxGeometry args={[6.5, 0.16, 2.3]} /><meshStandardMaterial color="#cf6f52" roughness={0.8} /></mesh>
+        {!lowPower && Array.from({ length: 9 }, (_, i) => -2.8 + i * 0.7).map((x) => (
+          <mesh key={x} position={[x, 0.12, 0]} rotation-x={Math.PI / 2} castShadow>
+            <cylinderGeometry args={[0.1, 0.1, 2.3, 8, 1, true]} />
+            <meshStandardMaterial color="#e0805c" roughness={0.75} />
+          </mesh>
+        ))}
+      </group>
       <mesh position={[0, 2.16, 6.78]} castShadow><sphereGeometry args={[0.2, 16, 10]} /><meshStandardMaterial color="#ffd58a" emissive="#ffb45e" emissiveIntensity={0.65} roughness={0.3} /></mesh>
       {!lowPower && <pointLight position={[0, 2.1, 7]} color="#ffc477" intensity={1.1} distance={4.5} decay={2} />}
     </group>
@@ -587,24 +637,28 @@ function FrontGarden({ lowPower }: { lowPower: boolean }) {
 }
 
 function FrontFacade() {
-  const cream = "#f4dfbf";
+  const cream = "#f7e3c3";
   return (
     <group>
       <Wall position={[-7, 1.5, 6]} size={[2, 3, 0.24]} color={cream} />
       <Wall position={[7, 1.5, 6]} size={[2, 3, 0.24]} color={cream} />
       <Wall position={[-2.43, 1.5, 6]} size={[2.75, 3, 0.24]} color={cream} />
       <Wall position={[2.43, 1.5, 6]} size={[2.75, 3, 0.24]} color={cream} />
-      <Wall position={[-4.8, 0.42, 6]} size={[2.4, 0.84, 0.24]} color={cream} />
-      <Wall position={[4.8, 0.42, 6]} size={[2.4, 0.84, 0.24]} color={cream} />
+      <Wall position={[-4.8, 0.34, 6]} size={[2.4, 0.68, 0.24]} color={cream} />
+      <Wall position={[4.8, 0.34, 6]} size={[2.4, 0.68, 0.24]} color={cream} />
       <Wall position={[-4.8, 2.62, 6]} size={[2.4, 0.76, 0.24]} color={cream} />
       <Wall position={[4.8, 2.62, 6]} size={[2.4, 0.76, 0.24]} color={cream} />
-      <Wall position={[0, 2.64, 6]} size={[2.1, 0.72, 0.24]} color={cream} />
-      <Window position={[-4.8, 1.62, 6.15]} />
-      <Window position={[4.8, 1.62, 6.15]} />
+      <Wall position={[0, 2.68, 6]} size={[2.1, 0.64, 0.24]} color={cream} />
+      {/* rodapé e cornija da fachada */}
+      <mesh position={[0, 0.16, 6.16]} castShadow receiveShadow><boxGeometry args={[16.1, 0.32, 0.14]} /><meshStandardMaterial color="#e2c8a2" roughness={0.85} /></mesh>
+      <mesh position={[0, 3.02, 6.24]} castShadow><boxGeometry args={[16.6, 0.24, 0.3]} /><meshStandardMaterial color="#fdf3e2" roughness={0.72} /></mesh>
+      <Window position={[-4.8, 1.5, 6.15]} front />
+      <Window position={[4.8, 1.5, 6.15]} front />
       <Doorway x={0} z={6.15} front />
     </group>
   );
 }
+
 
 function InteriorTrim() {
   const trim = "#b78963";
