@@ -1294,6 +1294,7 @@ function Fallback() {
 
 export default function MinhaCasa3D(props: Props) {
   const [lowPower, setLowPower] = useState(false);
+  const [dpr, setDpr] = useState(1);
   const [mode, setMode] = useState<ViewMode>("walk");
   const [resetSignal, setResetSignal] = useState(0);
   const [localGarden, setLocalGarden] = useState<GardenStyle>("florido");
