@@ -146,23 +146,44 @@ function Doorway({ x, z, rotation = 0, front = false }: { x: number; z: number; 
 }
 
 
-function Window({ position, rotation = 0 }: { position: [number, number, number]; rotation?: number }) {
+function Window({ position, rotation = 0, front = false }: { position: [number, number, number]; rotation?: number; front?: boolean }) {
+  const frame = "#8c5a3c";
   return (
     <group position={position} rotation-y={rotation}>
-      <mesh><boxGeometry args={[1.8, 1.25, 0.08]} /><meshPhysicalMaterial color="#9fd9e8" roughness={0.12} metalness={0.02} transmission={0.08} clearcoat={0.5} emissive="#73b6c8" emissiveIntensity={0.08} /></mesh>
-      <mesh position={[0, 0, 0.06]}><boxGeometry args={[0.08, 1.3, 0.08]} /><meshStandardMaterial color="#9a5f38" /></mesh>
-      <mesh position={[0, 0, 0.06]}><boxGeometry args={[1.85, 0.08, 0.08]} /><meshStandardMaterial color="#9a5f38" /></mesh>
-      <mesh position={[0, -0.72, 0.08]} castShadow><boxGeometry args={[2, 0.13, 0.3]} /><meshStandardMaterial color="#d4b492" /></mesh>
-      <RoundedBox args={[0.42, 1.5, 0.09]} radius={0.08} smoothness={3} position={[-1.02, -0.05, 0.14]} castShadow>
+      <mesh><boxGeometry args={[1.8, 1.25, 0.08]} /><meshPhysicalMaterial color="#a9e0ec" roughness={0.08} metalness={0.02} transmission={0.12} clearcoat={0.8} emissive="#7cc0d2" emissiveIntensity={0.12} /></mesh>
+      {front && (
+        <>
+          <RoundedBox args={[2.12, 0.18, 0.16]} radius={0.05} smoothness={3} position={[0, 0.7, 0.06]} castShadow><meshStandardMaterial color={frame} roughness={0.6} /></RoundedBox>
+          <RoundedBox args={[2.12, 0.18, 0.16]} radius={0.05} smoothness={3} position={[0, -0.7, 0.06]} castShadow><meshStandardMaterial color={frame} roughness={0.6} /></RoundedBox>
+          {[-0.97, 0.97].map((x) => (
+            <RoundedBox key={x} args={[0.18, 1.58, 0.16]} radius={0.05} smoothness={3} position={[x, 0, 0.06]} castShadow><meshStandardMaterial color={frame} roughness={0.6} /></RoundedBox>
+          ))}
+        </>
+      )}
+      <mesh position={[0, 0, 0.07]}><boxGeometry args={[0.09, 1.3, 0.09]} /><meshStandardMaterial color={frame} roughness={0.6} /></mesh>
+      <mesh position={[0, 0, 0.07]}><boxGeometry args={[1.85, 0.09, 0.09]} /><meshStandardMaterial color={frame} roughness={0.6} /></mesh>
+      <mesh position={[0, -0.82, 0.1]} castShadow><boxGeometry args={[2.3, 0.14, 0.34]} /><meshStandardMaterial color="#e6d3b3" roughness={0.85} /></mesh>
+      {front && (
+        <group position={[0, -1.02, 0.2]}>
+          <RoundedBox args={[1.72, 0.32, 0.36]} radius={0.07} smoothness={3} castShadow><meshStandardMaterial color="#b6764f" roughness={0.85} /></RoundedBox>
+          {[-0.58, -0.2, 0.2, 0.58].map((x, i) => (
+            <group key={x} position={[x, 0.22, 0.04]}>
+              <mesh castShadow><sphereGeometry args={[0.13, 10, 8]} /><meshStandardMaterial color="#4f9257" roughness={0.95} /></mesh>
+              <mesh position={[0, 0.13, 0.03]} castShadow><sphereGeometry args={[0.085, 10, 8]} /><meshStandardMaterial color={["#ef7f9a", "#f2c85f", "#e8697a", "#f0a15c"][i]} roughness={0.8} /></mesh>
+            </group>
+          ))}
+        </group>
+      )}
+      <RoundedBox args={[0.42, 1.6, 0.09]} radius={0.08} smoothness={3} position={[-1.22, -0.05, 0.14]} castShadow>
         <meshPhysicalMaterial color="#e9b7a2" roughness={0.9} sheen={0.42} sheenColor="#fff0da" />
       </RoundedBox>
-      <RoundedBox args={[0.42, 1.5, 0.09]} radius={0.08} smoothness={3} position={[1.02, -0.05, 0.14]} castShadow>
+      <RoundedBox args={[0.42, 1.6, 0.09]} radius={0.08} smoothness={3} position={[1.22, -0.05, 0.14]} castShadow>
         <meshPhysicalMaterial color="#e9b7a2" roughness={0.9} sheen={0.42} sheenColor="#fff0da" />
       </RoundedBox>
-      <mesh position={[0, 0.78, 0.16]}><cylinderGeometry args={[0.035, 0.035, 2.5, 10]} /><meshStandardMaterial color="#9a6845" roughness={0.55} /></mesh>
     </group>
   );
 }
+
 
 function Sofa({ position, color }: { position: [number, number, number]; color: string }) {
   return (
