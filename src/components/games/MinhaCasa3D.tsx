@@ -3,6 +3,7 @@ import { Canvas, type ThreeEvent, useFrame, useThree } from "@react-three/fiber"
 import { Billboard, Environment, Html, Lightformer, OrbitControls, RoundedBox, Text, useTexture } from "@react-three/drei";
 import { DoorOpen, Eye, Footprints, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import casaAvoLoading from "@/assets/casa-avo-loading.jpg";
 import * as THREE from "three";
 import Game3DGuard from "./Game3DGuard";
 
@@ -986,8 +987,17 @@ function TouchStick({ valueRef, label, className }: { valueRef: MutableRefObject
 
 function Fallback() {
   return (
-    <div className="grid h-full min-h-[420px] place-items-center bg-secondary/70 px-6 text-center text-sm font-bold text-muted-foreground">
-      Este aparelho não conseguiu abrir a casa em 3D.
+    <div className="relative h-full min-h-[420px] overflow-hidden bg-secondary">
+      <img
+        src={casaAvoLoading}
+        alt="Casa de vó acolhedora com a porta aberta"
+        width={1536}
+        height={864}
+        className="h-full w-full object-cover"
+      />
+      <div className="absolute inset-x-0 bottom-0 bg-foreground/70 px-4 py-3 text-center text-sm font-bold text-background backdrop-blur-sm">
+        A casa está visível, mas a caminhada em 3D não pôde ser iniciada neste aparelho.
+      </div>
     </div>
   );
 }
@@ -1017,11 +1027,12 @@ export default function MinhaCasa3D(props: Props) {
       <div className="relative h-full w-full bg-secondary">
         <Canvas
           key={mode}
+          fallback={<Fallback />}
           shadows={!lowPower}
           dpr={lowPower ? 1 : [1, 1.25]}
           frameloop={mode === "walk" ? "always" : "demand"}
           camera={{ position: mode === "walk" ? [0, 1.65, 13.2] : [13.5, 15.2, 17.5], fov: mode === "walk" ? 62 : 42, near: 0.08, far: 60 }}
-           gl={{ antialias: !lowPower, alpha: false, powerPreference: "high-performance", toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: lowPower ? 1.02 : 1.08 }}
+           gl={{ antialias: !lowPower, alpha: false, powerPreference: lowPower ? "default" : "high-performance", failIfMajorPerformanceCaveat: false, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: lowPower ? 1.02 : 1.08 }}
           onPointerMissed={() => props.onSelect(null)}
         >
           <Scene props={{ ...props, lowPower }} mode={mode} moveInput={moveInput} lookInput={lookInput} resetSignal={resetSignal} />
