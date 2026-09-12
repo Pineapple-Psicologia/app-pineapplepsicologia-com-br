@@ -653,7 +653,7 @@ function WalkCamera({ moveInput, lookInput, resetSignal, enabled }: {
 }) {
   const { camera, invalidate } = useThree();
   const keys = useRef(new Set<string>());
-  const position = useRef(new THREE.Vector3(0, 1.65, 13.2));
+  const position = useRef(new THREE.Vector3(0, 1.7, 14.2));
   const yaw = useRef(0);
   const pitch = useRef(-0.04);
 
@@ -672,7 +672,7 @@ function WalkCamera({ moveInput, lookInput, resetSignal, enabled }: {
   }, []);
 
   useEffect(() => {
-    position.current.set(0, 1.65, 13.2);
+    position.current.set(0, 1.7, 14.2);
     yaw.current = 0;
     pitch.current = -0.04;
     invalidate();
@@ -1061,7 +1061,7 @@ export default function MinhaCasa3D(props: Props) {
           shadows={!lowPower}
           dpr={lowPower ? 1 : [1, 1.25]}
           frameloop={mode === "walk" ? "always" : "demand"}
-          camera={{ position: mode === "walk" ? [0, 1.65, 13.2] : [13.5, 15.2, 17.5], fov: mode === "walk" ? 62 : 42, near: 0.08, far: 60 }}
+          camera={{ position: mode === "walk" ? [0, 1.7, 14.2] : [13.5, 15.2, 17.5], fov: mode === "walk" ? 62 : 42, near: 0.08, far: 60 }}
            gl={{ antialias: !lowPower, alpha: false, powerPreference: lowPower ? "default" : "high-performance", failIfMajorPerformanceCaveat: false, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: lowPower ? 1.02 : 1.08 }}
           onPointerMissed={() => props.onSelect(null)}
         >
