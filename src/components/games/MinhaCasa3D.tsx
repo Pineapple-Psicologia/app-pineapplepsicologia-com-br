@@ -823,9 +823,15 @@ function WalkCamera({ navigation, resetSignal, enabled, remoteCamera, onCamera }
     invalidate();
   }, [invalidate, resetSignal]);
 
+  const lastLocalInput = useRef(0);
+  const appliedRemote = useRef(0);
+  const lastSent = useRef(0);
+
   useFrame((_, rawDelta) => {
     if (!enabled) return;
     const dt = Math.min(rawDelta, 0.05);
+    const now = performance.now();
+    const hadLook = navigation.current.lookX !== 0 || navigation.current.lookY !== 0;
     yaw.current -= navigation.current.lookX * 0.0045;
     pitch.current = THREE.MathUtils.clamp(pitch.current - navigation.current.lookY * 0.0035, -0.62, 0.55);
     navigation.current.lookX = 0;
@@ -834,6 +840,7 @@ function WalkCamera({ navigation, resetSignal, enabled, remoteCamera, onCamera }
       - (keys.current.has("KeyS") || keys.current.has("ArrowDown") ? 1 : 0);
     const strafe = (keys.current.has("KeyD") || keys.current.has("ArrowRight") ? 1 : 0)
       - (keys.current.has("KeyA") || keys.current.has("ArrowLeft") ? 1 : 0);
+    if (hadLook || forward !== 0 || strafe !== 0) lastLocalInput.current = now;
     if (Math.abs(forward) > 0.02 || Math.abs(strafe) > 0.02) {
       const length = Math.hypot(forward, strafe) || 1;
       const speed = 3.25 * dt;
@@ -843,6 +850,23 @@ function WalkCamera({ navigation, resetSignal, enabled, remoteCamera, onCamera }
       if (isPassage(current.x + dx, current.z)) current.x += dx;
       if (isPassage(current.x, current.z + dz)) current.z += dz;
     }
+
+    // aplica a câmera do parceiro quando não há interação local recente
+    const remote = remoteCamera?.current;
+    if (remote && remote.t > appliedRemote.current && now - lastLocalInput.current > 700) {
+      appliedRemote.current = remote.t;
+      navigation.current.targetX = remote.targetX;
+      navigation.current.targetZ = remote.targetZ;
+      navigation.current.moving = remote.moving;
+      yaw.current = THREE.MathUtils.lerp(yaw.current, remote.yaw, 0.4);
+      pitch.current = THREE.MathUtils.lerp(pitch.current, remote.pitch, 0.4);
+      const far = Math.hypot(remote.x - position.current.x, remote.z - position.current.z);
+      if (far > 2.5) {
+        position.current.x = remote.x;
+        position.current.z = remote.z;
+      }
+    }
+
     if (navigation.current.moving) {
       const current = position.current;
       const dx = navigation.current.targetX - current.x;
@@ -864,8 +888,23 @@ function WalkCamera({ navigation, resetSignal, enabled, remoteCamera, onCamera }
     camera.position.copy(position.current);
     camera.rotation.order = "YXZ";
     camera.rotation.set(pitch.current, yaw.current, 0);
+
+    if (onCamera && now - lastSent.current > 120 && now - lastLocalInput.current < 2500) {
+      lastSent.current = now;
+      onCamera({
+        x: position.current.x,
+        z: position.current.z,
+        yaw: yaw.current,
+        pitch: pitch.current,
+        targetX: navigation.current.targetX,
+        targetZ: navigation.current.targetZ,
+        moving: navigation.current.moving,
+        t: Date.now(),
+      });
+    }
     invalidate();
   });
+
   return null;
 }
 
