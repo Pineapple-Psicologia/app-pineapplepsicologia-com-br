@@ -13,6 +13,7 @@
 - [ ] Transformar Bússola de Valores
 - [x] Transformar Minha Casa
 - [x] Otimizar Minha Casa 3D para movimentação simultânea em celular e tablet
+- [x] Criar entrada pela porta, teto e circulação interna na Minha Casa 3D
 - [ ] Transformar Missão Autocontrole
 - [ ] Transformar História em Espiral
 - [ ] Validar regras, sincronização, PDF e telas em retrato/paisagem
