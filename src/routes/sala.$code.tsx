@@ -36,7 +36,14 @@ export const Route = createFileRoute("/sala/$code")({
   validateSearch: searchSchema,
 
   head: ({ params }) => ({
-    meta: [{ title: `Sala ${params.code} — Mundo Pine` }],
+    meta: [
+      { title: `Sala ${params.code} — Mundo Pine` },
+      { name: "description", content: "Sala privada para uma atividade terapêutica colaborativa do Mundo Pine." },
+      { property: "og:title", content: `Sala terapêutica ${params.code} — Mundo Pine` },
+      { property: "og:description", content: "Acesse diretamente a atividade terapêutica compartilhada pela psicóloga." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
   }),
   component: SalaPage,
   errorComponent: ({ error }) => (

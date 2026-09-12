@@ -1,4 +1,4 @@
-import { Suspense, useRef } from "react";
+import { Suspense, useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, RoundedBox, Text, Float, Sparkles } from "@react-three/drei";
 import * as THREE from "three";
@@ -235,13 +235,18 @@ function Pawn({ x, z }: { x: number; z: number }) {
 }
 
 function Trail({ locations, completedCount }: { locations: Board3DLocation[]; completedCount: number }) {
-  const points = locations.map((l) => new THREE.Vector3(toWorld(l.x), 0.42, toWorld(l.y)));
-  const fullCurve = new THREE.CatmullRomCurve3(points, false, "catmullrom", 0.3);
-  const fullGeom = new THREE.TubeGeometry(fullCurve, 120, 0.07, 8, false);
-
-  const donePoints = points.slice(0, Math.max(2, completedCount + 1));
-  const doneCurve = completedCount > 0 ? new THREE.CatmullRomCurve3(donePoints, false, "catmullrom", 0.3) : null;
-  const doneGeom = doneCurve ? new THREE.TubeGeometry(doneCurve, 80, 0.09, 8, false) : null;
+  const { fullGeom, doneGeom } = useMemo(() => {
+    const points = locations.map((l) => new THREE.Vector3(toWorld(l.x), 0.42, toWorld(l.y)));
+    const fullCurve = new THREE.CatmullRomCurve3(points, false, "catmullrom", 0.3);
+    const finished = points.slice(0, Math.max(2, completedCount + 1));
+    const doneCurve = completedCount > 0
+      ? new THREE.CatmullRomCurve3(finished, false, "catmullrom", 0.3)
+      : null;
+    return {
+      fullGeom: new THREE.TubeGeometry(fullCurve, 80, 0.07, 8, false),
+      doneGeom: doneCurve ? new THREE.TubeGeometry(doneCurve, 60, 0.09, 8, false) : null,
+    };
+  }, [locations, completedCount]);
 
   return (
     <group>
@@ -333,15 +338,12 @@ export default function DetetiveBoard3D({ locations, currentIdx, completed, onSe
 
         {locations.map((loc, i) => {
           const done = completed.includes(loc.id);
-          const unlocked = i <= currentIdx;
           const isCurrent = i === currentIdx && !done;
           const state: "locked" | "current" | "done" | "available" = done
             ? "done"
             : isCurrent
               ? "current"
-              : unlocked
-                ? "available"
-                : "locked";
+              : "available";
           return (
             <Tile
               key={loc.id}
@@ -366,6 +368,7 @@ export default function DetetiveBoard3D({ locations, currentIdx, completed, onSe
           minPolarAngle={Math.PI / 6}
           autoRotate
           autoRotateSpeed={0.4}
+          touches={{ ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_ROTATE }}
         />
       </Suspense>
     </Canvas>
