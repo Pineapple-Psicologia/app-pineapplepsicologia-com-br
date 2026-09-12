@@ -18,7 +18,8 @@ function keepEditorMarkersOutOfThreeScenes(): Plugin {
       return {
         code: code
           .replace(/"data-tsd-source":\s*"[^"]*",\s*/g, "")
-          .replace(/,\s*"data-tsd-source":\s*"[^"]*"/g, ""),
+          .replace(/,\s*"data-tsd-source":\s*"[^"]*"/g, "")
+          .replace(/"data-tsd-source":\s*"[^"]*"/g, ""),
         map: null,
       };
     },
