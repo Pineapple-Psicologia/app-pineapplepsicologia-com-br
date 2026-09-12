@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
 import { Home, RotateCcw, Download, Trash2, Sun, Moon, Sparkles, Cloud, EyeOff, X, StickyNote, Smile } from "lucide-react";
 import jsPDF from "jspdf";
+import MinhaCasa3D from "./MinhaCasa3D";
 
-import casaBg from "@/assets/casa-pixar.jpg";
 import imgCrianca from "@/assets/casa/char-crianca.png";
 import imgAdolescente from "@/assets/casa/char-adolescente.png";
 import imgMae from "@/assets/casa/char-mae.png";
@@ -192,7 +192,6 @@ export default function MinhaCasa({ room }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const canvasRef = useRef<HTMLDivElement>(null);
 
   // sync realtime — evita ping-pong: quando o estado chega do peer, NÃO rebroadcast.
   const remoteRef = useRef(false);
@@ -228,9 +227,6 @@ export default function MinhaCasa({ room }: Props) {
   useEffect(() => () => {
     if (sendTimerRef.current) clearTimeout(sendTimerRef.current);
   }, []);
-
-  const mood = MOODS.find((m) => m.id === state.mood)!;
-  
 
   const addCharacter = (c: CharDef) => {
     setState((s) => ({
@@ -304,88 +300,6 @@ export default function MinhaCasa({ room }: Props) {
     setState((s) => ({ ...s, stickers: s.stickers.filter((st) => st.id !== id) }));
     if (selectedId === id) setSelectedId(null);
   };
-
-  // drag (personagens + covers + notas + stickers)
-  type DragMode = "move" | "resize";
-  type DragKind = "item" | "cover" | "note" | "sticker";
-  const dragRef = useRef<{ id: string; kind: DragKind; mode: DragMode; offX: number; offY: number } | null>(null);
-
-  const onPointerDownItem = (e: React.PointerEvent, item: Placed) => {
-    e.stopPropagation();
-    setSelectedId(item.id);
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const cx = (e.clientX - rect.left) / rect.width;
-    const cy = (e.clientY - rect.top) / rect.height;
-    dragRef.current = { id: item.id, kind: "item", mode: "move", offX: cx - item.x, offY: cy - item.y };
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-  };
-  const onPointerDownBox = (
-    e: React.PointerEvent,
-    box: { id: string; x: number; y: number; w: number; h: number },
-    kind: "cover" | "note",
-    mode: DragMode,
-  ) => {
-    e.stopPropagation();
-    setSelectedId(box.id);
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const cx = (e.clientX - rect.left) / rect.width;
-    const cy = (e.clientY - rect.top) / rect.height;
-    const offX = mode === "move" ? cx - box.x : cx - (box.x + box.w);
-    const offY = mode === "move" ? cy - box.y : cy - (box.y + box.h);
-    dragRef.current = { id: box.id, kind, mode, offX, offY };
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-  };
-  const onPointerDownSticker = (e: React.PointerEvent, st: Sticker) => {
-    e.stopPropagation();
-    setSelectedId(st.id);
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const cx = (e.clientX - rect.left) / rect.width;
-    const cy = (e.clientY - rect.top) / rect.height;
-    dragRef.current = { id: st.id, kind: "sticker", mode: "move", offX: cx - st.x, offY: cy - st.y };
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-  };
-  const onPointerMove = useCallback((e: React.PointerEvent) => {
-    const d = dragRef.current;
-    if (!d) return;
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const cx = (e.clientX - rect.left) / rect.width;
-    const cy = (e.clientY - rect.top) / rect.height;
-    setState((s) => {
-      if (d.kind === "item") {
-        return {
-          ...s,
-          items: s.items.map((i) =>
-            i.id !== d.id ? i : { ...i, x: Math.max(0.02, Math.min(0.98, cx - d.offX)), y: Math.max(0.05, Math.min(0.98, cy - d.offY)) },
-          ),
-        };
-      }
-      if (d.kind === "sticker") {
-        return {
-          ...s,
-          stickers: s.stickers.map((st) =>
-            st.id !== d.id ? st : { ...st, x: Math.max(0.02, Math.min(0.98, cx - d.offX)), y: Math.max(0.02, Math.min(0.98, cy - d.offY)) },
-          ),
-        };
-      }
-      const updateBox = <T extends { id: string; x: number; y: number; w: number; h: number }>(arr: T[]): T[] =>
-        arr.map((b) => {
-          if (b.id !== d.id) return b;
-          if (d.mode === "move") {
-            return { ...b, x: Math.max(0, Math.min(1 - b.w, cx - d.offX)), y: Math.max(0, Math.min(1 - b.h, cy - d.offY)) };
-          }
-          const nw = Math.max(0.08, Math.min(1 - b.x, cx - d.offX - b.x));
-          const nh = Math.max(0.06, Math.min(1 - b.y, cy - d.offY - b.y));
-          return { ...b, w: nw, h: nh };
-        });
-      if (d.kind === "cover") return { ...s, covers: updateBox(s.covers) };
-      return { ...s, notes: updateBox(s.notes) };
-    });
-  }, []);
-  const onPointerUp = () => { dragRef.current = null; };
 
   // leituras simbólicas
   const characters = state.items;
@@ -520,194 +434,24 @@ export default function MinhaCasa({ room }: Props) {
           })}
         </aside>
 
-        {/* canvas casa */}
+        {/* casa terapêutica 3D */}
         <div className="flex-1 min-w-0 flex flex-col gap-2">
-          <div className="relative flex-1 rounded-2xl border-4 border-amber-900/20 overflow-hidden shadow-[0_25px_60px_-20px_rgba(0,0,0,0.4)]">
-            <img
-              src={casaBg}
-              alt="Casa"
-              className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
-              draggable={false}
+          <div className="relative flex-1 min-h-[430px] short:min-h-[300px] rounded-xl border-4 border-accent/25 overflow-hidden shadow-xl touch-none">
+            <MinhaCasa3D
+              items={state.items}
+              covers={state.covers}
+              notes={state.notes}
+              stickers={state.stickers}
+              characters={CHARACTERS}
+              mood={state.mood}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+              onMoveItem={(id, x, y) => setState((s) => ({ ...s, items: s.items.map((item) => item.id === id ? { ...item, x, y } : item) }))}
+              onMoveCover={(id, x, y) => setState((s) => ({ ...s, covers: s.covers.map((cover) => cover.id === id ? { ...cover, x: Math.min(x, 1 - cover.w), y: Math.min(y, 1 - cover.h) } : cover) }))}
+              onMoveNote={(id, x, y) => setState((s) => ({ ...s, notes: s.notes.map((note) => note.id === id ? { ...note, x: Math.min(x, 1 - note.w), y: Math.min(y, 1 - note.h) } : note) }))}
+              onMoveSticker={(id, x, y) => updateSticker(id, { x, y })}
+              onChangeNote={(id, text) => updateNote(id, { text })}
             />
-            {/* overlay de atmosfera */}
-            <div
-              className="absolute inset-0 pointer-events-none"
-              style={{ backgroundColor: mood.overlay, mixBlendMode: mood.blend as any }}
-            />
-            {state.mood === "noite" && (
-              <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 50% 50%, transparent 25%, rgba(0,0,0,0.55) 100%)" }} />
-            )}
-
-            {/* área interativa */}
-            <div
-              ref={canvasRef}
-              className="absolute inset-0"
-              style={{ touchAction: "none" }}
-              onPointerMove={onPointerMove}
-              onPointerUp={onPointerUp}
-              onPointerCancel={onPointerUp}
-              onClick={() => setSelectedId(null)}
-            >
-              {state.items.map((it) => {
-                const def = CHARACTERS.find((c) => c.id === it.charId);
-                if (!def) return null;
-                const isSel = it.id === selectedId;
-                const emo = EMOTIONS.find((e) => e.id === it.emotion)!;
-                const size = (def.isPet ? 70 : 110) * it.scale; // px na altura do container
-                return (
-                  <div
-                    key={it.id}
-                    onPointerDown={(e) => onPointerDownItem(e, it)}
-                    className="absolute -translate-x-1/2 -translate-y-full cursor-grab active:cursor-grabbing select-none"
-                    style={{
-                      left: `${it.x * 100}%`,
-                      top: `${it.y * 100}%`,
-                      height: `${size}px`,
-                      filter: isSel
-                        ? `drop-shadow(0 0 12px ${emo.color === "transparent" ? "#fbbf24" : emo.color}) drop-shadow(0 6px 8px rgba(0,0,0,0.35))`
-                        : it.emotion !== "neutro"
-                          ? `drop-shadow(0 0 8px ${emo.color}) drop-shadow(0 4px 6px rgba(0,0,0,0.3))`
-                          : "drop-shadow(0 4px 6px rgba(0,0,0,0.3))",
-                      transition: "filter 0.2s",
-                    }}
-                  >
-                    <img
-                      src={def.img}
-                      alt={def.label}
-                      draggable={false}
-                      className="h-full w-auto object-contain pointer-events-none"
-                      style={{ transform: it.flip ? "scaleX(-1)" : undefined }}
-                    />
-                    {isSel && (
-                      <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-wider bg-white/90 px-2 py-0.5 rounded-full shadow whitespace-nowrap">
-                        {def.label}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-
-              {/* Coberturas de cômodos */}
-              {state.covers.map((c) => {
-                const isSel = c.id === selectedId;
-                return (
-                  <div
-                    key={c.id}
-                    onPointerDown={(e) => onPointerDownBox(e, c, "cover", "move")}
-                    className={`absolute cursor-move select-none rounded-xl border-2 flex items-center justify-center text-center backdrop-blur-sm transition ${isSel ? "border-amber-500" : "border-white/70"}`}
-                    style={{
-                      left: `${c.x * 100}%`,
-                      top: `${c.y * 100}%`,
-                      width: `${c.w * 100}%`,
-                      height: `${c.h * 100}%`,
-                      background: "repeating-linear-gradient(135deg, rgba(255,255,255,0.78), rgba(255,255,255,0.78) 10px, rgba(245,235,220,0.78) 10px, rgba(245,235,220,0.78) 20px)",
-                      boxShadow: isSel ? "0 0 0 3px rgba(251,191,36,0.35), 0 10px 25px -10px rgba(0,0,0,0.4)" : "0 6px 18px -8px rgba(0,0,0,0.35)",
-                    }}
-                  >
-                    <span className="text-xs font-semibold text-amber-900/80 px-2 pointer-events-none">
-                      {c.label}
-                    </span>
-                    <button
-                      onPointerDown={(e) => e.stopPropagation()}
-                      onClick={(e) => { e.stopPropagation(); removeCover(c.id); }}
-                      className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-white border shadow flex items-center justify-center hover:bg-red-50 hover:border-red-300"
-                      title="Remover cobertura"
-                    >
-                      <X className="w-3.5 h-3.5 text-red-600" />
-                    </button>
-                    <div
-                      onPointerDown={(e) => onPointerDownBox(e, c, "cover", "resize")}
-                      className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize bg-amber-500/80 rounded-tl-md"
-                      title="Redimensionar"
-                    />
-                  </div>
-                );
-              })}
-
-              {/* Notas / caixas de texto */}
-              {state.notes.map((n) => {
-                const isSel = n.id === selectedId;
-                const col = NOTE_COLORS[n.color];
-                return (
-                  <div
-                    key={n.id}
-                    onPointerDown={(e) => onPointerDownBox(e, n, "note", "move")}
-                    className={`absolute cursor-move select-none rounded-md flex flex-col transition ${isSel ? "ring-2 ring-amber-500" : ""}`}
-                    style={{
-                      left: `${n.x * 100}%`,
-                      top: `${n.y * 100}%`,
-                      width: `${n.w * 100}%`,
-                      height: `${n.h * 100}%`,
-                      background: col.bg,
-                      border: `1.5px solid ${col.border}`,
-                      boxShadow: "0 8px 18px -8px rgba(0,0,0,0.4), 2px 2px 0 rgba(0,0,0,0.04)",
-                      transform: "rotate(-1deg)",
-                    }}
-                  >
-                    <textarea
-                      value={n.text}
-                      maxLength={500}
-                      onChange={(e) => updateNote(n.id, { text: e.target.value })}
-                      onPointerDown={(e) => { e.stopPropagation(); setSelectedId(n.id); }}
-                      onClick={(e) => e.stopPropagation()}
-                      placeholder="o que acontece aqui? o que falam?"
-                      className="flex-1 w-full bg-transparent resize-none outline-none text-[12px] leading-tight font-medium text-amber-950/90 placeholder:text-amber-900/40 p-2"
-                      style={{ fontFamily: "'Caveat', 'Comic Sans MS', cursive" }}
-                    />
-                    <button
-                      onPointerDown={(e) => e.stopPropagation()}
-                      onClick={(e) => { e.stopPropagation(); removeNote(n.id); }}
-                      className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-white border shadow flex items-center justify-center hover:bg-red-50 hover:border-red-300"
-                      title="Remover nota"
-                    >
-                      <X className="w-3.5 h-3.5 text-red-600" />
-                    </button>
-                    <div
-                      onPointerDown={(e) => onPointerDownBox(e, n, "note", "resize")}
-                      className="absolute bottom-0 right-0 w-3.5 h-3.5 cursor-se-resize"
-                      style={{ background: col.border, borderTopLeftRadius: 4 }}
-                      title="Redimensionar"
-                    />
-                  </div>
-                );
-              })}
-
-              {/* Stickers / Emojis */}
-              {state.stickers.map((st) => {
-                const isSel = st.id === selectedId;
-                const size = 56 * st.scale;
-                return (
-                  <div
-                    key={st.id}
-                    onPointerDown={(e) => onPointerDownSticker(e, st)}
-                    onClick={(e) => e.stopPropagation()}
-                    className="absolute -translate-x-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing select-none flex items-center justify-center"
-                    style={{
-                      left: `${st.x * 100}%`,
-                      top: `${st.y * 100}%`,
-                      fontSize: `${size}px`,
-                      lineHeight: 1,
-                      filter: isSel
-                        ? "drop-shadow(0 0 10px rgba(251,191,36,0.9)) drop-shadow(0 4px 6px rgba(0,0,0,0.3))"
-                        : "drop-shadow(0 3px 5px rgba(0,0,0,0.35))",
-                      transition: "filter 0.2s",
-                    }}
-                  >
-                    <span className="pointer-events-none">{st.emoji}</span>
-                    {isSel && (
-                      <button
-                        onPointerDown={(e) => e.stopPropagation()}
-                        onClick={(e) => { e.stopPropagation(); removeSticker(st.id); }}
-                        className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-white border shadow flex items-center justify-center hover:bg-red-50 hover:border-red-300"
-                        title="Remover emoji"
-                      >
-                        <X className="w-3.5 h-3.5 text-red-600" />
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
           </div>
 
           {/* painel inferior */}
