@@ -16,6 +16,7 @@
 - [x] Criar entrada pela porta, teto e circulação interna na Minha Casa 3D
 - [x] Refinar Minha Casa 3D com iluminação acolhedora, materiais e decoração leve
 - [x] Transformar Minha Casa 3D em uma casa de vó acolhedora, com memória afetiva e acabamento de animação
+- [x] Aproximar a fachada da referência, reforçar as divisórias internas e navegar tocando diretamente na cena
 - [ ] Transformar Missão Autocontrole
 - [ ] Transformar História em Espiral
 - [ ] Validar regras, sincronização, PDF e telas em retrato/paisagem

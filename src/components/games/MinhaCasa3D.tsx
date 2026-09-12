@@ -1,7 +1,7 @@
-import { memo, Suspense, useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject, type PointerEvent as ReactPointerEvent } from "react";
+import { memo, Suspense, useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import { Canvas, type ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 import { Billboard, Environment, Html, Lightformer, OrbitControls, RoundedBox, Text, useTexture } from "@react-three/drei";
-import { DoorOpen, Eye, Footprints, RotateCcw } from "lucide-react";
+import { DoorOpen, Eye, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import casaAvoLoading from "@/assets/casa-avo-loading.jpg";
 import * as THREE from "three";
@@ -31,7 +31,7 @@ type Props = {
 };
 type SceneProps = Props & { lowPower: boolean };
 type ViewMode = "overview" | "walk";
-type MoveInput = { x: number; y: number };
+type NavigationInput = { targetX: number; targetZ: number; moving: boolean; lookX: number; lookY: number };
 
 type DragKind = "item" | "cover" | "note" | "sticker";
 type DragState = { id: string; kind: DragKind } | null;
@@ -103,24 +103,28 @@ function Doorway({ x, z, rotation = 0, front = false }: { x: number; z: number; 
     }
   });
 
+  const halfWidth = front ? 1.08 : 0.72;
+  const frameWidth = front ? 2.3 : 1.55;
+  const panelWidth = front ? 1.02 : 0.65;
+
   return (
     <group position={[x, 0, z]} rotation-y={rotation}>
-      <mesh position={[-0.72, 1.15, 0]} castShadow><boxGeometry args={[0.13, 2.3, 0.2]} /><meshStandardMaterial color="#9a6845" /></mesh>
-      <mesh position={[0.72, 1.15, 0]} castShadow><boxGeometry args={[0.13, 2.3, 0.2]} /><meshStandardMaterial color="#9a6845" /></mesh>
-      <mesh position={[0, 2.24, 0]} castShadow><boxGeometry args={[1.55, 0.14, 0.2]} /><meshStandardMaterial color="#9a6845" /></mesh>
+      <mesh position={[-halfWidth, 1.15, 0]} castShadow><boxGeometry args={[0.13, 2.3, 0.2]} /><meshStandardMaterial color="#9a6845" /></mesh>
+      <mesh position={[halfWidth, 1.15, 0]} castShadow><boxGeometry args={[0.13, 2.3, 0.2]} /><meshStandardMaterial color="#9a6845" /></mesh>
+      <mesh position={[0, 2.24, 0]} castShadow><boxGeometry args={[frameWidth, 0.14, 0.2]} /><meshStandardMaterial color="#9a6845" /></mesh>
       {front && (
         <>
-          <group ref={leftDoor} position={[-0.66, 0, -0.08]}>
-            <RoundedBox args={[0.65, 2.14, 0.12]} radius={0.04} smoothness={3} position={[0.325, 1.08, 0]} castShadow>
+          <group ref={leftDoor} position={[-1.01, 0, -0.08]}>
+            <RoundedBox args={[panelWidth, 2.14, 0.12]} radius={0.04} smoothness={3} position={[panelWidth / 2, 1.08, 0]} castShadow>
               <meshPhysicalMaterial color="#3f918a" roughness={0.38} clearcoat={0.38} clearcoatRoughness={0.32} />
             </RoundedBox>
-            <mesh position={[0.53, 1.05, -0.1]}><sphereGeometry args={[0.055, 12, 8]} /><meshStandardMaterial color="#f3c55e" metalness={0.6} roughness={0.25} /></mesh>
+            <mesh position={[0.83, 1.05, -0.1]}><sphereGeometry args={[0.055, 12, 8]} /><meshStandardMaterial color="#f3c55e" metalness={0.6} roughness={0.25} /></mesh>
           </group>
-          <group ref={rightDoor} position={[0.66, 0, -0.08]}>
-            <RoundedBox args={[0.65, 2.14, 0.12]} radius={0.04} smoothness={3} position={[-0.325, 1.08, 0]} castShadow>
+          <group ref={rightDoor} position={[1.01, 0, -0.08]}>
+            <RoundedBox args={[panelWidth, 2.14, 0.12]} radius={0.04} smoothness={3} position={[-panelWidth / 2, 1.08, 0]} castShadow>
               <meshPhysicalMaterial color="#3f918a" roughness={0.38} clearcoat={0.38} clearcoatRoughness={0.32} />
             </RoundedBox>
-            <mesh position={[-0.53, 1.05, -0.1]}><sphereGeometry args={[0.055, 12, 8]} /><meshStandardMaterial color="#f3c55e" metalness={0.6} roughness={0.25} /></mesh>
+            <mesh position={[-0.83, 1.05, -0.1]}><sphereGeometry args={[0.055, 12, 8]} /><meshStandardMaterial color="#f3c55e" metalness={0.6} roughness={0.25} /></mesh>
           </group>
         </>
       )}
@@ -504,11 +508,15 @@ function CeilingAndRoof({ visible, lowPower }: { visible: boolean; lowPower: boo
         <boxGeometry args={[16.35, 0.16, 12.35]} />
         <meshStandardMaterial color="#fff7e9" roughness={0.9} side={THREE.DoubleSide} />
       </mesh>
-      <RoofSlope z={3.85} depth={7.9} angle={0.163} lowPower={lowPower} />
-      <RoofSlope z={-3.5} depth={7.1} angle={-0.178} lowPower={lowPower} />
-      <mesh position={[0, 4.78, 0]} rotation-z={Math.PI / 2} castShadow>
+      <RoofSlope z={3.35} depth={7.6} angle={0.255} lowPower={lowPower} />
+      <RoofSlope z={-3.35} depth={7.6} angle={-0.255} lowPower={lowPower} />
+      <mesh position={[0, 5.02, 0]} rotation-z={Math.PI / 2} castShadow>
         <cylinderGeometry args={[0.2, 0.2, 17.6, 10]} />
         <meshStandardMaterial color="#b95a43" roughness={0.8} />
+      </mesh>
+      <mesh position={[0, 3.12, 6.82]} castShadow>
+        <boxGeometry args={[17.9, 0.26, 0.34]} />
+        <meshStandardMaterial color="#98503d" roughness={0.78} />
       </mesh>
     </group>
   );
@@ -562,13 +570,55 @@ function FrontGarden({ lowPower }: { lowPower: boolean }) {
         </group>
       ))}
 
-      <RoundedBox args={[3.2, 0.18, 1.45]} radius={0.08} position={[0, 0.02, 6.55]} receiveShadow>
+      <RoundedBox args={[5.7, 0.18, 1.45]} radius={0.08} position={[0, 0.02, 6.55]} receiveShadow>
         <meshStandardMaterial color="#d7b68e" roughness={0.9} />
       </RoundedBox>
-      {[-1.55, 1.55].map((x) => <mesh key={x} position={[x, 1.28, 6.68]} castShadow><cylinderGeometry args={[0.13, 0.17, 2.55, 16]} /><meshStandardMaterial color="#f6ead8" /></mesh>)}
-      <mesh position={[0, 2.5, 6.65]} castShadow><boxGeometry args={[3.8, 0.18, 1.8]} /><meshStandardMaterial color="#f6ead8" /></mesh>
+      {[0.18, 0.04, -0.1].map((y, index) => (
+        <RoundedBox key={y} args={[4.1 + index * 0.55, 0.14, 0.58]} radius={0.04} position={[0, y, 7.05 + index * 0.34]} receiveShadow>
+          <meshStandardMaterial color={index === 0 ? "#d8b48d" : "#c99f78"} roughness={0.9} />
+        </RoundedBox>
+      ))}
+      {[-2.15, 2.15].map((x) => <mesh key={x} position={[x, 1.28, 6.68]} castShadow><cylinderGeometry args={[0.16, 0.2, 2.55, 20]} /><meshStandardMaterial color="#f6ead8" roughness={0.72} /></mesh>)}
+      <mesh position={[0, 2.5, 6.65]} castShadow><boxGeometry args={[5.5, 0.18, 1.8]} /><meshStandardMaterial color="#f6ead8" /></mesh>
       <mesh position={[0, 2.16, 6.78]} castShadow><sphereGeometry args={[0.2, 16, 10]} /><meshStandardMaterial color="#ffd58a" emissive="#ffb45e" emissiveIntensity={0.65} roughness={0.3} /></mesh>
       {!lowPower && <pointLight position={[0, 2.1, 7]} color="#ffc477" intensity={1.1} distance={4.5} decay={2} />}
+    </group>
+  );
+}
+
+function FrontFacade() {
+  const cream = "#f4dfbf";
+  return (
+    <group>
+      <Wall position={[-7, 1.5, 6]} size={[2, 3, 0.24]} color={cream} />
+      <Wall position={[7, 1.5, 6]} size={[2, 3, 0.24]} color={cream} />
+      <Wall position={[-2.43, 1.5, 6]} size={[2.75, 3, 0.24]} color={cream} />
+      <Wall position={[2.43, 1.5, 6]} size={[2.75, 3, 0.24]} color={cream} />
+      <Wall position={[-4.8, 0.42, 6]} size={[2.4, 0.84, 0.24]} color={cream} />
+      <Wall position={[4.8, 0.42, 6]} size={[2.4, 0.84, 0.24]} color={cream} />
+      <Wall position={[-4.8, 2.62, 6]} size={[2.4, 0.76, 0.24]} color={cream} />
+      <Wall position={[4.8, 2.62, 6]} size={[2.4, 0.76, 0.24]} color={cream} />
+      <Wall position={[0, 2.64, 6]} size={[2.1, 0.72, 0.24]} color={cream} />
+      <Window position={[-4.8, 1.62, 6.15]} />
+      <Window position={[4.8, 1.62, 6.15]} />
+      <Doorway x={0} z={6.15} front />
+    </group>
+  );
+}
+
+function InteriorTrim() {
+  const trim = "#b78963";
+  return (
+    <group>
+      <mesh position={[0, 0.18, -5.82]}><boxGeometry args={[15.7, 0.22, 0.09]} /><meshStandardMaterial color={trim} roughness={0.72} /></mesh>
+      {[-7.82, 7.82].map((x) => <mesh key={x} position={[x, 0.18, 0]}><boxGeometry args={[0.09, 0.22, 11.6]} /><meshStandardMaterial color={trim} roughness={0.72} /></mesh>)}
+      {[-2.55, 2.55].map((x) => (
+        <group key={x}>
+          <mesh position={[x, 0.18, -3.55]}><boxGeometry args={[0.09, 0.22, 2.2]} /><meshStandardMaterial color={trim} /></mesh>
+          <mesh position={[x, 0.18, 1.25]}><boxGeometry args={[0.09, 0.22, 2]} /><meshStandardMaterial color={trim} /></mesh>
+        </group>
+      ))}
+      {[-0.95, 3.55].map((z) => [-5.3, 0, 5.3].map((x) => <mesh key={`${z}-${x}`} position={[x, 0.18, z]}><boxGeometry args={[2.35, 0.22, 0.09]} /><meshStandardMaterial color={trim} /></mesh>))}
     </group>
   );
 }
@@ -607,10 +657,7 @@ const Dollhouse = memo(function Dollhouse({ mode, lowPower }: { mode: ViewMode; 
       <Wall position={[0, 1.45, -6]} size={[16.2, 2.9, 0.18]} color="#f5dfc4" />
       <Wall position={[-8, 1.45, 0]} size={[0.18, 2.9, 12]} color="#f0d8bd" />
       <Wall position={[8, 1.45, 0]} size={[0.18, 2.9, 12]} color="#f0d8bd" />
-      <Wall position={[-5.2, 1.45, 6]} size={[5.6, 2.9, 0.18]} />
-      <Wall position={[5.2, 1.45, 6]} size={[5.6, 2.9, 0.18]} />
-      <Wall position={[0, 2.55, 6]} size={[4.8, 0.7, 0.18]} />
-      <Doorway x={0} z={6} front />
+      <FrontFacade />
 
       <Wall position={[-2.55, 1.45, -3.5]} size={[0.16, 2.9, 2.25]} />
       <Wall position={[-2.55, 1.45, 1.2]} size={[0.16, 2.9, 2]} />
@@ -636,8 +683,7 @@ const Dollhouse = memo(function Dollhouse({ mode, lowPower }: { mode: ViewMode; 
       <Window position={[5.15, 1.65, -5.88]} />
       <Window position={[-7.88, 1.65, 1.2]} rotation={Math.PI / 2} />
       <Window position={[7.88, 1.65, 1.2]} rotation={Math.PI / 2} />
-      <Window position={[-5.2, 1.65, 6.12]} />
-      <Window position={[5.2, 1.65, 6.12]} />
+      <InteriorTrim />
 
 
       <RoomLabel position={[-5.2, 0.13, -1.3]}>SALA</RoomLabel>
@@ -657,7 +703,7 @@ const Dollhouse = memo(function Dollhouse({ mode, lowPower }: { mode: ViewMode; 
 const isPassage = (x: number, z: number) => {
   const radius = 0.32;
   if (x < -8 + radius || x > 8 - radius || z < -6 + radius || z > 20.8) return false;
-  if (z > 6 - radius && Math.abs(x) > 0.72) return false;
+  if (z > 6 - radius && z < 6.4 && Math.abs(x) > 1.08) return false;
   const blockedVertical = (wallX: number) => Math.abs(x - wallX) < radius && z < 3.5 && Math.abs(z + 0.95) > 0.78;
   if (blockedVertical(-2.55) || blockedVertical(2.55)) return false;
   const horizontalBlocked = (wallZ: number, doors: number[]) => {
@@ -669,17 +715,16 @@ const isPassage = (x: number, z: number) => {
   return true;
 };
 
-function WalkCamera({ moveInput, lookInput, resetSignal, enabled }: {
-  moveInput: MutableRefObject<MoveInput>;
-  lookInput: MutableRefObject<MoveInput>;
+function WalkCamera({ navigation, resetSignal, enabled }: {
+  navigation: MutableRefObject<NavigationInput>;
   resetSignal: number;
   enabled: boolean;
 }) {
   const { camera, invalidate } = useThree();
   const keys = useRef(new Set<string>());
-  const position = useRef(new THREE.Vector3(0, 1.82, 17.2));
+  const position = useRef(new THREE.Vector3(0, 2.15, 19.2));
   const yaw = useRef(0);
-  const pitch = useRef(-0.16);
+  const pitch = useRef(-0.04);
 
   useEffect(() => {
     const down = (event: KeyboardEvent) => {
@@ -696,21 +741,24 @@ function WalkCamera({ moveInput, lookInput, resetSignal, enabled }: {
   }, []);
 
   useEffect(() => {
-    position.current.set(0, 1.82, 17.2);
+    position.current.set(0, 2.15, 19.2);
     yaw.current = 0;
-    pitch.current = -0.16;
+    pitch.current = -0.04;
+    navigation.current.moving = false;
     invalidate();
   }, [invalidate, resetSignal]);
 
   useFrame((_, rawDelta) => {
     if (!enabled) return;
     const dt = Math.min(rawDelta, 0.05);
-    yaw.current -= lookInput.current.x * dt * 1.8;
-    pitch.current = THREE.MathUtils.clamp(pitch.current - lookInput.current.y * dt * 1.35, -0.78, 0.7);
+    yaw.current -= navigation.current.lookX * 0.0045;
+    pitch.current = THREE.MathUtils.clamp(pitch.current - navigation.current.lookY * 0.0035, -0.62, 0.55);
+    navigation.current.lookX = 0;
+    navigation.current.lookY = 0;
     const forward = (keys.current.has("KeyW") || keys.current.has("ArrowUp") ? 1 : 0)
-      - (keys.current.has("KeyS") || keys.current.has("ArrowDown") ? 1 : 0) - moveInput.current.y;
+      - (keys.current.has("KeyS") || keys.current.has("ArrowDown") ? 1 : 0);
     const strafe = (keys.current.has("KeyD") || keys.current.has("ArrowRight") ? 1 : 0)
-      - (keys.current.has("KeyA") || keys.current.has("ArrowLeft") ? 1 : 0) + moveInput.current.x;
+      - (keys.current.has("KeyA") || keys.current.has("ArrowLeft") ? 1 : 0);
     if (Math.abs(forward) > 0.02 || Math.abs(strafe) > 0.02) {
       const length = Math.hypot(forward, strafe) || 1;
       const speed = 3.25 * dt;
@@ -719,6 +767,24 @@ function WalkCamera({ moveInput, lookInput, resetSignal, enabled }: {
       const current = position.current;
       if (isPassage(current.x + dx, current.z)) current.x += dx;
       if (isPassage(current.x, current.z + dz)) current.z += dz;
+    }
+    if (navigation.current.moving) {
+      const current = position.current;
+      const dx = navigation.current.targetX - current.x;
+      const dz = navigation.current.targetZ - current.z;
+      const distance = Math.hypot(dx, dz);
+      if (distance < 0.14) {
+        navigation.current.moving = false;
+      } else {
+        const step = Math.min(distance, 3.4 * dt);
+        const nextX = current.x + (dx / distance) * step;
+        const nextZ = current.z + (dz / distance) * step;
+        const movedX = isPassage(nextX, current.z);
+        const movedZ = isPassage(current.x, nextZ);
+        if (movedX) current.x = nextX;
+        if (movedZ) current.z = nextZ;
+        if (!movedX && !movedZ) navigation.current.moving = false;
+      }
     }
     camera.position.copy(position.current);
     camera.rotation.order = "YXZ";
@@ -802,11 +868,10 @@ const CharacterFigure = memo(function CharacterFigure({ item, definition, select
   );
 });
 
-function Scene({ props, mode, moveInput, lookInput, resetSignal }: {
+function Scene({ props, mode, navigation, resetSignal }: {
   props: SceneProps;
   mode: ViewMode;
-  moveInput: MutableRefObject<MoveInput>;
-  lookInput: MutableRefObject<MoveInput>;
+  navigation: MutableRefObject<NavigationInput>;
   resetSignal: number;
 }) {
   const drag = useRef<DragState>(null);
@@ -817,6 +882,7 @@ function Scene({ props, mode, moveInput, lookInput, resetSignal }: {
   const lastMoveAt = useRef(0);
   const pendingMove = useRef<{ drag: Exclude<DragState, null>; x: number; y: number } | null>(null);
   const { invalidate } = useThree();
+  const scenePointer = useRef<{ id: number; startX: number; startY: number; lastX: number; lastY: number; moved: boolean } | null>(null);
 
   const commitMove = useCallback((current: Exclude<DragState, null>, x: number, y: number) => {
     if (current.kind === "item") props.onMoveItem(current.id, x, y);
@@ -888,22 +954,65 @@ function Scene({ props, mode, moveInput, lookInput, resetSignal }: {
       </Environment>
 
       {mode === "walk" ? (
-        <WalkCamera moveInput={moveInput} lookInput={lookInput} resetSignal={resetSignal} enabled={controlsEnabled} />
+        <WalkCamera navigation={navigation} resetSignal={resetSignal} enabled={controlsEnabled} />
       ) : (
         <OverviewCamera />
       )}
       <Dollhouse mode={mode} lowPower={props.lowPower} />
 
       <mesh
-        position={[0, 0.17, 0]}
+        position={[0, 0.17, 7.35]}
         rotation={[-Math.PI / 2, 0, 0]}
         onPointerMove={moveDrag}
         onPointerUp={endDrag}
         onPointerDown={() => props.onSelect(null)}
       >
-        <planeGeometry args={[ROOM_W, ROOM_D]} />
+        <planeGeometry args={[20, 27.5]} />
         <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
+
+      {mode === "walk" && (
+        <mesh
+          position={[0, 0.19, 7.35]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          onPointerDown={(event) => {
+            props.onSelect(null);
+            navigation.current.moving = false;
+            scenePointer.current = { id: event.pointerId, startX: event.clientX, startY: event.clientY, lastX: event.clientX, lastY: event.clientY, moved: false };
+            (event.target as Element).setPointerCapture?.(event.pointerId);
+          }}
+          onPointerMove={(event) => {
+            const pointer = scenePointer.current;
+            if (!pointer || pointer.id !== event.pointerId) return;
+            const dx = event.clientX - pointer.lastX;
+            const dy = event.clientY - pointer.lastY;
+            pointer.lastX = event.clientX;
+            pointer.lastY = event.clientY;
+            if (Math.hypot(event.clientX - pointer.startX, event.clientY - pointer.startY) > 7) pointer.moved = true;
+            if (pointer.moved) {
+              navigation.current.lookX += dx;
+              navigation.current.lookY += dy;
+              invalidate();
+            }
+          }}
+          onPointerUp={(event) => {
+            const pointer = scenePointer.current;
+            if (!pointer || pointer.id !== event.pointerId) return;
+            if (!pointer.moved) {
+              navigation.current.targetX = THREE.MathUtils.clamp(event.point.x, -7.6, 7.6);
+              navigation.current.targetZ = THREE.MathUtils.clamp(event.point.z, -5.6, 20.4);
+              navigation.current.moving = true;
+            }
+            scenePointer.current = null;
+            (event.target as Element).releasePointerCapture?.(event.pointerId);
+            invalidate();
+          }}
+          onPointerCancel={() => { scenePointer.current = null; }}
+        >
+          <planeGeometry args={[20, 27.5]} />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+        </mesh>
+      )}
 
       <Suspense fallback={null}>
         {props.items.map((item) => {
@@ -1004,41 +1113,6 @@ function Scene({ props, mode, moveInput, lookInput, resetSignal }: {
   );
 }
 
-function TouchStick({ valueRef, label, className }: { valueRef: MutableRefObject<MoveInput>; label: string; className: string }) {
-  const origin = useRef({ x: 0, y: 0 });
-  const [knob, setKnob] = useState({ x: 0, y: 0 });
-  const update = (event: ReactPointerEvent<HTMLDivElement>) => {
-    const dx = THREE.MathUtils.clamp((event.clientX - origin.current.x) / 42, -1, 1);
-    const dy = THREE.MathUtils.clamp((event.clientY - origin.current.y) / 42, -1, 1);
-    valueRef.current = { x: dx, y: dy };
-    setKnob({ x: dx * 24, y: dy * 24 });
-  };
-  const stop = (event: ReactPointerEvent<HTMLDivElement>) => {
-    valueRef.current = { x: 0, y: 0 };
-    setKnob({ x: 0, y: 0 });
-    event.currentTarget.releasePointerCapture?.(event.pointerId);
-  };
-  return (
-    <div
-      role="application"
-      aria-label={label}
-      className={`absolute bottom-4 z-20 grid h-24 w-24 touch-none select-none place-items-center rounded-full border-2 border-background/60 bg-foreground/20 shadow-lg backdrop-blur-sm ${className}`}
-      onPointerDown={(event) => {
-        origin.current = { x: event.clientX, y: event.clientY };
-        event.currentTarget.setPointerCapture(event.pointerId);
-      }}
-      onPointerMove={(event) => {
-        if (event.currentTarget.hasPointerCapture(event.pointerId)) update(event);
-      }}
-      onPointerUp={stop}
-      onPointerCancel={stop}
-    >
-      <div className="pointer-events-none absolute text-[10px] font-bold uppercase text-background/90">{label}</div>
-      <div className="pointer-events-none h-11 w-11 rounded-full border border-background/70 bg-background/75 shadow-md" style={{ transform: `translate(${knob.x}px, ${knob.y}px)` }} />
-    </div>
-  );
-}
-
 function Fallback() {
   return (
     <div className="relative h-full min-h-[420px] overflow-hidden bg-secondary">
@@ -1060,8 +1134,7 @@ export default function MinhaCasa3D(props: Props) {
   const [lowPower, setLowPower] = useState(false);
   const [mode, setMode] = useState<ViewMode>("walk");
   const [resetSignal, setResetSignal] = useState(0);
-  const moveInput = useRef<MoveInput>({ x: 0, y: 0 });
-  const lookInput = useRef<MoveInput>({ x: 0, y: 0 });
+  const navigation = useRef<NavigationInput>({ targetX: 0, targetZ: 19.2, moving: false, lookX: 0, lookY: 0 });
 
   useEffect(() => {
     const coarse = window.matchMedia("(pointer: coarse)");
@@ -1085,11 +1158,11 @@ export default function MinhaCasa3D(props: Props) {
           shadows={!lowPower}
           dpr={lowPower ? 1 : [1, 1.25]}
           frameloop={mode === "walk" ? "always" : "demand"}
-          camera={{ position: mode === "walk" ? [0, 1.82, 17.2] : [13.5, 15.2, 17.5], fov: mode === "walk" ? 48 : 42, near: 0.08, far: 60 }}
+          camera={{ position: mode === "walk" ? [0, 2.15, 19.2] : [13.5, 15.2, 17.5], fov: mode === "walk" ? 52 : 42, near: 0.08, far: 60 }}
            gl={{ antialias: !lowPower, alpha: false, powerPreference: lowPower ? "default" : "high-performance", failIfMajorPerformanceCaveat: false, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: lowPower ? 1.02 : 1.08 }}
           onPointerMissed={() => props.onSelect(null)}
         >
-          <Scene props={{ ...props, lowPower }} mode={mode} moveInput={moveInput} lookInput={lookInput} resetSignal={resetSignal} />
+          <Scene props={{ ...props, lowPower }} mode={mode} navigation={navigation} resetSignal={resetSignal} />
         </Canvas>
 
         <div className="absolute left-3 top-3 z-20 flex gap-2">
@@ -1109,19 +1182,6 @@ export default function MinhaCasa3D(props: Props) {
           )}
         </div>
 
-        {mode === "walk" && (
-          <>
-            <div className="pointer-events-none absolute left-1/2 top-1/2 z-10 h-4 w-4 -translate-x-1/2 -translate-y-1/2">
-              <span className="absolute left-1/2 top-0 h-4 w-px -translate-x-1/2 bg-background/70" />
-              <span className="absolute left-0 top-1/2 h-px w-4 -translate-y-1/2 bg-background/70" />
-            </div>
-            <TouchStick valueRef={moveInput} label="Andar" className="left-4" />
-            <TouchStick valueRef={lookInput} label="Olhar" className="right-4" />
-            <div className="pointer-events-none absolute bottom-2 left-1/2 z-10 hidden -translate-x-1/2 items-center gap-1 rounded-full bg-foreground/35 px-3 py-1 text-[11px] font-semibold text-background backdrop-blur-sm md:flex">
-              <Footprints className="h-3.5 w-3.5" /> WASD ou setas para andar
-            </div>
-          </>
-        )}
       </div>
     </Game3DGuard>
   );
