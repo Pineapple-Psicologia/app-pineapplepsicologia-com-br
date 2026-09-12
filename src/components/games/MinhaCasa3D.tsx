@@ -1331,6 +1331,13 @@ export default function MinhaCasa3D(props: Props) {
            gl={{ antialias: !lowPower, alpha: false, powerPreference: lowPower ? "default" : "high-performance", failIfMajorPerformanceCaveat: false, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: lowPower ? 1.02 : 1.08 }}
           onPointerMissed={() => props.onSelect(null)}
         >
+          <PerformanceMonitor
+            ms={220}
+            iterations={4}
+            threshold={0.7}
+            onDecline={() => setDpr((current) => Math.max(0.62, Number((current - 0.2).toFixed(2))))}
+            onIncline={() => setDpr((current) => Math.min(lowPower ? 1 : 1.25, Number((current + 0.15).toFixed(2))))}
+          />
           <Scene props={{ ...props, lowPower }} mode={mode} navigation={navigation} resetSignal={resetSignal} garden={garden} />
         </Canvas>
 
