@@ -787,11 +787,14 @@ const isPassage = (x: number, z: number) => {
   return true;
 };
 
-function WalkCamera({ navigation, resetSignal, enabled }: {
+function WalkCamera({ navigation, resetSignal, enabled, remoteCamera, onCamera }: {
   navigation: MutableRefObject<NavigationInput>;
   resetSignal: number;
   enabled: boolean;
+  remoteCamera?: MutableRefObject<CasaCamera | null>;
+  onCamera?: (camera: CasaCamera) => void;
 }) {
+
   const { camera, invalidate } = useThree();
   const keys = useRef(new Set<string>());
   const position = useRef(new THREE.Vector3(0, 2.15, 19.2));
