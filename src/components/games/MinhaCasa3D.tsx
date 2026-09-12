@@ -1232,7 +1232,9 @@ export default function MinhaCasa3D(props: Props) {
   const [lowPower, setLowPower] = useState(false);
   const [mode, setMode] = useState<ViewMode>("walk");
   const [resetSignal, setResetSignal] = useState(0);
+  const [garden, setGarden] = useState<GardenStyle>("florido");
   const navigation = useRef<NavigationInput>({ targetX: 0, targetZ: 19.2, moving: false, lookX: 0, lookY: 0 });
+
 
   useEffect(() => {
     const coarse = window.matchMedia("(pointer: coarse)");
