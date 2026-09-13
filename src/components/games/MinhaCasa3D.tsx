@@ -648,7 +648,7 @@ function FrontGarden({ lowPower, style = "florido" }: { lowPower: boolean; style
         ))}
       </group>
       <mesh position={[0, 2.16, 6.78]} castShadow><sphereGeometry args={[0.2, 16, 10]} /><meshStandardMaterial color="#ffd58a" emissive="#ffb45e" emissiveIntensity={0.65} roughness={0.3} /></mesh>
-      {!lowPower && <pointLight position={[0, 2.1, 7]} color="#ffc477" intensity={1.1} distance={4.5} decay={2} />}
+      
     </group>
   );
 }
