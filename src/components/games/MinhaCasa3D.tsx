@@ -40,7 +40,13 @@ type SceneProps = Props & { lowPower: boolean };
 type ViewMode = "overview" | "walk";
 type NavigationInput = { targetX: number; targetZ: number; moving: boolean; lookX: number; lookY: number; localInput: number };
 
-const ENTRANCE_CAMERA = { x: 0, y: 1.82, z: 16.2, yaw: 0, pitch: -0.13 } as const;
+const ENTRANCE_CAMERA: { x: number; y: number; z: number; yaw: number; pitch: number } = {
+  x: 0,
+  y: 1.82,
+  z: 16.2,
+  yaw: 0,
+  pitch: -0.13,
+};
 
 
 type DragKind = "item" | "cover" | "note" | "sticker";
