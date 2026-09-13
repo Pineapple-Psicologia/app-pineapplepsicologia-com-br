@@ -1,6 +1,6 @@
 import { memo, Suspense, useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import { Canvas, type ThreeEvent, useFrame, useThree } from "@react-three/fiber";
-import { Billboard, Environment, Html, Lightformer, OrbitControls, PerformanceMonitor, RoundedBox, Text, useTexture } from "@react-three/drei";
+import { Billboard, Html, OrbitControls, PerformanceMonitor, RoundedBox, Text, useTexture } from "@react-three/drei";
 import { DoorOpen, Eye, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import casaAvoLoading from "@/assets/casa-avo-loading.jpg";
@@ -15,6 +15,7 @@ export type CasaSticker = { id: string; x: number; y: number; scale: number; emo
 export type CasaCharacter = { id: string; label: string; img: string; isPet?: boolean };
 
 export type CasaCamera = { x: number; z: number; yaw: number; pitch: number; targetX: number; targetZ: number; moving: boolean; t: number };
+export type CasaCameraUpdate = Partial<Omit<CasaCamera, "t">> & Pick<CasaCamera, "t">;
 
 type Props = {
   items: CasaPlaced[];
@@ -27,7 +28,7 @@ type Props = {
   garden?: GardenStyle;
   onGardenChange?: (garden: GardenStyle) => void;
   remoteCamera?: MutableRefObject<CasaCamera | null>;
-  onCamera?: (camera: CasaCamera) => void;
+  onCamera?: (camera: CasaCameraUpdate) => void;
   onSelect: (id: string | null) => void;
   onMoveItem: (id: string, x: number, y: number) => void;
   onMoveCover: (id: string, x: number, y: number) => void;
@@ -695,6 +696,7 @@ function InteriorTrim() {
 }
 
 const Dollhouse = memo(function Dollhouse({ mode, lowPower, garden }: { mode: ViewMode; lowPower: boolean; garden: GardenStyle }) {
+  if (lowPower) return <LiteDollhouse mode={mode} garden={garden} />;
   return (
     <group>
       <FrontGarden lowPower={lowPower} style={garden} />
@@ -772,18 +774,91 @@ const Dollhouse = memo(function Dollhouse({ mode, lowPower, garden }: { mode: Vi
   );
 });
 
+function LiteBox({ position, size, color }: { position: [number, number, number]; size: [number, number, number]; color: string }) {
+  return <mesh position={position}><boxGeometry args={size} /><meshStandardMaterial color={color} roughness={0.82} /></mesh>;
+}
+
+// Versão de baixo custo visualmente equivalente: volumes grandes substituem
+// centenas de peças decorativas quando o aparelho não sustenta a cena completa.
+function LiteDollhouse({ mode, garden }: { mode: ViewMode; garden: GardenStyle }) {
+  const palette = gardenPalettes[garden];
+  return (
+    <group>
+      <LiteBox position={[0, -0.1, 13.4]} size={[19, 0.18, 14.7]} color={palette.grass} />
+      <LiteBox position={[0, 0.01, 13.2]} size={[1.55, 0.08, 14.5]} color={palette.path} />
+      <LiteBox position={[0, 0.02, 6.55]} size={[5.7, 0.18, 1.45]} color="#d7b68e" />
+      {[-5.25, 0, 5.25].flatMap((x) => [-3.5, 1.25, 4.85].map((z) => (
+        <LiteBox key={`floor-${x}-${z}`} position={[x, 0, z]} size={[x === 0 ? 4.9 : 5.35, 0.14, z === 4.85 ? 2.55 : z === 1.25 ? 4.35 : 4.85]} color={z < 0 ? "#d0aa7c" : z < 4 ? "#cfb49b" : "#b9b399"} />
+      )))}
+      <LiteBox position={[0, 1.45, -6]} size={[16.2, 2.9, 0.18]} color="#f5dfc4" />
+      <LiteBox position={[-8, 1.45, 0]} size={[0.18, 2.9, 12]} color="#f0d8bd" />
+      <LiteBox position={[8, 1.45, 0]} size={[0.18, 2.9, 12]} color="#f0d8bd" />
+      {[-2.55, 2.55].flatMap((x) => [
+        <LiteBox key={`${x}-back`} position={[x, 1.45, -3.5]} size={[0.16, 2.9, 2.25]} color="#f7f0e5" />,
+        <LiteBox key={`${x}-front`} position={[x, 1.45, 1.2]} size={[0.16, 2.9, 2]} color="#f7f0e5" />,
+      ])}
+      {[-0.95, 3.55].flatMap((z) => [-5.3, 0, 5.3].map((x) => <LiteBox key={`${z}-${x}`} position={[x, 1.45, z]} size={[2.4, 2.9, 0.16]} color="#f7f0e5" />))}
+      <LiteFacade />
+      <LiteBox position={[-5.1, 0.48, -4.2]} size={[2.3, 0.8, 0.85]} color="#b95f52" />
+      <LiteBox position={[0, 0.48, -3.45]} size={[2.1, 0.8, 1.05]} color="#bd8a5c" />
+      <LiteBox position={[5.25, 0.55, -5.2]} size={[4.2, 0.95, 0.7]} color="#7fa39c" />
+      <LiteBox position={[-5.2, 0.42, 1.2]} size={[2.8, 0.7, 1.65]} color="#c37c99" />
+      <LiteBox position={[0, 0.42, 1.2]} size={[2.8, 0.7, 1.65]} color="#688fac" />
+      <LiteBox position={[5.15, 0.42, 1.25]} size={[1.6, 0.7, 1.1]} color="#d4e7e5" />
+      <LiteBox position={[-4.6, 0.48, 4.95]} size={[1.8, 0.8, 0.75]} color="#c78e5d" />
+      <LiteBox position={[0, 0.48, 5.1]} size={[2.3, 0.8, 0.85]} color="#718e75" />
+      {[-5.8, -4.5, 4.5, 5.8].map((x, index) => (
+        <mesh key={x} position={[x, 0.55, 7.6 + (index % 2) * 0.65]}><sphereGeometry args={[0.48, 8, 6]} /><meshStandardMaterial color={palette.bushes[index % 2]} roughness={0.9} /></mesh>
+      ))}
+      {mode === "walk" && <LiteBox position={[0, 2.96, 0]} size={[16.35, 0.16, 12.35]} color="#fff7e9" />}
+    </group>
+  );
+}
+
+function LiteFacade() {
+  return (
+    <group>
+      <LiteBox position={[-6.9, 1.5, 6]} size={[2.2, 3, 0.24]} color="#f7e3c3" />
+      <LiteBox position={[6.9, 1.5, 6]} size={[2.2, 3, 0.24]} color="#f7e3c3" />
+      <LiteBox position={[-2.45, 1.5, 6]} size={[2.7, 3, 0.24]} color="#f7e3c3" />
+      <LiteBox position={[2.45, 1.5, 6]} size={[2.7, 3, 0.24]} color="#f7e3c3" />
+      <LiteBox position={[-4.8, 0.32, 6]} size={[2.2, 0.64, 0.24]} color="#f7e3c3" />
+      <LiteBox position={[4.8, 0.32, 6]} size={[2.2, 0.64, 0.24]} color="#f7e3c3" />
+      <LiteBox position={[-4.8, 2.62, 6]} size={[2.2, 0.76, 0.24]} color="#f7e3c3" />
+      <LiteBox position={[4.8, 2.62, 6]} size={[2.2, 0.76, 0.24]} color="#f7e3c3" />
+      <LiteBox position={[0, 2.68, 6]} size={[2.1, 0.64, 0.24]} color="#f7e3c3" />
+      {[-4.8, 4.8].map((x) => (
+        <mesh key={x} position={[x, 1.5, 6.15]}><planeGeometry args={[1.75, 1.3]} /><meshStandardMaterial color="#a9e0ec" roughness={0.15} /></mesh>
+      ))}
+      {[-0.52, 0.52].map((x) => (
+        <mesh key={x} position={[x, 1.18, 6.16]}><boxGeometry args={[0.98, 2.25, 0.12]} /><meshStandardMaterial color="#37958c" roughness={0.36} /></mesh>
+      ))}
+      <LiteBox position={[0, 3.02, 6.2]} size={[16.4, 0.24, 0.28]} color="#fdf3e2" />
+    </group>
+  );
+}
+
+type Collider = readonly [minX: number, maxX: number, minZ: number, maxZ: number];
+const PLAYER_RADIUS = 0.3;
+const wall = (minX: number, maxX: number, minZ: number, maxZ: number): Collider =>
+  [minX - PLAYER_RADIUS, maxX + PLAYER_RADIUS, minZ - PLAYER_RADIUS, maxZ + PLAYER_RADIUS];
+// Paredes são convertidas uma única vez em retângulos 2D. A checagem por quadro
+// fica sem alocações, raycasts ou leitura da árvore 3D.
+const HOUSE_COLLIDERS: readonly Collider[] = [
+  wall(-8.1, 8.1, -6.1, -5.9), wall(-8.1, -7.9, -6, 6), wall(7.9, 8.1, -6, 6),
+  wall(-8.1, -1.08, 5.9, 6.4), wall(1.08, 8.1, 5.9, 6.4),
+  wall(-2.63, -2.47, -6, -1.73), wall(-2.63, -2.47, -0.17, 3.5),
+  wall(2.47, 2.63, -6, -1.73), wall(2.47, 2.63, -0.17, 3.5),
+  wall(-8, -4.68, -1.03, -0.87), wall(-3.12, 0.57, -1.03, -0.87), wall(2.13, 5.92, -1.03, -0.87), wall(7.48, 8, -1.03, -0.87),
+  wall(-8, -4.68, 3.47, 3.63), wall(-3.12, 0.57, 3.47, 3.63), wall(2.13, 5.92, 3.47, 3.63), wall(7.48, 8, 3.47, 3.63),
+] as const;
+
 const isPassage = (x: number, z: number) => {
-  const radius = 0.32;
-  if (x < -8 + radius || x > 8 - radius || z < -6 + radius || z > 20.8) return false;
-  if (z > 6 - radius && z < 6.4 && Math.abs(x) > 1.08) return false;
-  const blockedVertical = (wallX: number) => Math.abs(x - wallX) < radius && z < 3.5 && Math.abs(z + 0.95) > 0.78;
-  if (blockedVertical(-2.55) || blockedVertical(2.55)) return false;
-  const horizontalBlocked = (wallZ: number, doors: number[]) => {
-    if (Math.abs(z - wallZ) >= radius) return false;
-    return !doors.some((doorX) => Math.abs(x - doorX) < 0.78);
-  };
-  if (horizontalBlocked(-0.95, [-3.9, 1.35, 6.7])) return false;
-  if (horizontalBlocked(3.55, [-3.9, 1.35, 6.7])) return false;
+  if (x < -7.7 || x > 7.7 || z < -5.7 || z > 20.8) return false;
+  for (let index = 0; index < HOUSE_COLLIDERS.length; index += 1) {
+    const collider = HOUSE_COLLIDERS[index];
+    if (x > collider[0] && x < collider[1] && z > collider[2] && z < collider[3]) return false;
+  }
   return true;
 };
 
@@ -792,7 +867,7 @@ function WalkCamera({ navigation, resetSignal, enabled, remoteCamera, onCamera }
   resetSignal: number;
   enabled: boolean;
   remoteCamera?: MutableRefObject<CasaCamera | null>;
-  onCamera?: (camera: CasaCamera) => void;
+  onCamera?: (camera: CasaCameraUpdate) => void;
 }) {
 
   const { camera, invalidate } = useThree();
@@ -826,6 +901,8 @@ function WalkCamera({ navigation, resetSignal, enabled, remoteCamera, onCamera }
   const lastLocalInput = useRef(0);
   const appliedRemote = useRef(0);
   const lastSent = useRef(0);
+  const lastPacket = useRef<CasaCamera | null>(null);
+  const remoteTarget = useRef<CasaCamera | null>(null);
 
   useFrame((_, rawDelta) => {
     if (!enabled) return;
@@ -854,18 +931,21 @@ function WalkCamera({ navigation, resetSignal, enabled, remoteCamera, onCamera }
 
     // aplica a câmera do parceiro quando não há interação local recente
     const remote = remoteCamera?.current;
-    if (remote && remote.t > appliedRemote.current && now - lastLocalInput.current > 700) {
+    if (remote && remote.t > appliedRemote.current) {
       appliedRemote.current = remote.t;
+      remoteTarget.current = remote;
       navigation.current.targetX = remote.targetX;
       navigation.current.targetZ = remote.targetZ;
       navigation.current.moving = remote.moving;
-      yaw.current = THREE.MathUtils.lerp(yaw.current, remote.yaw, 0.4);
-      pitch.current = THREE.MathUtils.lerp(pitch.current, remote.pitch, 0.4);
-      const far = Math.hypot(remote.x - position.current.x, remote.z - position.current.z);
-      if (far > 2.5) {
-        position.current.x = remote.x;
-        position.current.z = remote.z;
-      }
+    }
+    const target = remoteTarget.current;
+    if (target && now - lastLocalInput.current > 700) {
+      const follow = 1 - Math.exp(-8 * dt);
+      position.current.x = THREE.MathUtils.lerp(position.current.x, target.x, follow);
+      position.current.z = THREE.MathUtils.lerp(position.current.z, target.z, follow);
+      const yawDelta = Math.atan2(Math.sin(target.yaw - yaw.current), Math.cos(target.yaw - yaw.current));
+      yaw.current += yawDelta * follow;
+      pitch.current = THREE.MathUtils.lerp(pitch.current, target.pitch, follow);
     }
 
     if (navigation.current.moving) {
@@ -890,18 +970,29 @@ function WalkCamera({ navigation, resetSignal, enabled, remoteCamera, onCamera }
     camera.rotation.order = "YXZ";
     camera.rotation.set(pitch.current, yaw.current, 0);
 
-    if (onCamera && now - lastSent.current > 220 && now - lastLocalInput.current < 2500) {
+    const quantize = (value: number, step: number) => Math.round(value / step) * step;
+    const snapshot: CasaCamera = {
+      x: quantize(position.current.x, 0.04), z: quantize(position.current.z, 0.04),
+      yaw: quantize(yaw.current, 0.015), pitch: quantize(pitch.current, 0.015),
+      targetX: quantize(navigation.current.targetX, 0.08), targetZ: quantize(navigation.current.targetZ, 0.08),
+      moving: navigation.current.moving, t: Date.now(),
+    };
+    const previous = lastPacket.current;
+    const changed = !previous || snapshot.x !== previous.x || snapshot.z !== previous.z || snapshot.yaw !== previous.yaw || snapshot.pitch !== previous.pitch || snapshot.targetX !== previous.targetX || snapshot.targetZ !== previous.targetZ || snapshot.moving !== previous.moving;
+    const stopped = previous?.moving === true && !snapshot.moving;
+    const sendInterval = snapshot.moving ? 280 : 480;
+    if (onCamera && changed && (stopped || now - lastSent.current > sendInterval) && now - lastLocalInput.current < 2500) {
       lastSent.current = now;
-      onCamera({
-        x: position.current.x,
-        z: position.current.z,
-        yaw: yaw.current,
-        pitch: pitch.current,
-        targetX: navigation.current.targetX,
-        targetZ: navigation.current.targetZ,
-        moving: navigation.current.moving,
-        t: Date.now(),
-      });
+      const update: CasaCameraUpdate = { t: snapshot.t };
+      if (!previous || snapshot.x !== previous.x) update.x = snapshot.x;
+      if (!previous || snapshot.z !== previous.z) update.z = snapshot.z;
+      if (!previous || snapshot.yaw !== previous.yaw) update.yaw = snapshot.yaw;
+      if (!previous || snapshot.pitch !== previous.pitch) update.pitch = snapshot.pitch;
+      if (!previous || snapshot.targetX !== previous.targetX) update.targetX = snapshot.targetX;
+      if (!previous || snapshot.targetZ !== previous.targetZ) update.targetZ = snapshot.targetZ;
+      if (!previous || snapshot.moving !== previous.moving) update.moving = snapshot.moving;
+      lastPacket.current = snapshot;
+      onCamera(update);
     }
     invalidate();
   });
@@ -923,6 +1014,37 @@ function ContextGuard() {
       canvas.removeEventListener("webglcontextrestored", onRestored);
     };
   }, [gl, invalidate]);
+  return null;
+}
+
+function PerformanceProbe({ onPressure }: { onPressure: () => void }) {
+  const { gl, scene } = useThree();
+  const sample = useRef({ frames: 0, elapsed: 0, slowFrames: 0, reported: false });
+  useFrame((_, rawDelta) => {
+    const metrics = sample.current;
+    metrics.frames += 1;
+    metrics.elapsed += rawDelta;
+    if (rawDelta > 1 / 24) metrics.slowFrames += 1;
+    if (metrics.elapsed < 3 || metrics.reported) return;
+    metrics.reported = true;
+    const fps = Math.round(metrics.frames / metrics.elapsed);
+    const objects = scene.children.reduce((total, child) => {
+      let count = 0;
+      child.traverse(() => { count += 1; });
+      return total + count;
+    }, 0);
+    const report = {
+      fps,
+      slowFramePercent: Math.round((metrics.slowFrames / metrics.frames) * 100),
+      drawCalls: gl.info.render.calls,
+      triangles: gl.info.render.triangles,
+      objects,
+      textures: gl.info.memory.textures,
+      geometries: gl.info.memory.geometries,
+    };
+    if (import.meta.env.DEV) console.info("[MinhaCasa3D performance]", report);
+    if (fps < 30 || report.drawCalls > 100 || report.triangles > 100000) onPressure();
+  });
   return null;
 }
 
@@ -1282,8 +1404,10 @@ function Fallback() {
 }
 
 export default function MinhaCasa3D(props: Props) {
-  const [lowPower, setLowPower] = useState(false);
-  const [dpr, setDpr] = useState(1);
+  // Começa leve para não travar o primeiro quadro; aparelhos maiores recebem
+  // a versão completa assim que o perfil de entrada/tela é conhecido.
+  const [lowPower, setLowPower] = useState(true);
+  const [dpr, setDpr] = useState(0.75);
   const [mode, setMode] = useState<ViewMode>("walk");
   const [resetSignal, setResetSignal] = useState(0);
   const [localGarden, setLocalGarden] = useState<GardenStyle>("florido");
@@ -1293,6 +1417,10 @@ export default function MinhaCasa3D(props: Props) {
     props.onGardenChange?.(value);
   };
   const navigation = useRef<NavigationInput>({ targetX: 0, targetZ: 19.2, moving: false, lookX: 0, lookY: 0, localInput: 0 });
+  const reduceQuality = useCallback(() => {
+    setLowPower(true);
+    setDpr((current) => Math.min(current, 0.65));
+  }, []);
 
 
   useEffect(() => {
@@ -1332,6 +1460,7 @@ export default function MinhaCasa3D(props: Props) {
             onDecline={() => setDpr((current) => Math.max(0.6, Number((current - 0.2).toFixed(2))))}
             onIncline={() => setDpr((current) => Math.min(lowPower ? 0.85 : 1, Number((current + 0.1).toFixed(2))))}
           />
+          <PerformanceProbe key={lowPower ? "lite" : "full"} onPressure={reduceQuality} />
           <Scene props={{ ...props, lowPower }} mode={mode} navigation={navigation} resetSignal={resetSignal} garden={garden} />
         </Canvas>
 

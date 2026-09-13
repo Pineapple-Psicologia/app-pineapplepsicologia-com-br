@@ -3,7 +3,7 @@ import type { useRoom } from "@/lib/useRoom";
 import { Button } from "@/components/ui/button";
 import { Home, RotateCcw, Download, Trash2, Sun, Moon, Sparkles, Cloud, EyeOff, X, StickyNote, Smile, BookmarkPlus } from "lucide-react";
 import jsPDF from "jspdf";
-import MinhaCasa3D, { type CasaCamera, type GardenStyle } from "./MinhaCasa3D";
+import MinhaCasa3D, { type CasaCamera, type CasaCameraUpdate, type GardenStyle } from "./MinhaCasa3D";
 
 import imgCrianca from "@/assets/casa/char-crianca.png";
 import imgAdolescente from "@/assets/casa/char-adolescente.png";
@@ -214,7 +214,9 @@ export default function MinhaCasa({ room }: Props) {
         remoteRef.current = true;
         setState({ ...DEFAULT_STATE, ...p, covers: p.covers ?? [], notes: p.notes ?? [], stickers: p.stickers ?? [], garden: p.garden ?? "florido" });
       } else if (m.type === "casa:cam") {
-        remoteCameraRef.current = m.payload as CasaCamera;
+        const update = m.payload as CasaCameraUpdate;
+        const previous = remoteCameraRef.current ?? { x: 0, z: 19.2, yaw: 0, pitch: -0.04, targetX: 0, targetZ: 19.2, moving: false, t: 0 };
+        remoteCameraRef.current = { ...previous, ...update };
       } else if (m.type === "casa:move") {
         const move = m.payload as MovePayload;
         remoteRef.current = true;
@@ -363,7 +365,7 @@ export default function MinhaCasa({ room }: Props) {
   };
   const removePreset = (id: string) => persistPresets(presets.filter((p) => p.id !== id));
 
-  const sendCamera = (camera: CasaCamera) => {
+  const sendCamera = (camera: CasaCameraUpdate) => {
     if (room.ready) room.send?.("casa:cam", camera);
   };
   const setGarden = (garden: GardenStyle) => setState((s) => ({ ...s, garden }));
