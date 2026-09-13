@@ -909,14 +909,20 @@ function WalkCamera({ navigation, resetSignal, enabled, remoteCamera, onCamera }
   return null;
 }
 
-// sombras estáticas: recalcula só quando a cena muda, não a cada quadro
-function ShadowBudget({ trigger }: { trigger: unknown }) {
+// mantém a cena viva se o navegador perder o contexto gráfico
+function ContextGuard() {
   const { gl, invalidate } = useThree();
   useEffect(() => {
-    gl.shadowMap.autoUpdate = false;
-    gl.shadowMap.needsUpdate = true;
-    invalidate();
-  }, [gl, invalidate, trigger]);
+    const canvas = gl.domElement;
+    const onLost = (event: Event) => event.preventDefault();
+    const onRestored = () => invalidate();
+    canvas.addEventListener("webglcontextlost", onLost, false);
+    canvas.addEventListener("webglcontextrestored", onRestored, false);
+    return () => {
+      canvas.removeEventListener("webglcontextlost", onLost);
+      canvas.removeEventListener("webglcontextrestored", onRestored);
+    };
+  }, [gl, invalidate]);
   return null;
 }
 
