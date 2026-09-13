@@ -1407,17 +1407,33 @@ function Scene({ props, mode, navigation, resetSignal, garden }: {
             <planeGeometry args={[Math.max(0.9, note.w * ROOM_W), Math.max(0.7, note.h * ROOM_D)]} />
             <meshStandardMaterial color={NOTE_COLORS[note.color]} roughness={0.94} />
           </mesh>
-          <Html center position={[0, 0.08, 0]} transform rotation-x={-Math.PI / 2} distanceFactor={8}>
-            <textarea
-              value={note.text}
-              maxLength={500}
-              onChange={(event) => props.onChangeNote(note.id, event.target.value)}
-              onPointerDown={(event) => event.stopPropagation()}
-              placeholder="Escreva aqui"
-              aria-label="Texto da nota"
-              className="h-20 w-32 resize-none rounded-sm border-0 bg-transparent p-2 text-xs font-semibold text-foreground outline-none"
-            />
-          </Html>
+          {props.selectedId === note.id ? (
+            <Html center position={[0, 0.08, 0]} transform rotation-x={-Math.PI / 2} distanceFactor={8}>
+              <textarea
+                value={note.text}
+                maxLength={500}
+                onChange={(event) => props.onChangeNote(note.id, event.target.value)}
+                onPointerDown={(event) => event.stopPropagation()}
+                placeholder="Escreva aqui"
+                aria-label="Texto da nota"
+                className="h-20 w-32 resize-none rounded-sm border-0 bg-transparent p-2 text-xs font-semibold text-foreground outline-none"
+              />
+            </Html>
+          ) : (
+            note.text.trim() && (
+              <Text
+                position={[0, 0.05, 0]}
+                rotation={[-Math.PI / 2, 0, -0.025]}
+                fontSize={0.16}
+                color="#4b3a2a"
+                anchorX="center"
+                anchorY="middle"
+                maxWidth={Math.max(0.9, note.w * ROOM_W) * 0.86}
+              >
+                {note.text}
+              </Text>
+            )
+          )}
         </group>
       ))}
 
