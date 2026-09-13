@@ -1092,6 +1092,7 @@ function Scene({ props, mode, navigation, resetSignal, garden }: {
 
   return (
     <>
+      <ContextGuard />
       <color attach="background" args={[background]} />
       <fog attach="fog" args={[background, 20, 34]} />
       <ambientLight intensity={ambience * 1.15} color={props.mood === "noite" ? "#aab6df" : "#fff3df"} />
