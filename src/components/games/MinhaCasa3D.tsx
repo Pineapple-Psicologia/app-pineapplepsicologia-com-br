@@ -1523,7 +1523,10 @@ export default function MinhaCasa3D(props: Props) {
             ms={240}
             iterations={4}
             threshold={0.7}
-            onDecline={() => setDpr((current) => Math.max(0.6, Number((current - 0.2).toFixed(2))))}
+            onDecline={() => {
+              setLowPower(true);
+              setDpr((current) => Math.max(0.6, Number((current - 0.2).toFixed(2))));
+            }}
             onIncline={() => setDpr((current) => Math.min(lowPower ? 0.85 : 1, Number((current + 0.1).toFixed(2))))}
           />
           <Scene props={{ ...props, lowPower }} mode={mode} navigation={navigation} resetSignal={resetSignal} garden={garden} />
