@@ -559,6 +559,7 @@ function CeilingAndRoof({ visible, lowPower }: { visible: boolean; lowPower: boo
         <boxGeometry args={[16.35, 0.16, 12.35]} />
         <meshStandardMaterial color="#fff7e9" roughness={0.9} side={THREE.DoubleSide} />
       </mesh>
+
       <RoofSlope z={3.35} depth={7.6} angle={0.255} lowPower={lowPower} />
       <RoofSlope z={-3.35} depth={7.6} angle={-0.255} lowPower={lowPower} />
       <mesh position={[0, 5.02, 0]} rotation-z={Math.PI / 2} castShadow>
@@ -572,6 +573,7 @@ function CeilingAndRoof({ visible, lowPower }: { visible: boolean; lowPower: boo
     </group>
   );
 }
+
 
 
 export type GardenStyle = "florido" | "sereno" | "outono";
@@ -819,7 +821,20 @@ function LiteDollhouse({ mode, garden }: { mode: ViewMode; garden: GardenStyle }
       {[-5.8, -4.5, 4.5, 5.8].map((x, index) => (
         <mesh key={x} position={[x, 0.55, 7.6 + (index % 2) * 0.65]}><sphereGeometry args={[0.48, 8, 6]} /><meshStandardMaterial color={palette.bushes[index % 2]} roughness={0.9} /></mesh>
       ))}
-      {mode === "walk" && <LiteBox position={[0, 2.96, 0]} size={[16.35, 0.16, 12.35]} color="#fff7e9" />}
+      {mode === "walk" && (
+        <group>
+          <LiteBox position={[0, 2.96, 0]} size={[16.35, 0.16, 12.35]} color="#fff7e9" />
+          <group position={[0, 4.08, 3.35]} rotation-x={0.255}>
+            <LiteBox position={[0, 0, 0]} size={[17.6, 0.2, 7.6]} color="#c9694f" />
+          </group>
+          <group position={[0, 4.08, -3.35]} rotation-x={-0.255}>
+            <LiteBox position={[0, 0, 0]} size={[17.6, 0.2, 7.6]} color="#c9694f" />
+          </group>
+          <LiteBox position={[0, 5.02, 0]} size={[17.6, 0.36, 0.4]} color="#b95a43" />
+          <LiteBox position={[0, 3.12, 6.82]} size={[17.9, 0.26, 0.34]} color="#98503d" />
+        </group>
+      )}
+
     </group>
   );
 }
