@@ -553,14 +553,13 @@ function RoofSlope({ z, depth, angle, lowPower }: { z: number; depth: number; an
 
 function CeilingAndRoof({ visible, lowPower }: { visible: boolean; lowPower: boolean }) {
   if (!visible) return null;
-
+  return (
     <group>
-      {visible && (
-        <mesh position={[0, 2.96, 0]} receiveShadow>
-          <boxGeometry args={[16.35, 0.16, 12.35]} />
-          <meshStandardMaterial color="#fff7e9" roughness={0.9} side={THREE.DoubleSide} />
-        </mesh>
-      )}
+      <mesh position={[0, 2.96, 0]} receiveShadow>
+        <boxGeometry args={[16.35, 0.16, 12.35]} />
+        <meshStandardMaterial color="#fff7e9" roughness={0.9} side={THREE.DoubleSide} />
+      </mesh>
+
       <RoofSlope z={3.35} depth={7.6} angle={0.255} lowPower={lowPower} />
       <RoofSlope z={-3.35} depth={7.6} angle={-0.255} lowPower={lowPower} />
       <mesh position={[0, 5.02, 0]} rotation-z={Math.PI / 2} castShadow>
