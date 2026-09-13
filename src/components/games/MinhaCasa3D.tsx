@@ -76,28 +76,40 @@ const EMOTION_COLORS: Record<string, string> = {
   ansioso: "#a855f7",
 };
 
+// Geometria e materiais compartilhados: um único cubo/disco reaproveitado por
+// centenas de peças evita recriar buffers e trocar shader a cada objeto.
+const UNIT_BOX = new THREE.BoxGeometry(1, 1, 1);
+const UNIT_DISC = new THREE.CircleGeometry(1, 24);
+const materialCache = new Map<string, THREE.MeshStandardMaterial>();
+function sharedMaterial(color: string, roughness = 0.82) {
+  const key = `${color}|${roughness}`;
+  let material = materialCache.get(key);
+  if (!material) {
+    material = new THREE.MeshStandardMaterial({ color, roughness });
+    materialCache.set(key, material);
+  }
+  return material;
+}
+
 function RoomFloor({ position, size, color, rug }: { position: [number, number, number]; size: [number, number]; color: string; rug?: string }) {
   return (
     <group position={position}>
-      <RoundedBox args={[size[0] - 0.12, 0.16, size[1] - 0.12]} radius={0.06} smoothness={1}>
-        <meshStandardMaterial color={color} roughness={0.72} />
-      </RoundedBox>
+      <mesh geometry={UNIT_BOX} material={sharedMaterial(color, 0.72)} scale={[size[0] - 0.12, 0.16, size[1] - 0.12]} />
       {rug && (
-        <mesh position={[0, 0.1, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <circleGeometry args={[Math.min(size[0], size[1]) * 0.28, 32]} />
-          <meshStandardMaterial color={rug} roughness={0.96} />
-        </mesh>
+        <mesh
+          geometry={UNIT_DISC}
+          material={sharedMaterial(rug, 0.96)}
+          position={[0, 0.1, 0]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          scale={Math.min(size[0], size[1]) * 0.28}
+        />
       )}
     </group>
   );
 }
 
 function Wall({ position, size, color = "#f7f0e5" }: { position: [number, number, number]; size: [number, number, number]; color?: string }) {
-  return (
-    <RoundedBox args={size} radius={0.035} smoothness={1} position={position}>
-      <meshStandardMaterial color={color} roughness={0.76} />
-    </RoundedBox>
-  );
+  return <mesh geometry={UNIT_BOX} material={sharedMaterial(color, 0.76)} position={position} scale={size} />;
 }
 
 function Doorway({ x, z, rotation = 0, front = false }: { x: number; z: number; rotation?: number; front?: boolean }) {
@@ -785,7 +797,7 @@ const Dollhouse = memo(function Dollhouse({ mode, lowPower, garden }: { mode: Vi
 });
 
 function LiteBox({ position, size, color }: { position: [number, number, number]; size: [number, number, number]; color: string }) {
-  return <mesh position={position}><boxGeometry args={size} /><meshStandardMaterial color={color} roughness={0.82} /></mesh>;
+  return <mesh geometry={UNIT_BOX} material={sharedMaterial(color)} position={position} scale={size} />;
 }
 
 // Versão de baixo custo visualmente equivalente: volumes grandes substituem
@@ -1089,38 +1101,6 @@ function ContextGuard() {
       canvas.removeEventListener("webglcontextrestored", onRestored);
     };
   }, [gl, invalidate]);
-  return null;
-}
-
-function PerformanceProbe({ onPressure }: { onPressure: () => void }) {
-  const { gl, scene } = useThree();
-  const sample = useRef({ frames: 0, elapsed: 0, slowFrames: 0, reported: false });
-  useFrame((_, rawDelta) => {
-    const metrics = sample.current;
-    metrics.frames += 1;
-    metrics.elapsed += rawDelta;
-    if (rawDelta > 1 / 24) metrics.slowFrames += 1;
-    if (metrics.elapsed < 3 || metrics.reported) return;
-    metrics.reported = true;
-    const fps = Math.round(metrics.frames / metrics.elapsed);
-    const objects = scene.children.reduce((total, child) => {
-      let count = 0;
-      child.traverse(() => { count += 1; });
-      return total + count;
-    }, 0);
-    const report = {
-      fps,
-      slowFramePercent: Math.round((metrics.slowFrames / metrics.frames) * 100),
-      drawCalls: gl.info.render.calls,
-      triangles: gl.info.render.triangles,
-      objects,
-      textures: gl.info.memory.textures,
-      geometries: gl.info.memory.geometries,
-    };
-    if (import.meta.env.DEV) console.info("[MinhaCasa3D performance]", report);
-    // Só reduz a qualidade quando o aparelho realmente não dá conta.
-    if (fps < 18 && report.slowFramePercent > 60) onPressure();
-  });
   return null;
 }
 
@@ -1507,10 +1487,6 @@ export default function MinhaCasa3D(props: Props) {
     props.onGardenChange?.(value);
   };
   const navigation = useRef<NavigationInput>({ targetX: ENTRANCE_CAMERA.x, targetZ: ENTRANCE_CAMERA.z, moving: false, lookX: 0, lookY: 0, localInput: 0 });
-  const reduceQuality = useCallback(() => {
-    setLowPower(true);
-    setDpr((current) => Math.min(current, 0.65));
-  }, []);
 
 
   useEffect(() => {
@@ -1547,10 +1523,12 @@ export default function MinhaCasa3D(props: Props) {
             ms={240}
             iterations={4}
             threshold={0.7}
-            onDecline={() => setDpr((current) => Math.max(0.6, Number((current - 0.2).toFixed(2))))}
+            onDecline={() => {
+              setLowPower(true);
+              setDpr((current) => Math.max(0.6, Number((current - 0.2).toFixed(2))));
+            }}
             onIncline={() => setDpr((current) => Math.min(lowPower ? 0.85 : 1, Number((current + 0.1).toFixed(2))))}
           />
-          <PerformanceProbe key={lowPower ? "lite" : "full"} onPressure={reduceQuality} />
           <Scene props={{ ...props, lowPower }} mode={mode} navigation={navigation} resetSignal={resetSignal} garden={garden} />
         </Canvas>
 
