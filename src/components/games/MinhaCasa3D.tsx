@@ -479,7 +479,7 @@ function FloorLamp({ position, lowPower }: { position: [number, number, number];
       <mesh position={[0, 0.08, 0]} castShadow><cylinderGeometry args={[0.28, 0.34, 0.16, 16]} /><meshStandardMaterial color="#815c49" roughness={0.6} /></mesh>
       <mesh position={[0, 0.9, 0]} castShadow><cylinderGeometry args={[0.045, 0.055, 1.65, 10]} /><meshStandardMaterial color="#b88555" metalness={0.25} roughness={0.45} /></mesh>
       <mesh position={[0, 1.72, 0]} castShadow><coneGeometry args={[0.42, 0.58, 18, 1, true]} /><meshStandardMaterial color="#f2b85b" roughness={0.68} emissive="#ffb65d" emissiveIntensity={0.35} side={THREE.DoubleSide} /></mesh>
-      {!lowPower && <pointLight position={[0, 1.55, 0]} color="#ffbd70" intensity={1.2} distance={4.8} decay={2} />}
+      
     </group>
   );
 }
