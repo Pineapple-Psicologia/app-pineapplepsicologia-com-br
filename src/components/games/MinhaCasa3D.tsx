@@ -1086,29 +1086,11 @@ function Scene({ props, mode, navigation, resetSignal, garden }: {
 
   return (
     <>
-      <ShadowBudget trigger={`${props.mood}-${mode}-${garden}-${props.lowPower}`} />
       <color attach="background" args={[background]} />
       <fog attach="fog" args={[background, 20, 34]} />
-      <ambientLight intensity={ambience * 0.72} color={props.mood === "noite" ? "#aab6df" : "#fff3df"} />
-      <hemisphereLight args={[props.mood === "noite" ? "#7f91c7" : "#dff6ff", "#8b7356", ambience]} />
-      <directionalLight
-        position={[-7, 12, 8]}
-        intensity={props.mood === "noite" ? 0.72 : 1.55}
-        castShadow={!props.lowPower}
-        shadow-mapSize={[512, 512]}
-        shadow-camera-left={-10}
-        shadow-camera-right={10}
-        shadow-camera-top={8}
-        shadow-camera-bottom={-8}
-        shadow-bias={-0.0003}
-      />
-      <pointLight position={[0, 4.2, 1]} color={props.mood === "calmo" ? "#d7ecff" : "#ffc47a"} intensity={props.mood === "noite" ? 5.5 : 3.4} distance={18} decay={2} />
-      <Environment resolution={props.lowPower ? 32 : 96}>
-        <Lightformer intensity={2.2} position={[0, 7, 2]} scale={[12, 12, 1]} />
-        <Lightformer intensity={1.1} color="#ffd7ac" position={[0, 3, 10]} scale={[10, 6, 1]} />
-        {!props.lowPower && <Lightformer intensity={1.2} color="#f5b77d" position={[-7, 2, 0]} rotation-y={Math.PI / 2} scale={[8, 4, 1]} />}
-        {!props.lowPower && <Lightformer intensity={0.8} color="#bfe0ff" position={[7, 3, 0]} rotation-y={-Math.PI / 2} scale={[8, 4, 1]} />}
-      </Environment>
+      <ambientLight intensity={ambience * 1.15} color={props.mood === "noite" ? "#aab6df" : "#fff3df"} />
+      <hemisphereLight args={[props.mood === "noite" ? "#7f91c7" : "#dff6ff", "#8b7356", ambience * 1.1]} />
+      <directionalLight position={[-7, 12, 8]} intensity={props.mood === "noite" ? 0.9 : 1.7} color="#fff0d8" />
       <directionalLight position={[6, 6, -9]} intensity={props.mood === "noite" ? 0.35 : 0.6} color="#ffd9b0" />
 
       {mode === "walk" ? (
