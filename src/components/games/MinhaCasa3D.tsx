@@ -1404,8 +1404,10 @@ function Fallback() {
 }
 
 export default function MinhaCasa3D(props: Props) {
-  const [lowPower, setLowPower] = useState(false);
-  const [dpr, setDpr] = useState(1);
+  // Começa leve para não travar o primeiro quadro; aparelhos maiores recebem
+  // a versão completa assim que o perfil de entrada/tela é conhecido.
+  const [lowPower, setLowPower] = useState(true);
+  const [dpr, setDpr] = useState(0.75);
   const [mode, setMode] = useState<ViewMode>("walk");
   const [resetSignal, setResetSignal] = useState(0);
   const [localGarden, setLocalGarden] = useState<GardenStyle>("florido");
