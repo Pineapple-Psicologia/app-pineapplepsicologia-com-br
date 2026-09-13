@@ -798,7 +798,7 @@ function LiteDollhouse({ mode, garden }: { mode: ViewMode; garden: GardenStyle }
         <LiteBox key={`${x}-front`} position={[x, 1.45, 1.2]} size={[0.16, 2.9, 2]} color="#f7f0e5" />,
       ])}
       {[-0.95, 3.55].flatMap((z) => [-5.3, 0, 5.3].map((x) => <LiteBox key={`${z}-${x}`} position={[x, 1.45, z]} size={[2.4, 2.9, 0.16]} color="#f7f0e5" />))}
-      <FrontFacade />
+      <LiteFacade />
       <LiteBox position={[-5.1, 0.48, -4.2]} size={[2.3, 0.8, 0.85]} color="#b95f52" />
       <LiteBox position={[0, 0.48, -3.45]} size={[2.1, 0.8, 1.05]} color="#bd8a5c" />
       <LiteBox position={[5.25, 0.55, -5.2]} size={[4.2, 0.95, 0.7]} color="#7fa39c" />
@@ -811,6 +811,29 @@ function LiteDollhouse({ mode, garden }: { mode: ViewMode; garden: GardenStyle }
         <mesh key={x} position={[x, 0.55, 7.6 + (index % 2) * 0.65]}><sphereGeometry args={[0.48, 8, 6]} /><meshStandardMaterial color={palette.bushes[index % 2]} roughness={0.9} /></mesh>
       ))}
       {mode === "walk" && <LiteBox position={[0, 2.96, 0]} size={[16.35, 0.16, 12.35]} color="#fff7e9" />}
+    </group>
+  );
+}
+
+function LiteFacade() {
+  return (
+    <group>
+      <LiteBox position={[-6.9, 1.5, 6]} size={[2.2, 3, 0.24]} color="#f7e3c3" />
+      <LiteBox position={[6.9, 1.5, 6]} size={[2.2, 3, 0.24]} color="#f7e3c3" />
+      <LiteBox position={[-2.45, 1.5, 6]} size={[2.7, 3, 0.24]} color="#f7e3c3" />
+      <LiteBox position={[2.45, 1.5, 6]} size={[2.7, 3, 0.24]} color="#f7e3c3" />
+      <LiteBox position={[-4.8, 0.32, 6]} size={[2.2, 0.64, 0.24]} color="#f7e3c3" />
+      <LiteBox position={[4.8, 0.32, 6]} size={[2.2, 0.64, 0.24]} color="#f7e3c3" />
+      <LiteBox position={[-4.8, 2.62, 6]} size={[2.2, 0.76, 0.24]} color="#f7e3c3" />
+      <LiteBox position={[4.8, 2.62, 6]} size={[2.2, 0.76, 0.24]} color="#f7e3c3" />
+      <LiteBox position={[0, 2.68, 6]} size={[2.1, 0.64, 0.24]} color="#f7e3c3" />
+      {[-4.8, 4.8].map((x) => (
+        <mesh key={x} position={[x, 1.5, 6.15]}><planeGeometry args={[1.75, 1.3]} /><meshStandardMaterial color="#a9e0ec" roughness={0.15} /></mesh>
+      ))}
+      {[-0.52, 0.52].map((x) => (
+        <mesh key={x} position={[x, 1.18, 6.16]}><boxGeometry args={[0.98, 2.25, 0.12]} /><meshStandardMaterial color="#37958c" roughness={0.36} /></mesh>
+      ))}
+      <LiteBox position={[0, 3.02, 6.2]} size={[16.4, 0.24, 0.28]} color="#fdf3e2" />
     </group>
   );
 }
