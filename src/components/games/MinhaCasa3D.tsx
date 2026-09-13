@@ -696,6 +696,7 @@ function InteriorTrim() {
 }
 
 const Dollhouse = memo(function Dollhouse({ mode, lowPower, garden }: { mode: ViewMode; lowPower: boolean; garden: GardenStyle }) {
+  if (lowPower) return <LiteDollhouse mode={mode} garden={garden} />;
   return (
     <group>
       <FrontGarden lowPower={lowPower} style={garden} />
@@ -772,6 +773,47 @@ const Dollhouse = memo(function Dollhouse({ mode, lowPower, garden }: { mode: Vi
     </group>
   );
 });
+
+function LiteBox({ position, size, color }: { position: [number, number, number]; size: [number, number, number]; color: string }) {
+  return <mesh position={position}><boxGeometry args={size} /><meshStandardMaterial color={color} roughness={0.82} /></mesh>;
+}
+
+// Versão de baixo custo visualmente equivalente: volumes grandes substituem
+// centenas de peças decorativas quando o aparelho não sustenta a cena completa.
+function LiteDollhouse({ mode, garden }: { mode: ViewMode; garden: GardenStyle }) {
+  const palette = gardenPalettes[garden];
+  return (
+    <group>
+      <LiteBox position={[0, -0.1, 13.4]} size={[19, 0.18, 14.7]} color={palette.grass} />
+      <LiteBox position={[0, 0.01, 13.2]} size={[1.55, 0.08, 14.5]} color={palette.path} />
+      <LiteBox position={[0, 0.02, 6.55]} size={[5.7, 0.18, 1.45]} color="#d7b68e" />
+      {[-5.25, 0, 5.25].flatMap((x) => [-3.5, 1.25, 4.85].map((z) => (
+        <LiteBox key={`floor-${x}-${z}`} position={[x, 0, z]} size={[x === 0 ? 4.9 : 5.35, 0.14, z === 4.85 ? 2.55 : z === 1.25 ? 4.35 : 4.85]} color={z < 0 ? "#d0aa7c" : z < 4 ? "#cfb49b" : "#b9b399"} />
+      )))}
+      <LiteBox position={[0, 1.45, -6]} size={[16.2, 2.9, 0.18]} color="#f5dfc4" />
+      <LiteBox position={[-8, 1.45, 0]} size={[0.18, 2.9, 12]} color="#f0d8bd" />
+      <LiteBox position={[8, 1.45, 0]} size={[0.18, 2.9, 12]} color="#f0d8bd" />
+      {[-2.55, 2.55].flatMap((x) => [
+        <LiteBox key={`${x}-back`} position={[x, 1.45, -3.5]} size={[0.16, 2.9, 2.25]} color="#f7f0e5" />,
+        <LiteBox key={`${x}-front`} position={[x, 1.45, 1.2]} size={[0.16, 2.9, 2]} color="#f7f0e5" />,
+      ])}
+      {[-0.95, 3.55].flatMap((z) => [-5.3, 0, 5.3].map((x) => <LiteBox key={`${z}-${x}`} position={[x, 1.45, z]} size={[2.4, 2.9, 0.16]} color="#f7f0e5" />))}
+      <FrontFacade />
+      <LiteBox position={[-5.1, 0.48, -4.2]} size={[2.3, 0.8, 0.85]} color="#b95f52" />
+      <LiteBox position={[0, 0.48, -3.45]} size={[2.1, 0.8, 1.05]} color="#bd8a5c" />
+      <LiteBox position={[5.25, 0.55, -5.2]} size={[4.2, 0.95, 0.7]} color="#7fa39c" />
+      <LiteBox position={[-5.2, 0.42, 1.2]} size={[2.8, 0.7, 1.65]} color="#c37c99" />
+      <LiteBox position={[0, 0.42, 1.2]} size={[2.8, 0.7, 1.65]} color="#688fac" />
+      <LiteBox position={[5.15, 0.42, 1.25]} size={[1.6, 0.7, 1.1]} color="#d4e7e5" />
+      <LiteBox position={[-4.6, 0.48, 4.95]} size={[1.8, 0.8, 0.75]} color="#c78e5d" />
+      <LiteBox position={[0, 0.48, 5.1]} size={[2.3, 0.8, 0.85]} color="#718e75" />
+      {[-5.8, -4.5, 4.5, 5.8].map((x, index) => (
+        <mesh key={x} position={[x, 0.55, 7.6 + (index % 2) * 0.65]}><sphereGeometry args={[0.48, 8, 6]} /><meshStandardMaterial color={palette.bushes[index % 2]} roughness={0.9} /></mesh>
+      ))}
+      {mode === "walk" && <LiteBox position={[0, 2.96, 0]} size={[16.35, 0.16, 12.35]} color="#fff7e9" />}
+    </group>
+  );
+}
 
 type Collider = readonly [minX: number, maxX: number, minZ: number, maxZ: number];
 const PLAYER_RADIUS = 0.3;
