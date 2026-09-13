@@ -1187,11 +1187,9 @@ const CharacterFigure = memo(function CharacterFigure({ item, definition, select
           <meshBasicMaterial map={texture} transparent alphaTest={0.08} side={THREE.DoubleSide} toneMapped={false} />
         </mesh>
         {selected && (
-          <Html center position={[0, height / 2 + 0.24, 0]} transform distanceFactor={7}>
-            <div className="pointer-events-none whitespace-nowrap rounded-full border bg-card/95 px-2 py-1 text-xs font-bold text-card-foreground shadow-md">
-              {definition.label}
-            </div>
-          </Html>
+          <Text position={[0, height / 2 + 0.26, 0]} fontSize={0.22} color="#4b3a2a" outlineWidth={0.02} outlineColor="#fffaf0" anchorX="center" anchorY="middle">
+            {definition.label}
+          </Text>
         )}
       </Billboard>
     </group>
