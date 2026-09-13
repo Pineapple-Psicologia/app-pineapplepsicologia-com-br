@@ -479,7 +479,7 @@ function FloorLamp({ position, lowPower }: { position: [number, number, number];
       <mesh position={[0, 0.08, 0]} castShadow><cylinderGeometry args={[0.28, 0.34, 0.16, 16]} /><meshStandardMaterial color="#815c49" roughness={0.6} /></mesh>
       <mesh position={[0, 0.9, 0]} castShadow><cylinderGeometry args={[0.045, 0.055, 1.65, 10]} /><meshStandardMaterial color="#b88555" metalness={0.25} roughness={0.45} /></mesh>
       <mesh position={[0, 1.72, 0]} castShadow><coneGeometry args={[0.42, 0.58, 18, 1, true]} /><meshStandardMaterial color="#f2b85b" roughness={0.68} emissive="#ffb65d" emissiveIntensity={0.35} side={THREE.DoubleSide} /></mesh>
-      {!lowPower && <pointLight position={[0, 1.55, 0]} color="#ffbd70" intensity={1.2} distance={4.8} decay={2} />}
+      
     </group>
   );
 }
@@ -490,7 +490,7 @@ function Pendant({ position, lowPower }: { position: [number, number, number]; l
       <mesh position={[0, 0.38, 0]}><cylinderGeometry args={[0.025, 0.025, 0.75, 8]} /><meshStandardMaterial color="#76594a" roughness={0.5} /></mesh>
       <mesh position={[0, -0.05, 0]} castShadow><sphereGeometry args={[0.2, 16, 10]} /><meshStandardMaterial color="#ffd58a" roughness={0.3} emissive="#ffb45e" emissiveIntensity={0.75} /></mesh>
       <mesh position={[0, 0.03, 0]} castShadow><coneGeometry args={[0.5, 0.42, 18, 1, true]} /><meshStandardMaterial color="#e7a75f" roughness={0.65} side={THREE.DoubleSide} /></mesh>
-      {!lowPower && <pointLight position={[0, -0.18, 0]} color="#ffc27c" intensity={0.9} distance={4.5} decay={2} />}
+      
     </group>
   );
 }
@@ -648,7 +648,7 @@ function FrontGarden({ lowPower, style = "florido" }: { lowPower: boolean; style
         ))}
       </group>
       <mesh position={[0, 2.16, 6.78]} castShadow><sphereGeometry args={[0.2, 16, 10]} /><meshStandardMaterial color="#ffd58a" emissive="#ffb45e" emissiveIntensity={0.65} roughness={0.3} /></mesh>
-      {!lowPower && <pointLight position={[0, 2.1, 7]} color="#ffc477" intensity={1.1} distance={4.5} decay={2} />}
+      
     </group>
   );
 }
@@ -909,14 +909,20 @@ function WalkCamera({ navigation, resetSignal, enabled, remoteCamera, onCamera }
   return null;
 }
 
-// sombras estáticas: recalcula só quando a cena muda, não a cada quadro
-function ShadowBudget({ trigger }: { trigger: unknown }) {
+// mantém a cena viva se o navegador perder o contexto gráfico
+function ContextGuard() {
   const { gl, invalidate } = useThree();
   useEffect(() => {
-    gl.shadowMap.autoUpdate = false;
-    gl.shadowMap.needsUpdate = true;
-    invalidate();
-  }, [gl, invalidate, trigger]);
+    const canvas = gl.domElement;
+    const onLost = (event: Event) => event.preventDefault();
+    const onRestored = () => invalidate();
+    canvas.addEventListener("webglcontextlost", onLost, false);
+    canvas.addEventListener("webglcontextrestored", onRestored, false);
+    return () => {
+      canvas.removeEventListener("webglcontextlost", onLost);
+      canvas.removeEventListener("webglcontextrestored", onRestored);
+    };
+  }, [gl, invalidate]);
   return null;
 }
 
@@ -1086,29 +1092,12 @@ function Scene({ props, mode, navigation, resetSignal, garden }: {
 
   return (
     <>
-      <ShadowBudget trigger={`${props.mood}-${mode}-${garden}-${props.lowPower}`} />
+      <ContextGuard />
       <color attach="background" args={[background]} />
       <fog attach="fog" args={[background, 20, 34]} />
-      <ambientLight intensity={ambience * 0.72} color={props.mood === "noite" ? "#aab6df" : "#fff3df"} />
-      <hemisphereLight args={[props.mood === "noite" ? "#7f91c7" : "#dff6ff", "#8b7356", ambience]} />
-      <directionalLight
-        position={[-7, 12, 8]}
-        intensity={props.mood === "noite" ? 0.72 : 1.55}
-        castShadow={!props.lowPower}
-        shadow-mapSize={[512, 512]}
-        shadow-camera-left={-10}
-        shadow-camera-right={10}
-        shadow-camera-top={8}
-        shadow-camera-bottom={-8}
-        shadow-bias={-0.0003}
-      />
-      <pointLight position={[0, 4.2, 1]} color={props.mood === "calmo" ? "#d7ecff" : "#ffc47a"} intensity={props.mood === "noite" ? 5.5 : 3.4} distance={18} decay={2} />
-      <Environment resolution={props.lowPower ? 32 : 96}>
-        <Lightformer intensity={2.2} position={[0, 7, 2]} scale={[12, 12, 1]} />
-        <Lightformer intensity={1.1} color="#ffd7ac" position={[0, 3, 10]} scale={[10, 6, 1]} />
-        {!props.lowPower && <Lightformer intensity={1.2} color="#f5b77d" position={[-7, 2, 0]} rotation-y={Math.PI / 2} scale={[8, 4, 1]} />}
-        {!props.lowPower && <Lightformer intensity={0.8} color="#bfe0ff" position={[7, 3, 0]} rotation-y={-Math.PI / 2} scale={[8, 4, 1]} />}
-      </Environment>
+      <ambientLight intensity={ambience * 1.15} color={props.mood === "noite" ? "#aab6df" : "#fff3df"} />
+      <hemisphereLight args={[props.mood === "noite" ? "#7f91c7" : "#dff6ff", "#8b7356", ambience * 1.1]} />
+      <directionalLight position={[-7, 12, 8]} intensity={props.mood === "noite" ? 0.9 : 1.7} color="#fff0d8" />
       <directionalLight position={[6, 6, -9]} intensity={props.mood === "noite" ? 0.35 : 0.6} color="#ffd9b0" />
 
       {mode === "walk" ? (
@@ -1312,7 +1301,7 @@ export default function MinhaCasa3D(props: Props) {
     const update = () => {
       const low = coarse.matches || narrow.matches;
       setLowPower(low);
-      setDpr(low ? 0.85 : 1.25);
+      setDpr(low ? 0.75 : 1);
     };
     update();
     coarse.addEventListener("change", update);
@@ -1329,19 +1318,19 @@ export default function MinhaCasa3D(props: Props) {
         <Canvas
           key={mode}
           fallback={<Fallback />}
-          shadows={!lowPower}
+          shadows={false}
           dpr={dpr}
           frameloop={mode === "walk" ? "always" : "demand"}
           camera={{ position: mode === "walk" ? [0, 2.15, 19.2] : [13.5, 15.2, 17.5], fov: mode === "walk" ? 52 : 42, near: 0.08, far: 60 }}
-           gl={{ antialias: !lowPower, alpha: false, powerPreference: lowPower ? "default" : "high-performance", failIfMajorPerformanceCaveat: false, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: lowPower ? 1.02 : 1.08 }}
+          gl={{ antialias: false, alpha: false, powerPreference: "default", failIfMajorPerformanceCaveat: false, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: lowPower ? 1.06 : 1.12 }}
           onPointerMissed={() => props.onSelect(null)}
         >
           <PerformanceMonitor
-            ms={220}
+            ms={240}
             iterations={4}
             threshold={0.7}
-            onDecline={() => setDpr((current) => Math.max(0.62, Number((current - 0.2).toFixed(2))))}
-            onIncline={() => setDpr((current) => Math.min(lowPower ? 1 : 1.25, Number((current + 0.15).toFixed(2))))}
+            onDecline={() => setDpr((current) => Math.max(0.6, Number((current - 0.2).toFixed(2))))}
+            onIncline={() => setDpr((current) => Math.min(lowPower ? 0.85 : 1, Number((current + 0.1).toFixed(2))))}
           />
           <Scene props={{ ...props, lowPower }} mode={mode} navigation={navigation} resetSignal={resetSignal} garden={garden} />
         </Canvas>
