@@ -76,28 +76,40 @@ const EMOTION_COLORS: Record<string, string> = {
   ansioso: "#a855f7",
 };
 
+// Geometria e materiais compartilhados: um único cubo/disco reaproveitado por
+// centenas de peças evita recriar buffers e trocar shader a cada objeto.
+const UNIT_BOX = new THREE.BoxGeometry(1, 1, 1);
+const UNIT_DISC = new THREE.CircleGeometry(1, 24);
+const materialCache = new Map<string, THREE.MeshStandardMaterial>();
+function sharedMaterial(color: string, roughness = 0.82) {
+  const key = `${color}|${roughness}`;
+  let material = materialCache.get(key);
+  if (!material) {
+    material = new THREE.MeshStandardMaterial({ color, roughness });
+    materialCache.set(key, material);
+  }
+  return material;
+}
+
 function RoomFloor({ position, size, color, rug }: { position: [number, number, number]; size: [number, number]; color: string; rug?: string }) {
   return (
     <group position={position}>
-      <RoundedBox args={[size[0] - 0.12, 0.16, size[1] - 0.12]} radius={0.06} smoothness={1}>
-        <meshStandardMaterial color={color} roughness={0.72} />
-      </RoundedBox>
+      <mesh geometry={UNIT_BOX} material={sharedMaterial(color, 0.72)} scale={[size[0] - 0.12, 0.16, size[1] - 0.12]} />
       {rug && (
-        <mesh position={[0, 0.1, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <circleGeometry args={[Math.min(size[0], size[1]) * 0.28, 32]} />
-          <meshStandardMaterial color={rug} roughness={0.96} />
-        </mesh>
+        <mesh
+          geometry={UNIT_DISC}
+          material={sharedMaterial(rug, 0.96)}
+          position={[0, 0.1, 0]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          scale={Math.min(size[0], size[1]) * 0.28}
+        />
       )}
     </group>
   );
 }
 
 function Wall({ position, size, color = "#f7f0e5" }: { position: [number, number, number]; size: [number, number, number]; color?: string }) {
-  return (
-    <RoundedBox args={size} radius={0.035} smoothness={1} position={position}>
-      <meshStandardMaterial color={color} roughness={0.76} />
-    </RoundedBox>
-  );
+  return <mesh geometry={UNIT_BOX} material={sharedMaterial(color, 0.76)} position={position} scale={size} />;
 }
 
 function Doorway({ x, z, rotation = 0, front = false }: { x: number; z: number; rotation?: number; front?: boolean }) {
