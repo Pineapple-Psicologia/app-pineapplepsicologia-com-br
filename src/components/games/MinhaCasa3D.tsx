@@ -490,7 +490,7 @@ function Pendant({ position, lowPower }: { position: [number, number, number]; l
       <mesh position={[0, 0.38, 0]}><cylinderGeometry args={[0.025, 0.025, 0.75, 8]} /><meshStandardMaterial color="#76594a" roughness={0.5} /></mesh>
       <mesh position={[0, -0.05, 0]} castShadow><sphereGeometry args={[0.2, 16, 10]} /><meshStandardMaterial color="#ffd58a" roughness={0.3} emissive="#ffb45e" emissiveIntensity={0.75} /></mesh>
       <mesh position={[0, 0.03, 0]} castShadow><coneGeometry args={[0.5, 0.42, 18, 1, true]} /><meshStandardMaterial color="#e7a75f" roughness={0.65} side={THREE.DoubleSide} /></mesh>
-      {!lowPower && <pointLight position={[0, -0.18, 0]} color="#ffc27c" intensity={0.9} distance={4.5} decay={2} />}
+      
     </group>
   );
 }
