@@ -1,6 +1,6 @@
 import { memo, Suspense, useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import { Canvas, type ThreeEvent, useFrame, useThree } from "@react-three/fiber";
-import { Billboard, Environment, Html, Lightformer, OrbitControls, PerformanceMonitor, RoundedBox, Text, useTexture } from "@react-three/drei";
+import { Billboard, Html, OrbitControls, PerformanceMonitor, RoundedBox, Text, useTexture } from "@react-three/drei";
 import { DoorOpen, Eye, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import casaAvoLoading from "@/assets/casa-avo-loading.jpg";
@@ -15,6 +15,7 @@ export type CasaSticker = { id: string; x: number; y: number; scale: number; emo
 export type CasaCharacter = { id: string; label: string; img: string; isPet?: boolean };
 
 export type CasaCamera = { x: number; z: number; yaw: number; pitch: number; targetX: number; targetZ: number; moving: boolean; t: number };
+export type CasaCameraUpdate = Partial<Omit<CasaCamera, "t">> & Pick<CasaCamera, "t">;
 
 type Props = {
   items: CasaPlaced[];
@@ -27,7 +28,7 @@ type Props = {
   garden?: GardenStyle;
   onGardenChange?: (garden: GardenStyle) => void;
   remoteCamera?: MutableRefObject<CasaCamera | null>;
-  onCamera?: (camera: CasaCamera) => void;
+  onCamera?: (camera: CasaCameraUpdate) => void;
   onSelect: (id: string | null) => void;
   onMoveItem: (id: string, x: number, y: number) => void;
   onMoveCover: (id: string, x: number, y: number) => void;
@@ -772,18 +773,27 @@ const Dollhouse = memo(function Dollhouse({ mode, lowPower, garden }: { mode: Vi
   );
 });
 
+type Collider = readonly [minX: number, maxX: number, minZ: number, maxZ: number];
+const PLAYER_RADIUS = 0.3;
+const wall = (minX: number, maxX: number, minZ: number, maxZ: number): Collider =>
+  [minX - PLAYER_RADIUS, maxX + PLAYER_RADIUS, minZ - PLAYER_RADIUS, maxZ + PLAYER_RADIUS];
+// Paredes são convertidas uma única vez em retângulos 2D. A checagem por quadro
+// fica sem alocações, raycasts ou leitura da árvore 3D.
+const HOUSE_COLLIDERS: readonly Collider[] = [
+  wall(-8.1, 8.1, -6.1, -5.9), wall(-8.1, -7.9, -6, 6), wall(7.9, 8.1, -6, 6),
+  wall(-8.1, -1.08, 5.9, 6.4), wall(1.08, 8.1, 5.9, 6.4),
+  wall(-2.63, -2.47, -6, -1.73), wall(-2.63, -2.47, -0.17, 3.5),
+  wall(2.47, 2.63, -6, -1.73), wall(2.47, 2.63, -0.17, 3.5),
+  wall(-8, -4.68, -1.03, -0.87), wall(-3.12, 0.57, -1.03, -0.87), wall(2.13, 5.92, -1.03, -0.87), wall(7.48, 8, -1.03, -0.87),
+  wall(-8, -4.68, 3.47, 3.63), wall(-3.12, 0.57, 3.47, 3.63), wall(2.13, 5.92, 3.47, 3.63), wall(7.48, 8, 3.47, 3.63),
+] as const;
+
 const isPassage = (x: number, z: number) => {
-  const radius = 0.32;
-  if (x < -8 + radius || x > 8 - radius || z < -6 + radius || z > 20.8) return false;
-  if (z > 6 - radius && z < 6.4 && Math.abs(x) > 1.08) return false;
-  const blockedVertical = (wallX: number) => Math.abs(x - wallX) < radius && z < 3.5 && Math.abs(z + 0.95) > 0.78;
-  if (blockedVertical(-2.55) || blockedVertical(2.55)) return false;
-  const horizontalBlocked = (wallZ: number, doors: number[]) => {
-    if (Math.abs(z - wallZ) >= radius) return false;
-    return !doors.some((doorX) => Math.abs(x - doorX) < 0.78);
-  };
-  if (horizontalBlocked(-0.95, [-3.9, 1.35, 6.7])) return false;
-  if (horizontalBlocked(3.55, [-3.9, 1.35, 6.7])) return false;
+  if (x < -7.7 || x > 7.7 || z < -5.7 || z > 20.8) return false;
+  for (let index = 0; index < HOUSE_COLLIDERS.length; index += 1) {
+    const collider = HOUSE_COLLIDERS[index];
+    if (x > collider[0] && x < collider[1] && z > collider[2] && z < collider[3]) return false;
+  }
   return true;
 };
 
@@ -792,7 +802,7 @@ function WalkCamera({ navigation, resetSignal, enabled, remoteCamera, onCamera }
   resetSignal: number;
   enabled: boolean;
   remoteCamera?: MutableRefObject<CasaCamera | null>;
-  onCamera?: (camera: CasaCamera) => void;
+  onCamera?: (camera: CasaCameraUpdate) => void;
 }) {
 
   const { camera, invalidate } = useThree();
@@ -826,6 +836,8 @@ function WalkCamera({ navigation, resetSignal, enabled, remoteCamera, onCamera }
   const lastLocalInput = useRef(0);
   const appliedRemote = useRef(0);
   const lastSent = useRef(0);
+  const lastPacket = useRef<CasaCamera | null>(null);
+  const remoteTarget = useRef<CasaCamera | null>(null);
 
   useFrame((_, rawDelta) => {
     if (!enabled) return;
@@ -854,18 +866,21 @@ function WalkCamera({ navigation, resetSignal, enabled, remoteCamera, onCamera }
 
     // aplica a câmera do parceiro quando não há interação local recente
     const remote = remoteCamera?.current;
-    if (remote && remote.t > appliedRemote.current && now - lastLocalInput.current > 700) {
+    if (remote && remote.t > appliedRemote.current) {
       appliedRemote.current = remote.t;
+      remoteTarget.current = remote;
       navigation.current.targetX = remote.targetX;
       navigation.current.targetZ = remote.targetZ;
       navigation.current.moving = remote.moving;
-      yaw.current = THREE.MathUtils.lerp(yaw.current, remote.yaw, 0.4);
-      pitch.current = THREE.MathUtils.lerp(pitch.current, remote.pitch, 0.4);
-      const far = Math.hypot(remote.x - position.current.x, remote.z - position.current.z);
-      if (far > 2.5) {
-        position.current.x = remote.x;
-        position.current.z = remote.z;
-      }
+    }
+    const target = remoteTarget.current;
+    if (target && now - lastLocalInput.current > 700) {
+      const follow = 1 - Math.exp(-8 * dt);
+      position.current.x = THREE.MathUtils.lerp(position.current.x, target.x, follow);
+      position.current.z = THREE.MathUtils.lerp(position.current.z, target.z, follow);
+      const yawDelta = Math.atan2(Math.sin(target.yaw - yaw.current), Math.cos(target.yaw - yaw.current));
+      yaw.current += yawDelta * follow;
+      pitch.current = THREE.MathUtils.lerp(pitch.current, target.pitch, follow);
     }
 
     if (navigation.current.moving) {
@@ -890,18 +905,29 @@ function WalkCamera({ navigation, resetSignal, enabled, remoteCamera, onCamera }
     camera.rotation.order = "YXZ";
     camera.rotation.set(pitch.current, yaw.current, 0);
 
-    if (onCamera && now - lastSent.current > 220 && now - lastLocalInput.current < 2500) {
+    const quantize = (value: number, step: number) => Math.round(value / step) * step;
+    const snapshot: CasaCamera = {
+      x: quantize(position.current.x, 0.04), z: quantize(position.current.z, 0.04),
+      yaw: quantize(yaw.current, 0.015), pitch: quantize(pitch.current, 0.015),
+      targetX: quantize(navigation.current.targetX, 0.08), targetZ: quantize(navigation.current.targetZ, 0.08),
+      moving: navigation.current.moving, t: Date.now(),
+    };
+    const previous = lastPacket.current;
+    const changed = !previous || snapshot.x !== previous.x || snapshot.z !== previous.z || snapshot.yaw !== previous.yaw || snapshot.pitch !== previous.pitch || snapshot.targetX !== previous.targetX || snapshot.targetZ !== previous.targetZ || snapshot.moving !== previous.moving;
+    const stopped = previous?.moving === true && !snapshot.moving;
+    const sendInterval = snapshot.moving ? 280 : 480;
+    if (onCamera && changed && (stopped || now - lastSent.current > sendInterval) && now - lastLocalInput.current < 2500) {
       lastSent.current = now;
-      onCamera({
-        x: position.current.x,
-        z: position.current.z,
-        yaw: yaw.current,
-        pitch: pitch.current,
-        targetX: navigation.current.targetX,
-        targetZ: navigation.current.targetZ,
-        moving: navigation.current.moving,
-        t: Date.now(),
-      });
+      const update: CasaCameraUpdate = { t: snapshot.t };
+      if (!previous || snapshot.x !== previous.x) update.x = snapshot.x;
+      if (!previous || snapshot.z !== previous.z) update.z = snapshot.z;
+      if (!previous || snapshot.yaw !== previous.yaw) update.yaw = snapshot.yaw;
+      if (!previous || snapshot.pitch !== previous.pitch) update.pitch = snapshot.pitch;
+      if (!previous || snapshot.targetX !== previous.targetX) update.targetX = snapshot.targetX;
+      if (!previous || snapshot.targetZ !== previous.targetZ) update.targetZ = snapshot.targetZ;
+      if (!previous || snapshot.moving !== previous.moving) update.moving = snapshot.moving;
+      lastPacket.current = snapshot;
+      onCamera(update);
     }
     invalidate();
   });
