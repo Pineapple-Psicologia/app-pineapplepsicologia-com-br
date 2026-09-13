@@ -815,6 +815,7 @@ function LiteDollhouse({ mode, garden }: { mode: ViewMode; garden: GardenStyle }
       <LiteBox position={[5.15, 0.42, 1.25]} size={[1.6, 0.7, 1.1]} color="#d4e7e5" />
       <LiteBox position={[-4.6, 0.48, 4.95]} size={[1.8, 0.8, 0.75]} color="#c78e5d" />
       <LiteBox position={[0, 0.48, 5.1]} size={[2.3, 0.8, 0.85]} color="#718e75" />
+      <LiteFurniture />
       {[-5.8, -4.5, 4.5, 5.8].map((x, index) => (
         <mesh key={x} position={[x, 0.55, 7.6 + (index % 2) * 0.65]}><sphereGeometry args={[0.48, 8, 6]} /><meshStandardMaterial color={palette.bushes[index % 2]} roughness={0.9} /></mesh>
       ))}
