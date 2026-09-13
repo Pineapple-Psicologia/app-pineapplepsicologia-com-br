@@ -40,6 +40,8 @@ type SceneProps = Props & { lowPower: boolean };
 type ViewMode = "overview" | "walk";
 type NavigationInput = { targetX: number; targetZ: number; moving: boolean; lookX: number; lookY: number; localInput: number };
 
+const ENTRANCE_CAMERA = { x: 0, y: 1.82, z: 16.2, yaw: 0, pitch: -0.13 } as const;
+
 
 type DragKind = "item" | "cover" | "note" | "sticker";
 type DragState = { id: string; kind: DragKind } | null;
@@ -872,9 +874,9 @@ function WalkCamera({ navigation, resetSignal, enabled, remoteCamera, onCamera }
 
   const { camera, invalidate } = useThree();
   const keys = useRef(new Set<string>());
-  const position = useRef(new THREE.Vector3(0, 2.15, 19.2));
-  const yaw = useRef(0);
-  const pitch = useRef(-0.04);
+  const position = useRef(new THREE.Vector3(ENTRANCE_CAMERA.x, ENTRANCE_CAMERA.y, ENTRANCE_CAMERA.z));
+  const yaw = useRef(ENTRANCE_CAMERA.yaw);
+  const pitch = useRef(ENTRANCE_CAMERA.pitch);
 
   useEffect(() => {
     const down = (event: KeyboardEvent) => {
@@ -891,10 +893,13 @@ function WalkCamera({ navigation, resetSignal, enabled, remoteCamera, onCamera }
   }, []);
 
   useEffect(() => {
-    position.current.set(0, 2.15, 19.2);
-    yaw.current = 0;
-    pitch.current = -0.04;
+    position.current.set(ENTRANCE_CAMERA.x, ENTRANCE_CAMERA.y, ENTRANCE_CAMERA.z);
+    yaw.current = ENTRANCE_CAMERA.yaw;
+    pitch.current = ENTRANCE_CAMERA.pitch;
     navigation.current.moving = false;
+    navigation.current.targetX = ENTRANCE_CAMERA.x;
+    navigation.current.targetZ = ENTRANCE_CAMERA.z;
+    remoteTarget.current = null;
     invalidate();
   }, [invalidate, resetSignal]);
 
@@ -1416,7 +1421,7 @@ export default function MinhaCasa3D(props: Props) {
     setLocalGarden(value);
     props.onGardenChange?.(value);
   };
-  const navigation = useRef<NavigationInput>({ targetX: 0, targetZ: 19.2, moving: false, lookX: 0, lookY: 0, localInput: 0 });
+  const navigation = useRef<NavigationInput>({ targetX: ENTRANCE_CAMERA.x, targetZ: ENTRANCE_CAMERA.z, moving: false, lookX: 0, lookY: 0, localInput: 0 });
   const reduceQuality = useCallback(() => {
     setLowPower(true);
     setDpr((current) => Math.min(current, 0.65));
@@ -1449,7 +1454,7 @@ export default function MinhaCasa3D(props: Props) {
           shadows={false}
           dpr={dpr}
           frameloop={mode === "walk" ? "always" : "demand"}
-          camera={{ position: mode === "walk" ? [0, 2.15, 19.2] : [13.5, 15.2, 17.5], fov: mode === "walk" ? 52 : 42, near: 0.08, far: 60 }}
+          camera={{ position: mode === "walk" ? [ENTRANCE_CAMERA.x, ENTRANCE_CAMERA.y, ENTRANCE_CAMERA.z] : [13.5, 15.2, 17.5], fov: mode === "walk" ? 52 : 42, near: 0.08, far: 60 }}
           gl={{ antialias: false, alpha: false, powerPreference: "default", failIfMajorPerformanceCaveat: false, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: lowPower ? 1.06 : 1.12 }}
           onPointerMissed={() => props.onSelect(null)}
         >
