@@ -1061,7 +1061,8 @@ function PerformanceProbe({ onPressure }: { onPressure: () => void }) {
       geometries: gl.info.memory.geometries,
     };
     if (import.meta.env.DEV) console.info("[MinhaCasa3D performance]", report);
-    if (fps < 30 || report.drawCalls > 100 || report.triangles > 100000) onPressure();
+    // Só reduz a qualidade quando o aparelho realmente não dá conta.
+    if (fps < 18 && report.slowFramePercent > 60) onPressure();
   });
   return null;
 }
