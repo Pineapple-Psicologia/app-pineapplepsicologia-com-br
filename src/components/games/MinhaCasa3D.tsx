@@ -1435,7 +1435,7 @@ export default function MinhaCasa3D(props: Props) {
             onDecline={() => setDpr((current) => Math.max(0.6, Number((current - 0.2).toFixed(2))))}
             onIncline={() => setDpr((current) => Math.min(lowPower ? 0.85 : 1, Number((current + 0.1).toFixed(2))))}
           />
-          <PerformanceProbe onPressure={reduceQuality} />
+          <PerformanceProbe key={lowPower ? "lite" : "full"} onPressure={reduceQuality} />
           <Scene props={{ ...props, lowPower }} mode={mode} navigation={navigation} resetSignal={resetSignal} garden={garden} />
         </Canvas>
 
