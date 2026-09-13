@@ -1318,19 +1318,19 @@ export default function MinhaCasa3D(props: Props) {
         <Canvas
           key={mode}
           fallback={<Fallback />}
-          shadows={!lowPower}
+          shadows={false}
           dpr={dpr}
           frameloop={mode === "walk" ? "always" : "demand"}
           camera={{ position: mode === "walk" ? [0, 2.15, 19.2] : [13.5, 15.2, 17.5], fov: mode === "walk" ? 52 : 42, near: 0.08, far: 60 }}
-           gl={{ antialias: !lowPower, alpha: false, powerPreference: lowPower ? "default" : "high-performance", failIfMajorPerformanceCaveat: false, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: lowPower ? 1.02 : 1.08 }}
+          gl={{ antialias: false, alpha: false, powerPreference: "default", failIfMajorPerformanceCaveat: false, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: lowPower ? 1.06 : 1.12 }}
           onPointerMissed={() => props.onSelect(null)}
         >
           <PerformanceMonitor
-            ms={220}
+            ms={240}
             iterations={4}
             threshold={0.7}
-            onDecline={() => setDpr((current) => Math.max(0.62, Number((current - 0.2).toFixed(2))))}
-            onIncline={() => setDpr((current) => Math.min(lowPower ? 1 : 1.25, Number((current + 0.15).toFixed(2))))}
+            onDecline={() => setDpr((current) => Math.max(0.6, Number((current - 0.2).toFixed(2))))}
+            onIncline={() => setDpr((current) => Math.min(lowPower ? 0.85 : 1, Number((current + 0.1).toFixed(2))))}
           />
           <Scene props={{ ...props, lowPower }} mode={mode} navigation={navigation} resetSignal={resetSignal} garden={garden} />
         </Canvas>
