@@ -815,10 +815,52 @@ function LiteDollhouse({ mode, garden }: { mode: ViewMode; garden: GardenStyle }
       <LiteBox position={[5.15, 0.42, 1.25]} size={[1.6, 0.7, 1.1]} color="#d4e7e5" />
       <LiteBox position={[-4.6, 0.48, 4.95]} size={[1.8, 0.8, 0.75]} color="#c78e5d" />
       <LiteBox position={[0, 0.48, 5.1]} size={[2.3, 0.8, 0.85]} color="#718e75" />
+      <LiteFurniture />
       {[-5.8, -4.5, 4.5, 5.8].map((x, index) => (
         <mesh key={x} position={[x, 0.55, 7.6 + (index % 2) * 0.65]}><sphereGeometry args={[0.48, 8, 6]} /><meshStandardMaterial color={palette.bushes[index % 2]} roughness={0.9} /></mesh>
       ))}
       {mode === "walk" && <LiteBox position={[0, 2.96, 0]} size={[16.35, 0.16, 12.35]} color="#fff7e9" />}
+    </group>
+  );
+}
+
+// Mobília simples da versão leve: encostos, camas, mesa, cadeiras e tapetes
+// para que os cômodos pareçam habitados mesmo sem os móveis detalhados.
+function LiteFurniture() {
+  return (
+    <group>
+      {/* sala: sofá com encosto e braços + tapete + mesa de centro + tv */}
+      <LiteBox position={[-5.1, 0.9, -4.55]} size={[2.3, 0.85, 0.26]} color="#a5504a" />
+      <LiteBox position={[-6.2, 0.78, -4.2]} size={[0.24, 0.6, 0.85]} color="#a5504a" />
+      <LiteBox position={[-4, 0.78, -4.2]} size={[0.24, 0.6, 0.85]} color="#a5504a" />
+      <LiteBox position={[-5.1, 0.09, -3]} size={[3.2, 0.05, 2]} color="#c98f74" />
+      <LiteBox position={[-5.1, 0.32, -2.6]} size={[1.4, 0.45, 0.8]} color="#8a5a3c" />
+      <LiteBox position={[-5.1, 0.75, -1.35]} size={[1.7, 1, 0.16]} color="#3b3f46" />
+      {/* sala central: mesa de jantar com cadeiras */}
+      <LiteBox position={[0, 0.74, -3.45]} size={[2.2, 0.12, 1.2]} color="#a9713f" />
+      {[-0.7, 0.7].flatMap((dx) => [-0.95, 0.95].map((dz) => (
+        <group key={`chair-${dx}-${dz}`}>
+          <LiteBox position={[dx, 0.42, -3.45 + dz]} size={[0.5, 0.08, 0.5]} color="#b98551" />
+          <LiteBox position={[dx, 0.68, -3.45 + dz * 1.22]} size={[0.5, 0.6, 0.08]} color="#b98551" />
+        </group>
+      )))}
+      {/* cozinha: armários superiores e geladeira */}
+      <LiteBox position={[5.25, 1.85, -5.45]} size={[3.4, 0.7, 0.45]} color="#e5d2b6" />
+      <LiteBox position={[7.1, 0.95, -4.3]} size={[0.8, 1.9, 0.8]} color="#e9e5df" />
+      {/* quartos: camas com travesseiro e criado-mudo */}
+      {[[-5.2, "#c37c99"], [0, "#688fac"]].map(([x, color]) => (
+        <group key={`bed-${x}`}>
+          <LiteBox position={[Number(x), 0.88, 0.5]} size={[2.8, 0.9, 0.16]} color="#8d6647" />
+          <LiteBox position={[Number(x) - 0.85, 0.83, 0.72]} size={[0.9, 0.22, 0.5]} color="#fdf6ea" />
+          <LiteBox position={[Number(x) + 1.65, 0.32, 0.6]} size={[0.55, 0.62, 0.55]} color={String(color)} />
+        </group>
+      ))}
+      {/* banheiro: pia e box */}
+      <LiteBox position={[5.9, 0.5, 1.9]} size={[0.8, 0.85, 0.6]} color="#eef3f4" />
+      <LiteBox position={[6.9, 1, 0.4]} size={[1.1, 2, 0.08]} color="#cfe6ea" />
+      {/* área de trás: mesinha e estante */}
+      <LiteBox position={[-4.6, 0.95, 5.35]} size={[1.8, 0.16, 0.3]} color="#9c6f45" />
+      <LiteBox position={[5.1, 0.85, 5.2]} size={[1.6, 1.7, 0.35]} color="#b08a63" />
     </group>
   );
 }
@@ -1061,7 +1103,8 @@ function PerformanceProbe({ onPressure }: { onPressure: () => void }) {
       geometries: gl.info.memory.geometries,
     };
     if (import.meta.env.DEV) console.info("[MinhaCasa3D performance]", report);
-    if (fps < 30 || report.drawCalls > 100 || report.triangles > 100000) onPressure();
+    // Só reduz a qualidade quando o aparelho realmente não dá conta.
+    if (fps < 18 && report.slowFramePercent > 60) onPressure();
   });
   return null;
 }
