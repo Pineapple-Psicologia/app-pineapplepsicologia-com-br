@@ -13,6 +13,7 @@
 - [ ] Transformar Bússola de Valores
 - [x] Transformar Minha Casa
 - [x] Otimizar Minha Casa 3D para movimentação simultânea em celular e tablet
+- [x] Otimizar colisões, quantizar/interpolar a sincronização e diagnosticar FPS/draw calls da Minha Casa 3D
 - [x] Criar entrada pela porta, teto e circulação interna na Minha Casa 3D
 - [x] Refinar Minha Casa 3D com iluminação acolhedora, materiais e decoração leve
 - [x] Transformar Minha Casa 3D em uma casa de vó acolhedora, com memória afetiva e acabamento de animação
