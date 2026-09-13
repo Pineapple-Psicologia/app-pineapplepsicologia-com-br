@@ -797,7 +797,7 @@ const Dollhouse = memo(function Dollhouse({ mode, lowPower, garden }: { mode: Vi
 });
 
 function LiteBox({ position, size, color }: { position: [number, number, number]; size: [number, number, number]; color: string }) {
-  return <mesh position={position}><boxGeometry args={size} /><meshStandardMaterial color={color} roughness={0.82} /></mesh>;
+  return <mesh geometry={UNIT_BOX} material={sharedMaterial(color)} position={position} scale={size} />;
 }
 
 // Versão de baixo custo visualmente equivalente: volumes grandes substituem
