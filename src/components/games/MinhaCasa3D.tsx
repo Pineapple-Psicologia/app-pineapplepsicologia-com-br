@@ -552,7 +552,8 @@ function RoofSlope({ z, depth, angle, lowPower }: { z: number; depth: number; an
 }
 
 function CeilingAndRoof({ visible, lowPower }: { visible: boolean; lowPower: boolean }) {
-  return (
+  if (!visible) return null;
+
     <group>
       {visible && (
         <mesh position={[0, 2.96, 0]} receiveShadow>
